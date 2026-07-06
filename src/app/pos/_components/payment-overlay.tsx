@@ -118,13 +118,6 @@ export function PaymentOverlay({ onClose, employeeId, shiftId }: PaymentOverlayP
       const result = await res.json()
       toast.success(`Sale #${result.saleNumber} completed`)
 
-      // Signal customer display - show "Salamat po!" with total
-      fetch("/api/pos/cart/display", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: [], subtotal: 0, taxTotal: 0, total: totals.total, status: "complete" }),
-      }).catch(() => {})
-
       openCashDrawer().then(ok => { if (ok) setDrawerOpened(true) }).catch(() => {})
       setReceiptData(result.receipt || result)
       setCompletedSaleId(result.id ?? saleId)

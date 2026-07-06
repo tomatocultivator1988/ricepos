@@ -8,7 +8,7 @@ export async function GET(_request: NextRequest) {
     if (session.role !== "admin") return forbid("Admin required")
     const storeId = session.storeId
 
-    const tables = ["items", "categories", "employees", "customers", "discounts", "tax_rates", "sales", "sale_items", "payments", "journal", "inventory_log", "product_variants", "product_ingredients", "time_logs"]
+    const tables = ["items", "selling_units", "customers", "sales", "sale_items", "payments", "expenses", "inventory_log", "cash_counts", "categories", "tax_rates", "discounts", "employees", "audit_log", "journal", "stores", "settings", "pos_carts", "time_logs", "sale_sequences"]
     const data: Record<string, any[]> = {}
 
     for (const table of tables) {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid backup file" }, { status: 400 })
     }
 
-    const tables = ["items", "categories", "employees", "customers", "discounts", "tax_rates", "sales", "sale_items", "payments", "journal", "inventory_log", "product_variants", "product_ingredients", "time_logs"]
+    const tables = ["items", "selling_units", "customers", "sales", "sale_items", "payments", "expenses", "inventory_log", "cash_counts", "categories", "tax_rates", "discounts", "employees", "audit_log", "journal", "stores", "settings", "pos_carts", "time_logs", "sale_sequences"]
     let imported = 0
 
     for (const table of tables) {

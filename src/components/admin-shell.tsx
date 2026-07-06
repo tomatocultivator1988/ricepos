@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter, usePathname } from "next/navigation"
-import { LogOutIcon, Clock, LayoutDashboardIcon, MonitorIcon } from "lucide-react"
+import { LogOutIcon, LayoutDashboardIcon } from "lucide-react"
 import { adminNavLinks } from "@/lib/nav-links"
 
 interface AdminShellProps {
@@ -59,9 +59,7 @@ export function AdminShell({ name, children }: AdminShellProps) {
             </div>
             <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-gold-200 truncate max-w-[80px]">{name}</span>
           </div>
-          <button onClick={() => { const url = window.location.origin + "/display"; navigator.clipboard.writeText(url) }} className="rounded-full p-2 text-gold-300 hover:bg-gold-400/15 hover:text-gold-200 transition-colors" title="Copy customer display link">
-            <MonitorIcon className="h-5 w-5" />
-          </button>
+
           <button onClick={handleLogout} className="rounded-full border border-gold-400/40 bg-gold-400/25 p-2 text-gold-300 hover:bg-red-500/30 hover:text-white transition-all" title="Logout">
             <LogOutIcon className="h-5 w-5" />
           </button>

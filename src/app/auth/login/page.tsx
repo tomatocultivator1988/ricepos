@@ -74,12 +74,12 @@ export default function LoginPage() {
             <div className="mb-10 flex justify-center">
               <div className="relative w-72 h-72 flex items-center justify-center">
                 <div className="absolute inset-0 rounded-full bg-gold-400/20 blur-2xl" />
-                <img src="/logo.png" alt="Brewhas Coffeehouse" className="relative z-10 w-64 h-64 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]" />
+                <img src="/logo.png" alt="GroceryPOS" className="relative z-10 w-64 h-64 object-contain drop-shadow-[0_0_30px_rgba(212,175,55,0.4)]" />
               </div>
             </div>
 
             <h1 className="text-center font-display text-5xl font-extrabold leading-[1.05] text-white xl:text-6xl">
-              Brewhas Coffeehouse
+              GroceryPOS
             </h1>
 
             <p className="mx-auto mt-5 max-w-sm text-center text-base leading-relaxed text-white/75">
@@ -114,7 +114,7 @@ export default function LoginPage() {
                 <div className="absolute inset-0 rounded-full bg-gold-400/20 blur-xl animate-pulse" />
                 <img src="/logo.png" alt="Brewhas" className="relative z-10 w-24 h-24 object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
               </div>
-              <h1 className="font-display text-3xl font-extrabold leading-tight text-white">Brewhas Coffeehouse</h1>
+              <h1 className="font-display text-3xl font-extrabold leading-tight text-white">GroceryPOS</h1>
               <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-gold-400">
                 <Sparkles className="size-3.5 text-gold-500 sparkle-icon" />
                 Point of Sale
@@ -179,7 +179,7 @@ export default function LoginPage() {
 
             <p className="bk-rise mt-6 flex items-center justify-center gap-1.5 text-center text-xs text-brewhas-400" style={{ animationDelay: "420ms" }}>
               <Store className="size-3.5" />
-              Brewhas Coffeehouse - Point of Sale
+              GroceryPOS - Point of Sale
             </p>
           </div>
         </section>
