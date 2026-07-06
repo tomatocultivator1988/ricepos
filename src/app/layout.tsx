@@ -8,12 +8,14 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" })
 
 export const viewport: Viewport = {
-  themeColor: "#4A235A",
+  themeColor: "#059669",
 }
 
 export const metadata: Metadata = {
-  title: "GroceryPOS",
-  description: "Point of Sale for GroceryPOS",
+  title: "GroceryPOS / RicePOS",
+  description: "Tablet POS for rice retail & grocery",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "GroceryPOS" },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +34,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style: { background: "linear-gradient(135deg, #2a1b3d, #3d2260)", borderColor: "rgba(212, 175, 55, 0.3)" },
           }}
         />
-
+        <script dangerouslySetInnerHTML={{ __html: `
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+              navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+          }
+        ` }} />
       </body>
     </html>
   )

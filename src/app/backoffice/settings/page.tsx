@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import {
   PrinterIcon, CheckCircleIcon, XCircleIcon,
-  Loader2Icon, PlugIcon, ReceiptIcon, LinkIcon
+  Loader2Icon, PlugIcon, ReceiptIcon, LinkIcon, StoreIcon
 } from "lucide-react"
+import { Input } from "@/components/ui/input"
 import {
   pairPrinter, reconnectPrinter, isPrinterConnected, getPrinterName,
   printReceipt, openDrawerViaPrinter,
@@ -34,6 +35,8 @@ export default function SettingsPage() {
   const [testing, setTesting] = useState(false)
   const [drawerMethod, setDrawerMethodState] = useState<'printer' | 'usb' | 'none'>('printer')
   const [autoPrint, setAutoPrintState] = useState(false)
+  const [store, setStore] = useState<any>({ name: "", tin: "", address: "", contact: "" })
+  const [savingStore, setSavingStore] = useState(false)
 
   useEffect(() => {
     const init = async () => {
@@ -44,7 +47,21 @@ export default function SettingsPage() {
       setAutoPrintState(getAutoPrint())
     }
     init()
+    fetch("/api/backoffice/store").then(r => r.json()).then(d => {
+      if (d.store) setStore(d.store)
+    })
   }, [])
+
+  const saveStore = async () => {
+    setSavingStore(true)
+    const res = await fetch("/api/backoffice/store", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(store),
+    })
+    if (res.ok) toast.success("Store profile saved")
+    else toast.error("Failed to save")
+    setSavingStore(false)
+  }
 
   const handlePair = async () => {
     setPairing(true)
@@ -68,7 +85,7 @@ export default function SettingsPage() {
     setTesting(true)
     try {
       const ok = await printReceipt({
-        header: "Brewhas Coffeehouse",
+        header: store.name || "GroceryPOS",
         subtitle: "TEST PRINT",
         items: [],
         subtotal: 0, discount: 0, tax: 0, total: 0,
@@ -116,6 +133,38 @@ export default function SettingsPage() {
   return (
     <div className="p-5 space-y-6">
       <h1 className="text-2xl font-bold text-gold-200">Settings</h1>
+
+      {/* Store Profile */}
+      <Card className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl shadow-md">
+        <CardContent className="p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <StoreIcon className="h-5 w-5 text-gold-300" />
+            <h2 className="text-sm font-bold text-gold-200">Store Profile</h2>
+          </div>
+          <p className="text-xs text-slate-400">Shown on all receipts and documents.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400">Business Name</label>
+              <Input value={store.name ?? ""} onChange={e => setStore({ ...store, name: e.target.value })} className="bg-brewhas-900/60 border-brewhas-700/40" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400">TIN</label>
+              <Input value={store.tin ?? ""} onChange={e => setStore({ ...store, tin: e.target.value })} className="bg-brewhas-900/60 border-brewhas-700/40" />
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <label className="text-xs text-slate-400">Address</label>
+              <Input value={store.address ?? ""} onChange={e => setStore({ ...store, address: e.target.value })} className="bg-brewhas-900/60 border-brewhas-700/40" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400">Contact</label>
+              <Input value={store.contact ?? ""} onChange={e => setStore({ ...store, contact: e.target.value })} className="bg-brewhas-900/60 border-brewhas-700/40" />
+            </div>
+          </div>
+          <Button onClick={saveStore} disabled={savingStore} className="bg-brewhas-700 hover:bg-brewhas-800 text-white rounded-xl" size="sm">
+            {savingStore ? <Loader2Icon className="mr-2 h-4 w-4 animate-spin" /> : null} Save Profile
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Printer Section */}
       <Card className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl shadow-md">

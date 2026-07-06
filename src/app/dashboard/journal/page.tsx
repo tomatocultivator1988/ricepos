@@ -1,94 +1,76 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import {
-  LogOutIcon, StoreIcon, LayoutDashboardIcon, TrendingUpIcon,
-  TruckIcon, ShieldCheckIcon, BoxesIcon, UsersIcon, Clock,
-  Loader2Icon
-} from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
+import { Search, Loader2Icon } from "lucide-react"
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString("en-PH", { hour: "2-digit", minute: "2-digit" })
-}
-
-function eventBadge(type: string) {
-  const map: Record<string, string> = {
-    sale: "bg-green-100 text-green-700 border-green-200",
-    void_transaction: "bg-red-100 text-red-700 border-red-200",
-    void_line: "bg-amber-100 text-amber-700 border-amber-200",
-    refund: "bg-purple-100 text-purple-700 border-purple-200",
-    return_exchange: "bg-blue-100 text-blue-700 border-blue-200",
-  }
-  return map[type] || "bg-slate-100 text-gold-400 border-slate-200"
+interface JournalEntry {
+  id: string; event_type: string; sale_id: string | null;
+  employee_id: string | null; details: any; created_at: string;
 }
 
 export default function JournalPage() {
-  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
-  const [events, setEvents] = useState<any[]>([])
+  const [entries, setEntries] = useState<JournalEntry[]>([])
+  const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  useEffect(() => {
-    fetch("/api/pos/me").then(r => r.json()).then(d => {
-      if (d.employee) setUser({ name: d.employee.name, role: d.employee.role })
-      else { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") }
-    }).catch(() => { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") })
-  }, [router])
 
   useEffect(() => {
     fetch("/api/dashboard/journal").then(r => r.json()).then(d => {
-      setEvents(d.events ?? [])
+      setEntries(d.entries ?? [])
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
 
-  const handleLogout = async () => {
-    document.cookie = "session=; max-age=0; path=/"
-    await fetch("/api/auth/logout", { method: "POST" })
-    router.push("/auth/login")
-  }
-
-  const navLinks = [
-    { label: "POS", href: "/pos", icon: StoreIcon },
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
-    { label: "Sales", href: "/dashboard/sales", icon: TrendingUpIcon },
-    { label: "Inventory", href: "/backoffice/inventory", icon: BoxesIcon },
-    { label: "Journal", href: "/dashboard/journal", icon: ShieldCheckIcon },
-  ]
-
-  if (!user) return null
+  const filtered = search
+    ? entries.filter(e => e.event_type?.toLowerCase().includes(search.toLowerCase()))
+    : entries
 
   return (
-    <div className="flex h-screen flex-col bg-transparent">
-
-
-      <div className="flex-1 overflow-y-auto p-5">
-        <h1 className="text-2xl font-bold text-gold-200 mb-4">Electronic Journal</h1>
-        {loading ? (
-          <div className="flex items-center justify-center py-12"><Loader2Icon className="h-8 w-8 animate-spin text-brewhas-600" /></div>
-        ) : events.length === 0 ? (
-          <p className="text-center py-12 text-slate-400">No events recorded yet</p>
-        ) : (
-          <div className="space-y-2">
-            {events.map(e => (
-              <div key={e.id} className="rounded-xl border border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-3 shadow-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${eventBadge(e.eventType)}`}>
-                    {e.eventType.replace("_", " ")}
-                  </span>
-                  <span className="text-xs text-slate-400">{formatTime(e.createdAt)}</span>
-                </div>
-                <p className="text-sm text-gold-400">
-                  {e.employeeName}
-                  {e.details?.reason && <span className="text-slate-400"> - {e.details.reason}</span>}
-                  {e.details?.total != null && <span className="font-semibold text-gold-300 ml-2">₱{e.details.total}</span>}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-white">Electronic Journal</h1>
       </div>
+      <div className="relative max-w-sm">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}
+          className="pl-9 bg-slate-800 border-slate-700 text-white" />
+      </div>
+
+      <Card className="bg-slate-900 border-slate-700">
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-emerald-400" /></div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center text-slate-500 py-16">
+              <p>Journal records all sales, voids, refunds, and collections.</p>
+              <p className="text-xs mt-1">Entries appear here after each transaction.</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="border-slate-700 hover:bg-transparent">
+                  <TableHead className="text-slate-300">Timestamp</TableHead>
+                  <TableHead className="text-slate-300">Event</TableHead>
+                  <TableHead className="text-slate-300">Sale</TableHead>
+                  <TableHead className="text-slate-300">Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map(e => (
+                  <TableRow key={e.id} className="border-slate-800">
+                    <TableCell className="text-xs text-slate-400">{new Date(e.created_at).toLocaleString("en-PH")}</TableCell>
+                    <TableCell className="text-slate-300">{e.event_type}</TableCell>
+                    <TableCell className="text-slate-400">{e.sale_id?.slice(0, 8) ?? "—"}</TableCell>
+                    <TableCell className="text-xs text-slate-500 max-w-xs truncate">{JSON.stringify(e.details)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

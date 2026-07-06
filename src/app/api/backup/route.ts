@@ -32,7 +32,7 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json(backup, {
       headers: {
-        "Content-Disposition": `attachment; filename="brewhas-backup-${new Date().toISOString().slice(0, 10)}.json"`,
+        "Content-Disposition": `attachment; filename="ricepos-backup-${new Date().toISOString().slice(0, 10)}.json"`,
       },
     })
   } catch (error: any) {
