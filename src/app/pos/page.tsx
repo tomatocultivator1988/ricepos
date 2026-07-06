@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { LogOutIcon, LayoutDashboardIcon, StoreIcon, Search, ShoppingCart, X, Plus, Minus, User, CreditCard, Loader2Icon } from "lucide-react"
+import { LogOutIcon, LayoutDashboardIcon, StoreIcon, Search, ShoppingCart, X, Plus, Minus, User, CreditCard, Loader2Icon, BanknoteIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -48,6 +48,15 @@ export default function PosPage() {
   const searchRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const cart = useCart()
+
+  // Collections
+  const [collModal, setCollModal] = useState(false)
+  const [collSearch, setCollSearch] = useState("")
+  const [collResults, setCollResults] = useState<CustomerResult[]>([])
+  const [collSelected, setCollSelected] = useState<{ id: string; name: string; balance: number } | null>(null)
+  const [collAmount, setCollAmount] = useState("")
+  const [collMethod, setCollMethod] = useState("cash")
+  const [collSaving, setCollSaving] = useState(false)
 
   // Auth
   useEffect(() => { fetch("/api/pos/me").then(r => r.json()).then(d => {
@@ -402,6 +411,60 @@ export default function PosPage() {
               <Button className="flex-1 bg-emerald-600 hover:bg-emerald-500" onClick={processPayment} disabled={paySaving}>{paySaving?<Loader2Icon className="h-4 w-4 animate-spin"/>:"Confirm Payment"}</Button>
             </div>
           </div></DialogContent>
+      </Dialog>
+
+      {/* ══ COLLECTIONS MODAL ══ */}
+      <Dialog open={collModal} onOpenChange={setCollModal}>
+        <DialogContent className="max-w-sm bg-slate-900 border-slate-700 text-white">
+          <DialogHeader><DialogTitle>Collections (Utang Payment)</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            {!collSelected ? (
+              <>
+                <Input placeholder="Search customer..." value={collSearch} onChange={e => {
+                  setCollSearch(e.target.value)
+                  if (e.target.value.length < 1) { setCollResults([]); return }
+                  fetch(`/api/backoffice/customers?q=${encodeURIComponent(e.target.value)}`).then(r => r.json()).then(d => setCollResults(d.customers ?? []))
+                }} className="bg-slate-800 border-slate-700" />
+                {collResults.map((c: any) => (
+                  <button key={c.id} onClick={() => setCollSelected({ id: c.id, name: c.name, balance: c.balance ?? 0 })}
+                    className="w-full text-left p-2 rounded bg-slate-800 text-sm hover:bg-slate-700">
+                    <div className="font-medium text-white">{c.name}</div>
+                    <div className="text-xs text-yellow-400">Utang: ₱{(c.balance ?? 0).toFixed(2)}</div>
+                  </button>
+                ))}
+              </>
+            ) : (
+              <>
+                <div className="p-3 rounded bg-slate-800">
+                  <p className="text-sm font-medium">{collSelected.name}</p>
+                  <p className="text-xl font-bold text-yellow-400">Balance: ₱{collSelected.balance.toFixed(2)}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Input type="number" step="0.01" placeholder="Amount" value={collAmount} onChange={e => setCollAmount(e.target.value)} className="bg-slate-800 border-slate-700 flex-1" />
+                  <Select value={collMethod} onValueChange={v => setCollMethod(v ?? "cash")}>
+                    <SelectTrigger className="w-28 bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                    <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="gcash">GCash</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" className="flex-1" onClick={() => { setCollSelected(null); setCollAmount(""); setCollModal(false) }}>Cancel</Button>
+                  <Button className="flex-1 bg-emerald-600 hover:bg-emerald-500"
+                    onClick={async () => {
+                      if (!collAmount || Number(collAmount) <= 0) { toast.error("Enter a valid amount"); return }
+                      if (Number(collAmount) > collSelected.balance) { toast.error(`Amount exceeds balance (₱${collSelected.balance.toFixed(2)})`); return }
+                      setCollSaving(true)
+                      const res = await fetch("/api/collections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ customerId: collSelected.id, amount: Number(collAmount), method: collMethod }) })
+                      const json = await res.json()
+                      if (!res.ok) { toast.error(json.error || "Collection failed"); setCollSaving(false); return }
+                      toast.success(`Collected ₱${Number(collAmount).toFixed(2)}. Balance: ₱${json.newBalance.toFixed(2)}`)
+                      setCollSaving(false); setCollModal(false); setCollSelected(null); setCollAmount("")
+                    }}
+                    disabled={collSaving}>{collSaving ? <Loader2Icon className="h-4 w-4 animate-spin" /> : "Record Payment"}</Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
       </Dialog>
     </div>
   )
