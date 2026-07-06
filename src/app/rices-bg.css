@@ -1,0 +1,37 @@
+/* RicePOS — Rice grain themed backgrounds */
+
+.rices-bg {
+  background-image: url('/rice_bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
+}
+
+.rices-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, 
+    rgba(28, 25, 23, 0.88) 0%, 
+    rgba(41, 37, 36, 0.78) 35%, 
+    rgba(28, 25, 23, 0.85) 65%, 
+    rgba(41, 32, 23, 0.82) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rices-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Login page — slightly warmer overlay */
+.rices-bg-login::after {
+  background: linear-gradient(160deg, 
+    rgba(28, 25, 23, 0.82) 0%, 
+    rgba(41, 37, 36, 0.72) 35%, 
+    rgba(28, 25, 23, 0.80) 65%, 
+    rgba(41, 32, 23, 0.76) 100%);
+}

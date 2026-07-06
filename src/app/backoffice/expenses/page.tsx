@@ -47,30 +47,30 @@ export default function ExpensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Expenses</h1>
-          <p className="text-sm text-slate-400">Total: ₱{total.toFixed(2)}</p>
+          <p className="text-sm text-stone-400">Total: ₱{total.toFixed(2)}</p>
         </div>
         <Button onClick={() => setOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> Add Expense</Button>
       </div>
 
-      {loading ? <div className="text-center text-slate-400 py-12">Loading...</div> : (
-        <Card className="bg-slate-900 border-slate-700">
+      {loading ? <div className="text-center text-stone-400 py-12">Loading...</div> : (
+        <Card className="bg-stone-900/60 border-amber-600/30">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-700 hover:bg-transparent">
-                  <TableHead className="text-slate-300">Date</TableHead>
-                  <TableHead className="text-slate-300">Category</TableHead>
-                  <TableHead className="text-slate-300">Description</TableHead>
-                  <TableHead className="text-slate-300 text-right">Amount</TableHead>
+                <TableRow className="border-amber-600/30 hover:bg-transparent">
+                  <TableHead className="text-stone-300">Date</TableHead>
+                  <TableHead className="text-stone-300">Category</TableHead>
+                  <TableHead className="text-stone-300">Description</TableHead>
+                  <TableHead className="text-stone-300 text-right">Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expenses.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-slate-500 py-8">No expenses</TableCell></TableRow> :
+                {expenses.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-stone-500 py-8">No expenses</TableCell></TableRow> :
                   expenses.map(e => (
-                    <TableRow key={e.id} className="border-slate-800">
-                      <TableCell className="text-slate-300">{e.date}</TableCell>
-                      <TableCell className="text-slate-400 capitalize">{e.category}</TableCell>
-                      <TableCell className="text-slate-400">{e.description ?? "—"}</TableCell>
+                    <TableRow key={e.id} className="border-amber-600/30">
+                      <TableCell className="text-stone-300">{e.date}</TableCell>
+                      <TableCell className="text-stone-400 capitalize">{e.category}</TableCell>
+                      <TableCell className="text-stone-400">{e.description ?? "—"}</TableCell>
                       <TableCell className="text-right text-orange-400 font-medium">₱{Number(e.amount).toFixed(2)}</TableCell>
                     </TableRow>
                   ))}
@@ -81,27 +81,27 @@ export default function ExpensesPage() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white">
           <DialogHeader><DialogTitle>Add Expense</DialogTitle></DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs text-slate-400">Date</label>
-              <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="bg-slate-800 border-slate-700" />
+              <label className="text-xs text-stone-400">Date</label>
+              <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="bg-stone-800 border-amber-600/30" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-slate-400">Category</label>
+              <label className="text-xs text-stone-400">Category</label>
               <Select value={form.category} onValueChange={v => setForm({ ...form, category: v ?? "utilities" })}>
-                <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
                 <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-slate-400">Description</label>
-              <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="bg-slate-800 border-slate-700" />
+              <label className="text-xs text-stone-400">Description</label>
+              <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="bg-stone-800 border-amber-600/30" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-slate-400">Amount</label>
-              <Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="bg-slate-800 border-slate-700" />
+              <label className="text-xs text-stone-400">Amount</label>
+              <Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="bg-stone-800 border-amber-600/30" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

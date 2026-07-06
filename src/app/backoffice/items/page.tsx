@@ -189,7 +189,7 @@ export default function ItemsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Products</h1>
-          <p className="text-sm text-slate-400">{items.length} items</p>
+          <p className="text-sm text-stone-400">{items.length} items</p>
         </div>
         <Button onClick={openNew} className="gap-2">
           <Plus className="h-4 w-4" /> Add Product
@@ -199,16 +199,16 @@ export default function ItemsPage() {
       {/* Filters */}
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-400" />
           <Input
             placeholder="Search by name or barcode..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 bg-slate-800 border-slate-700 text-white"
+            className="pl-9 bg-stone-800 border-amber-600/30 text-white"
           />
         </div>
         <Select value={filterCat} onValueChange={(v) => setFilterCat(v ?? "all")}>
-          <SelectTrigger className="w-[180px] bg-slate-800 border-slate-700 text-white">
+          <SelectTrigger className="w-[180px] bg-stone-800 border-amber-600/30 text-white">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
@@ -220,25 +220,25 @@ export default function ItemsPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="text-center text-slate-400 py-12">Loading...</div>
+        <div className="text-center text-stone-400 py-12">Loading...</div>
       ) : (
-        <div className="rounded-lg border border-slate-700 bg-slate-900/60 overflow-hidden">
+        <div className="rounded-lg border border-amber-600/30 bg-stone-900/60 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-700 hover:bg-transparent">
-                <TableHead className="text-slate-300">Name</TableHead>
-                <TableHead className="text-slate-300">Category</TableHead>
-                <TableHead className="text-slate-300">Type</TableHead>
-                <TableHead className="text-slate-300">Cost</TableHead>
-                <TableHead className="text-slate-300">Stock</TableHead>
-                <TableHead className="text-slate-300">Units</TableHead>
-                <TableHead className="text-slate-300">Status</TableHead>
+              <TableRow className="border-amber-600/30 hover:bg-transparent">
+                <TableHead className="text-stone-300">Name</TableHead>
+                <TableHead className="text-stone-300">Category</TableHead>
+                <TableHead className="text-stone-300">Type</TableHead>
+                <TableHead className="text-stone-300">Cost</TableHead>
+                <TableHead className="text-stone-300">Stock</TableHead>
+                <TableHead className="text-stone-300">Selling Units</TableHead>
+                <TableHead className="text-stone-300">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-500 py-8">
+                  <TableCell colSpan={7} className="text-center text-stone-500 py-8">
                     No products found
                   </TableCell>
                 </TableRow>
@@ -246,25 +246,25 @@ export default function ItemsPage() {
                 filtered.map(item => (
                   <TableRow
                     key={item.id}
-                    className="border-slate-800 cursor-pointer hover:bg-slate-800/50"
+                    className="border-amber-600/30 cursor-pointer hover:bg-stone-800/50"
                     onClick={() => openEdit(item)}
                   >
                     <TableCell className="text-white font-medium">{item.name}</TableCell>
-                    <TableCell className="text-slate-400">
+                    <TableCell className="text-stone-400">
                       {categories.find(c => c.id === item.category_id)?.name ?? "—"}
                     </TableCell>
-                    <TableCell className="text-slate-400">
+                    <TableCell className="text-stone-400">
                       <Badge variant={item.sell_by === "weight" ? "secondary" : "outline"}>
                         {item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-slate-300">₱{Number(item.cost).toFixed(2)}</TableCell>
+                    <TableCell className="text-stone-300">₱{Number(item.cost).toFixed(2)}</TableCell>
                     <TableCell>
                       <span className={item.stock_qty <= 0 ? "text-red-400" : item.stock_qty <= item.min_stock ? "text-yellow-400" : "text-green-400"}>
                         {Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-slate-400">
+                    <TableCell className="text-stone-400">
                       {(item.selling_units ?? []).filter(u => u.is_active !== false).length}
                     </TableCell>
                     <TableCell>
@@ -282,7 +282,7 @@ export default function ItemsPage() {
 
       {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
@@ -294,13 +294,13 @@ export default function ItemsPage() {
                 <div className="space-y-1 col-span-2">
                   <Label>Name *</Label>
                   <Input value={editing.name ?? ""} onChange={e => updateField("name", e.target.value)}
-                    className="bg-slate-800 border-slate-700" />
+                    className="bg-stone-800 border-amber-600/30" />
                 </div>
 
                 <div className="space-y-1">
                   <Label>Category</Label>
                   <Select value={editing.category_id ?? "none"} onValueChange={v => updateField("category_id", v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30">
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
@@ -313,7 +313,7 @@ export default function ItemsPage() {
                 <div className="space-y-1">
                   <Label>Sell By</Label>
                   <Select value={editing.sell_by ?? "unit"} onValueChange={v => updateField("sell_by", v)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -326,25 +326,25 @@ export default function ItemsPage() {
                 <div className="space-y-1">
                   <Label>Cost (per base unit)</Label>
                   <Input type="number" step="0.01" value={editing.cost ?? 0} onChange={e => updateField("cost", e.target.value)}
-                    className="bg-slate-800 border-slate-700" />
+                    className="bg-stone-800 border-amber-600/30" />
                 </div>
 
                 <div className="space-y-1">
                   <Label>Min Stock</Label>
                   <Input type="number" step="0.001" value={editing.min_stock ?? 0} onChange={e => updateField("min_stock", e.target.value)}
-                    className="bg-slate-800 border-slate-700" />
+                    className="bg-stone-800 border-amber-600/30" />
                 </div>
 
                 <div className="space-y-1">
                   <Label>Barcode</Label>
                   <Input value={editing.barcode ?? ""} onChange={e => updateField("barcode", e.target.value || null)}
-                    placeholder="Scan or type..." className="bg-slate-800 border-slate-700" />
+                    placeholder="Scan or type..." className="bg-stone-800 border-amber-600/30" />
                 </div>
 
                 <div className="space-y-1">
                   <Label>Tax Rate</Label>
                   <Select value={editing.tax_rate_id ?? "none"} onValueChange={v => updateField("tax_rate_id", v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700">
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30">
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
@@ -357,7 +357,7 @@ export default function ItemsPage() {
                 <div className="space-y-1">
                   <Label>Status</Label>
                   <Select value={editing.status ?? "active"} onValueChange={v => updateField("status", v)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
@@ -383,31 +383,31 @@ export default function ItemsPage() {
 
                 <div className="space-y-2">
                   {(editing.selling_units ?? []).map((unit, idx) => (
-                    <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                    <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-stone-800/50 rounded-lg p-3 border border-amber-600/30">
                       <div className="col-span-3 space-y-1">
                         <Label className="text-xs">Name</Label>
                         <Input value={unit.name} onChange={e => updateUnit(idx, "name", e.target.value)}
-                          className="bg-slate-700 border-slate-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
                       </div>
                       <div className="col-span-2 space-y-1">
                         <Label className="text-xs">Base Qty</Label>
                         <Input type="number" step="0.001" value={unit.base_qty} onChange={e => updateUnit(idx, "base_qty", e.target.value)}
-                          className="bg-slate-700 border-slate-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
                       </div>
                       <div className="col-span-2 space-y-1">
                         <Label className="text-xs">Price (₱)</Label>
                         <Input type="number" step="0.01" value={unit.price} onChange={e => updateUnit(idx, "price", e.target.value)}
-                          className="bg-slate-700 border-slate-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
                       </div>
                       <div className="col-span-1 space-y-1">
                         <Label className="text-xs">Min Qty</Label>
                         <Input type="number" step="0.001" value={unit.min_qty} onChange={e => updateUnit(idx, "min_qty", e.target.value)}
-                          className="bg-slate-700 border-slate-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
                       </div>
                       <div className="col-span-1 space-y-1">
                         <Label className="text-xs">Sort</Label>
                         <Input type="number" value={unit.sort_order} onChange={e => updateUnit(idx, "sort_order", e.target.value)}
-                          className="bg-slate-700 border-slate-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
                       </div>
                       <div className="col-span-1 flex flex-col items-center gap-1 pt-1">
                         <Button
@@ -419,7 +419,7 @@ export default function ItemsPage() {
                         >
                           <Check className="h-3 w-3" />
                         </Button>
-                        <span className="text-[10px] text-slate-500">Default</span>
+                        <span className="text-[10px] text-stone-500">Default</span>
                       </div>
                       <div className="col-span-1 flex flex-col items-center pt-1">
                         <Button
@@ -434,12 +434,12 @@ export default function ItemsPage() {
                   ))}
                 </div>
                 {(editing.selling_units ?? []).length === 0 && (
-                  <p className="text-sm text-slate-500 text-center py-4">No selling units. Add at least one.</p>
+                  <p className="text-sm text-stone-500 text-center py-4">No selling units. Add at least one.</p>
                 )}
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <div className="flex justify-end gap-3 pt-4 border-t border-amber-600/30">
                 <Button variant="outline" onClick={() => { setDialogOpen(false); setEditing(null) }}>
                   Cancel
                 </Button>

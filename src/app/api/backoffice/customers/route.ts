@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const { data: customers } = await db
       .from("customers")
       .select(`
-        id, name, contact, address, type, status,
+        id, name, contact, address, status,
         sales(id, balance, status)
       `)
       .eq("store_id", storeId)
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const storeId = session.storeId
 
     const body = await request.json()
-    const { name, contact, address, type } = body
+    const { name, contact, address } = body
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         contact: contact || null,
         address: address || null,
-        type: type || "retail",
         status: "active",
       })
       .select()

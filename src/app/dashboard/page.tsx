@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Loader2Icon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 
 interface DashboardData {
   todaySales: number; todayProfit: number; todayCash: number; todayGcash: number;
@@ -39,13 +40,11 @@ export default function DashboardPage() {
     { label: "Profit Today", value: `${(data?.todayProfit ?? 0) >= 0 ? "₱" : "-₱"}${Math.abs(data?.todayProfit ?? 0).toFixed(2)}`, color: (data?.todayProfit ?? 0) >= 0 ? "text-emerald-400" : "text-red-400" },
     { label: "Cash Today", value: `₱${(data?.todayCash ?? 0).toFixed(2)}`, color: "text-blue-400" },
     { label: "GCash Today", value: `₱${(data?.todayGcash ?? 0).toFixed(2)}`, color: "text-purple-400" },
-    { label: "Outstanding Utang", value: `₱${(data?.outstandingUtang ?? 0).toFixed(2)}`, color: data?.outstandingUtang ? "text-yellow-400" : "text-slate-400" },
-    { label: "Low Stock", value: `${data?.lowStockCount ?? 0} items`, color: data?.lowStockCount ? "text-red-400" : "text-slate-400" },
+    { label: "Outstanding Utang", value: `₱${(data?.outstandingUtang ?? 0).toFixed(2)}`, color: data?.outstandingUtang ? "text-yellow-400" : "text-stone-400" },
+    { label: "Low Stock", value: `${data?.lowStockCount ?? 0} items`, color: data?.lowStockCount ? "text-red-400" : "text-stone-400" },
     { label: "Expenses Today", value: `₱${(data?.expensesToday ?? 0).toFixed(2)}`, color: "text-orange-400" },
-    { label: "Cash Variance", value: data?.lastCashCount ? `${data.lastCashCount.variance >= 0 ? "+" : ""}₱${data.lastCashCount.variance.toFixed(2)}` : "—", color: (data?.lastCashCount?.variance ?? 0) === 0 ? "text-slate-400" : "text-red-400" },
+    { label: "Cash Variance", value: data?.lastCashCount ? `${data.lastCashCount.variance >= 0 ? "+" : ""}₱${data.lastCashCount.variance.toFixed(2)}` : "—", color: (data?.lastCashCount?.variance ?? 0) === 0 ? "text-stone-400" : "text-red-400" },
   ]
-
-  const maxTrend = Math.max(...(data?.salesTrend.map(t => t.total) ?? [0]), 1)
 
   return (
     <div className="p-6 space-y-6">
@@ -55,66 +54,69 @@ export default function DashboardPage() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {kpis.map(kpi => (
-          <Card key={kpi.label} className="bg-slate-900 border-slate-700">
+          <Card key={kpi.label} className="border-amber-600/30 bg-stone-900/60">
             <CardContent className="p-4">
-              <p className="text-xs text-slate-400">{kpi.label}</p>
+              <p className="text-xs text-stone-400">{kpi.label}</p>
               <p className={`text-lg font-bold ${kpi.color}`}>{kpi.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Sales Trend */}
-      <Card className="bg-slate-900 border-slate-700">
+      {/* Sales Trend — Recharts */}
+      <Card className="border-amber-600/30 bg-stone-900/60">
         <CardContent className="p-4">
-          <h2 className="text-sm font-semibold text-slate-300 mb-3">14-Day Sales Trend</h2>
-          <div className="flex items-end gap-1 h-24">
-            {(data?.salesTrend ?? []).map((t, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <span className="text-[10px] text-slate-500 tabular-nums">₱{(t.total / 1000).toFixed(0)}k</span>
-                <div className="w-full bg-emerald-500/60 rounded-t" style={{ height: `${(t.total / (maxTrend || 1)) * 100}%` }} />
-                <span className="text-[9px] text-slate-600">{new Date(t.date).getDate()}/{new Date(t.date).getMonth() + 1}</span>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-sm font-semibold text-amber-300 mb-3">14-Day Sales Trend</h2>
+          {data?.salesTrend.length ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <LineChart data={data.salesTrend}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9ca3af" }} tickFormatter={v => `${new Date(v).getDate()}/${new Date(v).getMonth()+1}`} />
+                <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                <Tooltip formatter={(v: any) => [`₱${Number(v).toFixed(2)}`, "Sales"]} />
+                <Line type="monotone" dataKey="total" stroke="#f59e0b" strokeWidth={2} dot={{ fill: "#f59e0b", r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : <p className="text-xs text-stone-500 py-8 text-center">No sales data yet</p>}
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Top Products */}
-        <Card className="bg-slate-900 border-slate-700">
+        {/* Top Products — Recharts */}
+        <Card className="border-amber-600/30 bg-stone-900/60">
           <CardContent className="p-4">
-            <h2 className="text-sm font-semibold text-slate-300 mb-3">Top Products Today</h2>
+            <h2 className="text-sm font-semibold text-amber-300 mb-3">Top Products Today</h2>
             {data?.topProducts.length ? (
-              <div className="space-y-2">
-                {data.topProducts.map((p, i) => (
-                  <div key={i} className="flex justify-between items-center text-xs">
-                    <span className="text-slate-300">{i + 1}. {p.name}</span>
-                    <span className="text-slate-400">{Number(p.qty).toFixed(1)}</span>
-                  </div>
-                ))}
-              </div>
-            ) : <p className="text-xs text-slate-500">No sales yet today</p>}
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={data.topProducts} layout="vertical">
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: "#9ca3af" }} />
+                  <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10, fill: "#d1d5db" }} />
+                  <Tooltip formatter={(v: any) => [v, "Qty Sold"]} />
+                  <Bar dataKey="qty" fill="#f59e0b" barSize={16} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : <p className="text-xs text-stone-500 py-8 text-center">No sales yet today</p>}
           </CardContent>
         </Card>
 
         {/* Recent Sales */}
-        <Card className="bg-slate-900 border-slate-700">
+        <Card className="border-amber-600/30 bg-stone-900/60">
           <CardContent className="p-4">
-            <h2 className="text-sm font-semibold text-slate-300 mb-3">Recent Sales</h2>
+            <h2 className="text-sm font-semibold text-stone-300 mb-3">Recent Sales</h2>
             {data?.recentSales.length ? (
               <div className="space-y-1 max-h-64 overflow-y-auto">
                 {data.recentSales.map(s => (
-                  <div key={s.id} className="flex justify-between items-center text-xs py-1 border-b border-slate-800">
-                    <span className="text-slate-400">#{String(s.saleNumber).padStart(6, "0")}</span>
-                    <span className={`${s.status === "completed" || s.status === "paid" ? "text-emerald-400" : s.status === "partial" || s.status === "unpaid" ? "text-yellow-400" : "text-slate-400"}`}>
+                  <div key={s.id} className="flex justify-between items-center text-xs py-1 border-b border-amber-600/30">
+                    <span className="text-stone-400">#{String(s.saleNumber).padStart(6, "0")}</span>
+                    <span className={`${s.status === "completed" || s.status === "paid" ? "text-emerald-400" : s.status === "partial" || s.status === "unpaid" ? "text-yellow-400" : "text-stone-400"}`}>
                       ₱{s.total.toFixed(2)}
                     </span>
-                    <span className="text-slate-600">{new Date(s.createdAt).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <span className="text-stone-600">{new Date(s.createdAt).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" })}</span>
                   </div>
                 ))}
               </div>
-            ) : <p className="text-xs text-slate-500">No sales yet today</p>}
+            ) : <p className="text-xs text-stone-500">No sales yet today</p>}
           </CardContent>
         </Card>
       </div>

@@ -12,7 +12,7 @@ export async function GET(
     const { id: customerId } = await params
 
     const { data: customer } = await db.from("customers")
-      .select("id, name, contact, address, type")
+      .select("id, name, contact, address")
       .eq("id", customerId).eq("store_id", storeId).single()
 
     if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 })
@@ -115,7 +115,6 @@ export async function GET(
   </div>
   <div class="cust">
     <strong>Customer:</strong> ${customer.name}<br/>
-    <strong>Type:</strong> ${customer.type}<br/>
     ${customer.contact ? `<strong>Contact:</strong> ${customer.contact}<br/>` : ""}
     ${customer.address ? `<strong>Address:</strong> ${customer.address}` : ""}
   </div>

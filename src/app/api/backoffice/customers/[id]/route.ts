@@ -78,7 +78,7 @@ export async function PUT(
     if (!existing) return notfind("Customer not found")
 
     const body = await request.json()
-    const { name, contact, address, type, status } = body
+    const { name, contact, address, status } = body
 
     // Block deactivation if has balance
     if (status === "inactive") {
@@ -97,7 +97,6 @@ export async function PUT(
     if (name !== undefined) upd.name = name.trim()
     if (contact !== undefined) upd.contact = contact
     if (address !== undefined) upd.address = address
-    if (type !== undefined) upd.type = type
     if (status !== undefined) upd.status = status
 
     const { data: updated } = await db.from("customers")

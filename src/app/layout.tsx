@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { Toaster } from "sonner"
 import { cn } from "@/lib/utils/cn"
 import "./globals.css"
+import "./rices-bg.css"
 
 import { Inter } from "next/font/google"
 
@@ -26,12 +27,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="min-h-screen bg-background text-foreground">
-        {children}
+      <body className="min-h-screen text-foreground">
+        <div className="rices-bg min-h-screen">
+          {children}
+        </div>
         <Toaster closeButton position="top-right"
           toastOptions={{
-            className: "!border !border-gold-500/30 !shadow-lg !shadow-gold-500/20 !text-brewhas-100",
-            style: { background: "linear-gradient(135deg, #2a1b3d, #3d2260)", borderColor: "rgba(212, 175, 55, 0.3)" },
+            className: "!border !border-amber-500/30 !shadow-lg !shadow-amber-500/20 !text-stone-100",
+            style: { background: "linear-gradient(135deg, #3d2800, #5c3d02)", borderColor: "rgba(245, 158, 11, 0.3)" },
           }}
         />
         <script dangerouslySetInnerHTML={{ __html: `

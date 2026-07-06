@@ -13,7 +13,7 @@ export async function GET(
 
     const { data: sale } = await db
       .from("sales")
-      .select("id, sale_number, created_at, subtotal, discount_amt, tax_total, total, employees(name)")
+      .select("id, sale_number, created_at, subtotal, discount_amount, tax_total, total, employee_id")
       .eq("id", saleId)
       .eq("store_id", storeId)
       .single()
@@ -22,7 +22,7 @@ export async function GET(
 
     const { data: itemRows } = await db
       .from("sale_items")
-      .select("item_name, qty, unit_price, total")
+      .select("item_name, qty, unit_price, line_total")
       .eq("sale_id", saleId)
 
     const { data: paymentRows } = await db
@@ -30,32 +30,36 @@ export async function GET(
       .select("method, amount")
       .eq("sale_id", saleId)
 
+    // Get employee name
+    let empName = "—"
+    if ((sale as any).employee_id) {
+      const { data: emp } = await db.from("employees").select("name").eq("id", (sale as any).employee_id).single()
+      if (emp) empName = (emp as any).name
+    }
+
     return NextResponse.json({
       sale: {
         id: sale.id,
         saleNumber: sale.sale_number,
         createdAt: sale.created_at,
-        employeeName: (sale.employees as any)?.name ?? "\u2014",
-        items: (itemRows ?? []).map((i: Record<string, any>) => ({
+        employeeName: empName,
+        items: (itemRows ?? []).map((i: any) => ({
           itemName: i.item_name,
           qty: Number(i.qty),
-          unitPrice: Number(i.unit_price),
-          lineTotal: Number(i.total),
+          lineTotal: Number(i.line_total),
         })),
         subtotal: Number(sale.subtotal),
-        discountAmt: Number(sale.discount_amt),
+        discountAmt: Number((sale as any).discount_amount),
         taxTotal: Number(sale.tax_total),
         total: Number(sale.total),
-        payments: (paymentRows ?? []).map((p: Record<string, any>) => ({
+        payments: (paymentRows ?? []).map((p: any) => ({
           method: p.method,
           amount: Number(p.amount),
         })),
-        paymentMethod: paymentRows?.[0]?.method ?? "cash",
       },
     })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
-    if (error.message === "Store not found") return notfind("Store not found")
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

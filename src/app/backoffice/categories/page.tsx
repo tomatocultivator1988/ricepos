@@ -168,7 +168,7 @@ export default function CategoriesPage() {
           </div>
 
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-400" />
             <Input
               placeholder="Search categories..."
               value={search}
@@ -180,25 +180,25 @@ export default function CategoriesPage() {
           {/* Mobile Cards */}
           <div className="grid grid-cols-1 gap-3 lg:hidden">
             {loading ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">Loading...</div>
+              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">Loading...</div>
             ) : filtered.length === 0 ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">No categories found</div>
+              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">No categories found</div>
             ) : (
               filtered.map((cat) => (
                 <div key={cat.id} onClick={() => openEditDialog(cat)} className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-4 shadow-md cursor-pointer hover:border-gold-400/50">
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-bold text-gold-200 text-sm">{cat.name}</span>
-                    <span className="text-xs text-slate-400">Sort: {cat.sort_order}</span>
+                    <span className="text-xs text-stone-400">Sort: {cat.sort_order}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="flex items-center gap-1.5 text-slate-400">
+                    <span className="flex items-center gap-1.5 text-stone-400">
                       {cat.color ? (
                         <>
                           <span className="h-4 w-4 rounded-full border" style={{ backgroundColor: cat.color }} />
                           {cat.color}
                         </>
                       ) : (
-                        <span className="text-slate-400">No color</span>
+                        <span className="text-stone-400">No color</span>
                       )}
                     </span>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
@@ -225,13 +225,13 @@ export default function CategoriesPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={4} className="py-8 text-center text-stone-400">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={4} className="py-8 text-center text-stone-400">
                       No categories found
                     </TableCell>
                   </TableRow>
@@ -254,7 +254,7 @@ export default function CategoriesPage() {
                             {cat.color}
                           </div>
                         ) : (
-                          <span className="text-slate-400">â€”</span>
+                          <span className="text-stone-400">â€”</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -296,7 +296,7 @@ export default function CategoriesPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDialogOpen(false)}>
+                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-stone-100" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving} className="bg-brewhas-700 hover:bg-brewhas-800 text-white">
@@ -311,11 +311,11 @@ export default function CategoriesPage() {
               <DialogHeader>
                 <DialogTitle>Delete Category</DialogTitle>
               </DialogHeader>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-stone-400">
                 Are you sure you want to delete <strong>{deleteConfirm?.name}</strong>? This action cannot be undone.
               </p>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDeleteConfirm(null)}>
+                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-stone-100" onClick={() => setDeleteConfirm(null)}>
                   Cancel
                 </Button>
                 <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)} disabled={saving}>

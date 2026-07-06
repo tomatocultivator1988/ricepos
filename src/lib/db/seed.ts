@@ -265,11 +265,11 @@ async function seed() {
 
   // ── CUSTOMERS ──
   await db.from("customers").insert([
-    { id: uuid(), store_id: store.id, name: "Juan Dela Cruz", contact: "09123456789", address: "Brgy. San Jose, Iloilo City", type: "wholesale", status: "active" },
-    { id: uuid(), store_id: store.id, name: "Maria Santos", contact: "09187654321", address: "Brgy. Molo, Iloilo City", type: "retail", status: "active" },
-    { id: uuid(), store_id: store.id, name: "Pedro Penduko", contact: "09151234567", address: "Brgy. Jaro, Iloilo City", type: "wholesale", status: "active" },
-    { id: uuid(), store_id: store.id, name: "Lorna's Sari-Sari Store", contact: "09201112233", address: "Brgy. Lapaz, Iloilo City", type: "wholesale", status: "active" },
-    { id: uuid(), store_id: store.id, name: "Nena's Canteen", contact: "09178889990", address: "Brgy. Mandurriao, Iloilo City", type: "wholesale", status: "active" },
+    { id: uuid(), store_id: store.id, name: "Juan Dela Cruz", contact: "09123456789", address: "Brgy. San Jose, Iloilo City", status: "active" },
+    { id: uuid(), store_id: store.id, name: "Maria Santos", contact: "09187654321", address: "Brgy. Molo, Iloilo City", status: "active" },
+    { id: uuid(), store_id: store.id, name: "Pedro Penduko", contact: "09151234567", address: "Brgy. Jaro, Iloilo City", status: "active" },
+    { id: uuid(), store_id: store.id, name: "Lorna's Sari-Sari Store", contact: "09201112233", address: "Brgy. Lapaz, Iloilo City", status: "active" },
+    { id: uuid(), store_id: store.id, name: "Nena's Canteen", contact: "09178889990", address: "Brgy. Mandurriao, Iloilo City", status: "active" },
   ])
 
   console.log("Seed complete!")

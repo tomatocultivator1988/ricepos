@@ -79,37 +79,37 @@ export default function InventoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Inventory</h1>
-          <p className="text-sm text-slate-400">Total value: ₱{totalValue.toFixed(2)} · {lowCount} low/out</p>
+          <p className="text-sm text-stone-400">Total value: ₱{totalValue.toFixed(2)} · {lowCount} low/out</p>
         </div>
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-400" />
         <Input placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)}
-          className="pl-9 bg-slate-800 border-slate-700 text-white" />
+          className="pl-9 bg-stone-800 border-amber-600/30 text-white" />
       </div>
 
       {loading ? <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-emerald-400" /></div> : (
-        <Card className="bg-slate-900 border-slate-700">
+        <Card className="bg-stone-900/60 border-amber-600/30">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-slate-700 hover:bg-transparent">
-                  <TableHead className="text-slate-300">Product</TableHead>
-                  <TableHead className="text-slate-300 text-right">On Hand</TableHead>
-                  <TableHead className="text-slate-300 text-right">Min</TableHead>
-                  <TableHead className="text-slate-300 text-right">Value</TableHead>
-                  <TableHead className="text-slate-300">Status</TableHead>
-                  <TableHead className="text-slate-300 text-right">Actions</TableHead>
+                <TableRow className="border-amber-600/30 hover:bg-transparent">
+                  <TableHead className="text-stone-300">Product</TableHead>
+                  <TableHead className="text-stone-300 text-right">On Hand</TableHead>
+                  <TableHead className="text-stone-300 text-right">Min</TableHead>
+                  <TableHead className="text-stone-300 text-right">Value</TableHead>
+                  <TableHead className="text-stone-300">Status</TableHead>
+                  <TableHead className="text-stone-300 text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map(i => (
-                  <TableRow key={i.id} className="border-slate-800">
+                  <TableRow key={i.id} className="border-amber-600/30">
                     <TableCell className="text-white font-medium">{i.name}</TableCell>
-                    <TableCell className="text-right text-slate-300">{Number(i.stock_qty).toFixed(i.sell_by === "weight" ? 3 : 0)} {i.sell_by === "weight" ? "kg" : "pc"}</TableCell>
-                    <TableCell className="text-right text-slate-500">{Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</TableCell>
-                    <TableCell className="text-right text-slate-400">₱{i.value.toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-stone-300">{Number(i.stock_qty).toFixed(i.sell_by === "weight" ? 3 : 0)} {i.sell_by === "weight" ? "kg" : "pc"}</TableCell>
+                    <TableCell className="text-right text-stone-500">{Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</TableCell>
+                    <TableCell className="text-right text-stone-400">₱{i.value.toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge className={i.stock_status === "ok" ? "bg-emerald-600" : i.stock_status === "low" ? "bg-yellow-600" : "bg-red-600"}>
                         {i.stock_status.toUpperCase()}
@@ -135,19 +135,19 @@ export default function InventoryPage() {
 
       {/* Delivery Modal */}
       <Dialog open={!!deliverItem} onOpenChange={() => setDeliverItem(null)}>
-        <DialogContent className="max-w-sm bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white">
           <DialogHeader><DialogTitle>Receive Delivery — {deliverItem?.name}</DialogTitle></DialogHeader>
           {deliverItem && (
             <div className="space-y-3">
-              <p className="text-xs text-slate-400">Current: {Number(deliverItem.stock_qty).toFixed(deliverItem.sell_by === "weight" ? 3 : 0)} {deliverItem.sell_by === "weight" ? "kg" : "pc"}</p>
+              <p className="text-xs text-stone-400">Current: {Number(deliverItem.stock_qty).toFixed(deliverItem.sell_by === "weight" ? 3 : 0)} {deliverItem.sell_by === "weight" ? "kg" : "pc"}</p>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Supplier (optional)</label>
-                <Input value={delivSupplier} onChange={e => setDelivSupplier(e.target.value)} className="bg-slate-800 border-slate-700" />
+                <label className="text-xs text-stone-400">Supplier (optional)</label>
+                <Input value={delivSupplier} onChange={e => setDelivSupplier(e.target.value)} className="bg-stone-800 border-amber-600/30" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Quantity received ({deliverItem.sell_by === "weight" ? "kg" : "pcs"})</label>
-                <Input type="number" step={deliverItem.sell_by === "weight" ? "0.1" : "1"} value={delivQty} onChange={e => setDelivQty(e.target.value)} className="bg-slate-800 border-slate-700" />
-                <p className="text-xs text-slate-500">Delivery increases stock only (cost is set in Products).</p>
+                <label className="text-xs text-stone-400">Quantity received ({deliverItem.sell_by === "weight" ? "kg" : "pcs"})</label>
+                <Input type="number" step={deliverItem.sell_by === "weight" ? "0.1" : "1"} value={delivQty} onChange={e => setDelivQty(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+                <p className="text-xs text-stone-500">Delivery increases stock only (cost is set in Products).</p>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setDeliverItem(null)}>Cancel</Button>
@@ -160,15 +160,15 @@ export default function InventoryPage() {
 
       {/* Adjustment Modal */}
       <Dialog open={!!adjustItem} onOpenChange={() => setAdjustItem(null)}>
-        <DialogContent className="max-w-sm bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white">
           <DialogHeader><DialogTitle>Adjust Stock — {adjustItem?.name}</DialogTitle></DialogHeader>
           {adjustItem && (
             <div className="space-y-3">
-              <p className="text-xs text-slate-400">Current: {Number(adjustItem.stock_qty).toFixed(adjustItem.sell_by === "weight" ? 3 : 0)}</p>
+              <p className="text-xs text-stone-400">Current: {Number(adjustItem.stock_qty).toFixed(adjustItem.sell_by === "weight" ? 3 : 0)}</p>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Type</label>
+                <label className="text-xs text-stone-400">Type</label>
                 <Select value={adjType} onValueChange={v => setAdjType(v ?? "spoilage")}>
-                  <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="spoilage">Spoilage</SelectItem>
                     <SelectItem value="damage">Damage</SelectItem>
@@ -178,12 +178,12 @@ export default function InventoryPage() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">{adjType === "physical_count" ? "Actual counted quantity" : "Quantity to remove"}</label>
-                <Input type="number" step="0.001" value={adjQty} onChange={e => setAdjQty(e.target.value)} className="bg-slate-800 border-slate-700" />
+                <label className="text-xs text-stone-400">{adjType === "physical_count" ? "Actual counted quantity" : "Quantity to remove"}</label>
+                <Input type="number" step="0.001" value={adjQty} onChange={e => setAdjQty(e.target.value)} className="bg-stone-800 border-amber-600/30" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Reason</label>
-                <Input value={adjReason} onChange={e => setAdjReason(e.target.value)} className="bg-slate-800 border-slate-700" />
+                <label className="text-xs text-stone-400">Reason</label>
+                <Input value={adjReason} onChange={e => setAdjReason(e.target.value)} className="bg-stone-800 border-amber-600/30" />
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setAdjustItem(null)}>Cancel</Button>

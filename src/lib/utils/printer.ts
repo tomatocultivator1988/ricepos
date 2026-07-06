@@ -240,13 +240,81 @@ export async function printReceipt(data: ReceiptData): Promise<boolean> {
   try {
     if (!isPrinterConnected()) {
       const reconnected = await reconnectPrinter()
-      if (!reconnected) return false
+      if (!reconnected) {
+        // Fall back to browser print
+        openBrowserReceipt(data)
+        return true
+      }
     }
     const receipt = buildReceipt(data)
     return await sendRaw(receipt)
   } catch {
+    // Try browser print as last resort
+    try { openBrowserReceipt(data) } catch {}
     return false
   }
+}
+
+// Browser-based receipt (opens print dialog)
+export function openBrowserReceipt(data: ReceiptData) {
+  const w = window.open("", "receipt", "width=320,height=600")
+  if (!w) return
+  const itemsHtml = data.items.map(i => `
+    <tr>
+      <td style="text-align:left;padding:1px 4px;">${i.name.slice(0, 22)}</td>
+      <td style="text-align:right;padding:1px 4px;">x${i.qty}</td>
+      <td style="text-align:right;padding:1px 4px;">₱${i.price.toFixed(2)}</td>
+    </tr>
+  `).join("")
+  
+  const discountRow = data.discount > 0 ? `
+    <tr><td colspan="2" style="text-align:left;">Discount</td><td style="text-align:right;">-₱${data.discount.toFixed(2)}</td></tr>
+  ` : ""
+  const taxRow = data.tax > 0 ? `
+    <tr><td colspan="2" style="text-align:left;">Tax</td><td style="text-align:right;">₱${data.tax.toFixed(2)}</td></tr>
+  ` : ""
+
+  w.document.write(`
+    <!DOCTYPE html>
+    <html><head><meta charset="UTF-8"><title>Receipt ${data.orderNumber}</title>
+    <style>
+      @page { size: 80mm auto; margin: 4mm; }
+      body { font-family: 'Consolas', 'Courier New', monospace; font-size: 12px; width: 72mm; margin: 0 auto; color: #000; }
+      .center { text-align: center; }
+      .line { border-top: 1px dashed #000; margin: 4px 0; }
+      table { width: 100%; border-collapse: collapse; }
+      td { font-size: 11px; }
+      @media print { body { -webkit-print-color-adjust: exact; } }
+    </style></head><body onload="setTimeout(() => window.print(), 300)">
+      <div class="center">
+        <strong style="font-size:14px">${data.header}</strong><br/>
+        <span style="font-size:10px">${data.subtitle}</span>
+      </div>
+      <div class="line"></div>
+      <div style="font-size:10px">
+        Receipt #: ${data.orderNumber}<br/>
+        Date: ${data.date}<br/>
+        Cashier: ${data.cashier}
+      </div>
+      <div class="line"></div>
+      <table>${itemsHtml}</table>
+      <div class="line"></div>
+      <table>
+        <tr><td colspan="2" style="text-align:left;">Subtotal</td><td style="text-align:right;">₱${data.subtotal.toFixed(2)}</td></tr>
+        ${discountRow}
+        ${taxRow}
+        <tr><td colspan="2" style="text-align:left;font-weight:bold;">TOTAL</td><td style="text-align:right;font-weight:bold;">₱${data.total.toFixed(2)}</td></tr>
+      </table>
+      <div class="line"></div>
+      <div style="font-size:10px">
+        ${data.paymentMethod}<br/>
+        ${data.amountTendered > 0 ? `Tendered: ₱${data.amountTendered.toFixed(2)}<br/>Change: ₱${data.change.toFixed(2)}` : ""}
+      </div>
+      <div class="line"></div>
+      <div class="center" style="font-size:11px">${data.footer}</div>
+    </body></html>
+  `)
+  w.document.close()
 }
 
 // Open cash drawer via ESC/p command (printer RJ12 port)

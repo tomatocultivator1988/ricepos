@@ -166,7 +166,7 @@ export default function TaxRatesPage() {
           </div>
 
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-400" />
             <Input
               placeholder="Search tax rates..."
               value={search}
@@ -178,9 +178,9 @@ export default function TaxRatesPage() {
           {/* Mobile Cards */}
           <div className="grid grid-cols-1 gap-3 lg:hidden">
             {loading ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">Loading...</div>
+              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">Loading...</div>
             ) : filtered.length === 0 ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">No tax rates found</div>
+              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">No tax rates found</div>
             ) : (
               filtered.map((tr) => (
                 <div key={tr.id} onClick={() => openEditDialog(tr)} className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-4 shadow-md cursor-pointer hover:border-gold-400/50">
@@ -212,13 +212,13 @@ export default function TaxRatesPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={3} className="py-8 text-center text-stone-400">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={3} className="py-8 text-center text-stone-400">
                       No tax rates found
                     </TableCell>
                   </TableRow>
@@ -264,7 +264,7 @@ export default function TaxRatesPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDialogOpen(false)}>
+                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-stone-100" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving} className="bg-brewhas-700 hover:bg-brewhas-800 text-white">
@@ -279,11 +279,11 @@ export default function TaxRatesPage() {
               <DialogHeader>
                 <DialogTitle>Delete Tax Rate</DialogTitle>
               </DialogHeader>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-stone-400">
                 Are you sure you want to delete <strong>{deleteConfirm?.name}</strong>? This action cannot be undone.
               </p>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDeleteConfirm(null)}>
+                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-stone-100" onClick={() => setDeleteConfirm(null)}>
                   Cancel
                 </Button>
                 <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)} disabled={saving}>

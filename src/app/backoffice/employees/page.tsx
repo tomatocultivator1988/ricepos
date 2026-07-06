@@ -160,7 +160,7 @@ export default function EmployeesPage() {
   ]
 
   if (!user) return (
-    <div className="flex items-center justify-center min-h-screen bg-transparent"><Loader2Icon className="h-8 w-8 animate-spin text-gold-300" /></div>
+    <div className="flex items-center justify-center min-h-screen bg-transparent"><Loader2Icon className="h-8 w-8 animate-spin text-amber-300" /></div>
   )
 
   return (
@@ -170,42 +170,42 @@ export default function EmployeesPage() {
       <div className="flex-1 overflow-y-auto p-5">
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gold-300">Employees</h1>
-            <Button onClick={openCreateDialog} className="rounded-xl bg-brewhas-700 hover:bg-brewhas-800 text-white">
+            <h1 className="text-2xl font-bold text-amber-300">Employees</h1>
+            <Button onClick={openCreateDialog} className="rounded-xl bg-stone-800 hover:bg-stone-800 text-white">
               <Plus className="size-4" />
               Add Employee
             </Button>
           </div>
 
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-400" />
             <Input
               placeholder="Search employees..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10 rounded-xl border-brewhas-700/40 bg-brewhas-900/60 backdrop-blur-xl pl-9"
+              className="h-10 rounded-xl border-amber-600/40 bg-stone-900/60 backdrop-blur-xl pl-9"
             />
           </div>
 
           {/* Mobile Cards */}
           <div className="grid grid-cols-1 gap-3 lg:hidden">
             {loading ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">Loading...</div>
+              <div className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">Loading...</div>
             ) : filtered.length === 0 ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">No employees found</div>
+              <div className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">No employees found</div>
             ) : (
               filtered.map((employee) => (
-                <div key={employee.id} onClick={() => openEditDialog(employee)} className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-4 shadow-md cursor-pointer hover:border-gold-400/50">
+                <div key={employee.id} onClick={() => openEditDialog(employee)} className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl p-4 shadow-md cursor-pointer hover:border-amber-400/50">
                   <div className="flex justify-between items-start mb-2">
-                    <span className="font-bold text-gold-200 text-sm">{employee.name}</span>
-                    <span className="capitalize text-xs text-slate-400">{employee.role}</span>
+                    <span className="font-bold text-amber-200 text-sm">{employee.name}</span>
+                    <span className="capitalize text-xs text-stone-400">{employee.role}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className={employee.is_active ? 'text-gold-300 font-semibold' : 'text-slate-400'}>
+                    <span className={employee.is_active ? 'text-amber-300 font-semibold' : 'text-stone-400'}>
                       {employee.is_active ? 'Active' : 'Inactive'}
                     </span>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => openEditDialog(employee)} className="rounded-full p-1.5 hover:bg-gold-400/20"><Pencil className="size-3.5" /></button>
+                      <button onClick={() => openEditDialog(employee)} className="rounded-full p-1.5 hover:bg-amber-400/20"><Pencil className="size-3.5" /></button>
                       <button onClick={() => setDeleteConfirm(employee)} className="rounded-full p-1.5 hover:bg-red-50 text-red-500"><Trash2 className="size-3.5" /></button>
                     </div>
                   </div>
@@ -215,26 +215,26 @@ export default function EmployeesPage() {
           </div>
 
           {/* Desktop Table */}
-          <div className="hidden lg:block rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl shadow-md">
+          <div className="hidden lg:block rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
             <Table>
               <TableHeader>
                 <TableRow className="bg-transparent hover:bg-transparent">
-                  <TableHead className="text-xs font-semibold uppercase text-gold-300">Name</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase text-gold-300">Role</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase text-gold-300">Status</TableHead>
-                  <TableHead className="w-24 text-xs font-semibold uppercase text-gold-300">Actions</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase text-amber-300">Name</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase text-amber-300">Role</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase text-amber-300">Status</TableHead>
+                  <TableHead className="w-24 text-xs font-semibold uppercase text-amber-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={4} className="py-8 text-center text-stone-400">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={4} className="py-8 text-center text-stone-400">
                       No employees found
                     </TableCell>
                   </TableRow>
@@ -249,18 +249,18 @@ export default function EmployeesPage() {
                       <TableCell className="capitalize">{employee.role}</TableCell>
                       <TableCell>
                         {employee.is_active ? (
-                          <span className="inline-flex h-5 w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium bg-gold-400/20 text-gold-200">
+                          <span className="inline-flex h-5 w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium bg-amber-400/20 text-amber-200">
                             Active
                           </span>
                         ) : (
-                          <span className="inline-flex h-5 w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-400">
+                          <span className="inline-flex h-5 w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium bg-stone-100 text-stone-400">
                             Inactive
                           </span>
                         )}
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon-sm" className="rounded-full hover:bg-gold-400/20" onClick={() => openEditDialog(employee)}>
+                          <Button variant="ghost" size="icon-sm" className="rounded-full hover:bg-amber-400/20" onClick={() => openEditDialog(employee)}>
                             <Pencil className="size-3.5" />
                           </Button>
                           <Button variant="ghost" size="icon-sm" className="rounded-full text-red-500 hover:bg-red-50" onClick={() => setDeleteConfirm(employee)}>
@@ -317,10 +317,10 @@ export default function EmployeesPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDialogOpen(false)}>
+                <Button variant="outline" className="border-2 border-amber-600/40 text-amber-300 font-medium hover:bg-stone-100" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleSave} disabled={saving} className="bg-brewhas-700 hover:bg-brewhas-800 text-white">
+                <Button onClick={handleSave} disabled={saving} className="bg-stone-800 hover:bg-stone-800 text-white">
                   {saving ? "Saving..." : editingEmployee ? "Update" : "Create"}
                 </Button>
               </DialogFooter>
@@ -332,11 +332,11 @@ export default function EmployeesPage() {
               <DialogHeader>
                 <DialogTitle>Deactivate Employee</DialogTitle>
               </DialogHeader>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-stone-400">
                 Are you sure you want to deactivate <strong>{deleteConfirm?.name}</strong>? This employee will no longer be able to access the POS.
               </p>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDeleteConfirm(null)}>
+                <Button variant="outline" className="border-2 border-amber-600/40 text-amber-300 font-medium hover:bg-stone-100" onClick={() => setDeleteConfirm(null)}>
                   Cancel
                 </Button>
                 <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)} disabled={saving}>

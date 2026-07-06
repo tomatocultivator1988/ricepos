@@ -65,8 +65,8 @@ export function AppSidebar({ user, ...props }: { user?: { name: string; role: st
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center gap-2.5 px-2 group-data-[collapsible=icon]:justify-center">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brewhas-700 text-white text-sm font-bold">B</div>
-          <span className="text-sm font-bold text-slate-800 group-data-[collapsible=icon]:hidden">Brewhas Coffeehouse</span>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-stone-700 text-white text-sm font-bold">B</div>
+          <span className="text-sm font-bold text-stone-800 group-data-[collapsible=icon]:hidden">Brewhas Coffeehouse</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="px-2">
@@ -75,16 +75,16 @@ export function AppSidebar({ user, ...props }: { user?: { name: string; role: st
       <SidebarFooter className="border-t">
         {user && (
           <div className="flex items-center gap-3 px-3 py-2.5 group-data-[collapsible=icon]:justify-center">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brewhas-100 text-xs font-bold text-brewhas-800">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-xs font-bold text-stone-800">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-              <p className="truncate text-sm font-medium text-slate-700">{user.name}</p>
-              <p className="truncate text-xs text-slate-400">{user.role === "admin" ? "Administrator" : "Cashier"}</p>
+              <p className="truncate text-sm font-medium text-stone-700">{user.name}</p>
+              <p className="truncate text-xs text-stone-400">{user.role === "admin" ? "Administrator" : "Cashier"}</p>
             </div>
           </div>
         )}
-        <SidebarMenuButton onClick={handleLogout} className="text-slate-500 hover:text-red-600">
+        <SidebarMenuButton onClick={handleLogout} className="text-stone-500 hover:text-red-600">
           <LogOutIcon className="size-4" />
           <span>Sign Out</span>
         </SidebarMenuButton>

@@ -176,7 +176,7 @@ export default function DiscountsPage() {
           </div>
 
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-400" />
             <Input
               placeholder="Search discounts..."
               value={search}
@@ -188,9 +188,9 @@ export default function DiscountsPage() {
           {/* Mobile Cards */}
           <div className="grid grid-cols-1 gap-3 lg:hidden">
             {loading ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">Loading...</div>
+              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">Loading...</div>
             ) : filtered.length === 0 ? (
-              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">No discounts found</div>
+              <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">No discounts found</div>
             ) : (
               filtered.map((discount) => (
                 <div key={discount.id} onClick={() => openEditDialog(discount)} className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-4 shadow-md cursor-pointer hover:border-gold-400/50">
@@ -199,7 +199,7 @@ export default function DiscountsPage() {
                     <span className="text-gold-200 font-extrabold">{formatValue(discount)}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="capitalize text-slate-400">{discount.type} Â· {discount.is_active ? 'Active' : 'Inactive'}</span>
+                    <span className="capitalize text-stone-400">{discount.type} Â· {discount.is_active ? 'Active' : 'Inactive'}</span>
                     <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => openEditDialog(discount)} className="rounded-full p-1.5 hover:bg-gold-400/20"><Pencil className="size-3.5" /></button>
                       <button onClick={() => setDeleteConfirm(discount)} className="rounded-full p-1.5 hover:bg-red-50 text-red-500"><Trash2 className="size-3.5" /></button>
@@ -225,13 +225,13 @@ export default function DiscountsPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={5} className="py-8 text-center text-stone-400">
                       Loading...
                     </TableCell>
                   </TableRow>
                 ) : filtered.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-slate-400">
+                    <TableCell colSpan={5} className="py-8 text-center text-stone-400">
                       No discounts found
                     </TableCell>
                   </TableRow>
@@ -251,7 +251,7 @@ export default function DiscountsPage() {
                             Active
                           </span>
                         ) : (
-                          <span className="inline-flex h-5 w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-400">
+                          <span className="inline-flex h-5 w-fit items-center rounded-full border border-transparent px-2 py-0.5 text-xs font-medium bg-stone-100 text-stone-400">
                             Inactive
                           </span>
                         )}
@@ -303,7 +303,7 @@ export default function DiscountsPage() {
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDialogOpen(false)}>
+                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-stone-100" onClick={() => setDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button onClick={handleSave} disabled={saving} className="bg-brewhas-700 hover:bg-brewhas-800 text-white">
@@ -318,11 +318,11 @@ export default function DiscountsPage() {
               <DialogHeader>
                 <DialogTitle>Delete Discount</DialogTitle>
               </DialogHeader>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-stone-400">
                 Are you sure you want to deactivate <strong>{deleteConfirm?.name}</strong>?
               </p>
               <DialogFooter>
-                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100" onClick={() => setDeleteConfirm(null)}>
+                <Button variant="outline" className="border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-stone-100" onClick={() => setDeleteConfirm(null)}>
                   Cancel
                 </Button>
                 <Button variant="destructive" onClick={() => deleteConfirm && handleDelete(deleteConfirm)} disabled={saving}>

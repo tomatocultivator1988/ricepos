@@ -18,7 +18,7 @@ import { toast } from "sonner"
 
 interface Customer {
   id: string; name: string; contact: string | null; address: string | null;
-  type: string; status: string; balance?: number;
+  status: string; balance?: number;
 }
 
 export default function CustomersPage() {
@@ -46,7 +46,7 @@ export default function CustomersPage() {
   useEffect(() => { fetchCustomers() }, [fetchCustomers])
 
   function openNew() {
-    setEditing({ type: "retail", status: "active" })
+    setEditing({ status: "active" })
     setDialogOpen(true)
   }
 
@@ -59,7 +59,7 @@ export default function CustomersPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: editing.name, contact: editing.contact, address: editing.address,
-        type: editing.type, status: editing.status,
+        status: editing.status,
       }),
     })
     const json = await res.json()
@@ -116,43 +116,41 @@ export default function CustomersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Customers</h1>
-          <p className="text-sm text-slate-400">{customers.length} customers</p>
+          <p className="text-sm text-stone-400">{customers.length} customers</p>
         </div>
         <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" /> Add Customer</Button>
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-400" />
         <Input placeholder="Search customers..." value={search} onChange={e => setSearch(e.target.value)}
-          className="pl-9 bg-slate-800 border-slate-700 text-white" />
+          className="pl-9 bg-stone-800 border-amber-600/30 text-white" />
       </div>
 
       {loading ? (
-        <div className="text-center text-slate-400 py-12">Loading...</div>
+        <div className="text-center text-stone-400 py-12">Loading...</div>
       ) : (
-        <div className="rounded-lg border border-slate-700 bg-slate-900/60 overflow-hidden">
+        <div className="rounded-lg border border-amber-600/30 bg-stone-900/60 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-700 hover:bg-transparent">
-                <TableHead className="text-slate-300">Name</TableHead>
-                <TableHead className="text-slate-300">Type</TableHead>
-                <TableHead className="text-slate-300">Contact</TableHead>
-                <TableHead className="text-slate-300 text-right">Balance (Utang)</TableHead>
-                <TableHead className="text-slate-300">Status</TableHead>
+              <TableRow className="border-amber-600/30 hover:bg-transparent">
+                <TableHead className="text-stone-300">Name</TableHead>
+                <TableHead className="text-stone-300">Contact</TableHead>
+                <TableHead className="text-stone-300 text-right">Balance (Utang)</TableHead>
+                <TableHead className="text-stone-300">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {customers.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center text-slate-500 py-8">No customers</TableCell></TableRow>
+                <TableRow><TableCell colSpan={4} className="text-center text-stone-500 py-8">No customers</TableCell></TableRow>
               ) : customers.map(c => (
-                <TableRow key={c.id} className="border-slate-800 cursor-pointer hover:bg-slate-800/50" onClick={() => openDetail(c.id)}>
+                <TableRow key={c.id} className="border-amber-600/30 cursor-pointer hover:bg-stone-800/50" onClick={() => openDetail(c.id)}>
                   <TableCell className="text-white font-medium">{c.name}</TableCell>
-                  <TableCell><Badge variant="outline">{c.type}</Badge></TableCell>
-                  <TableCell className="text-slate-400">{c.contact ?? "—"}</TableCell>
+                  <TableCell className="text-stone-400">{c.contact ?? "—"}</TableCell>
                   <TableCell className="text-right">
                     {(c.balance ?? 0) > 0
                       ? <span className="text-yellow-400 font-semibold">₱{(c.balance ?? 0).toFixed(2)}</span>
-                      : <span className="text-slate-500">₱0.00</span>}
+                      : <span className="text-stone-500">₱0.00</span>}
                   </TableCell>
                   <TableCell><Badge variant={c.status === "active" ? "default" : "secondary"}>{c.status}</Badge></TableCell>
                 </TableRow>
@@ -164,38 +162,28 @@ export default function CustomersPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Customer" : "Add Customer"}</DialogTitle></DialogHeader>
           {editing && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Name *</label>
-                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-slate-800 border-slate-700" />
+                <label className="text-xs text-stone-400">Name *</label>
+                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-stone-800 border-amber-600/30" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Contact</label>
-                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-slate-800 border-slate-700" />
+                <label className="text-xs text-stone-400">Contact</label>
+                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-stone-800 border-amber-600/30" />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-slate-400">Address</label>
-                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-slate-800 border-slate-700" />
+                <label className="text-xs text-stone-400">Address</label>
+                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-stone-800 border-amber-600/30" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-slate-400">Type</label>
-                  <Select value={editing.type ?? "retail"} onValueChange={v => setEditing({ ...editing, type: v ?? "retail" })}>
-                    <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="retail">Retail</SelectItem>
-                      <SelectItem value="wholesale">Wholesale</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="grid grid-cols-1 gap-3">
                 {editing.id && (
                   <div className="space-y-1">
-                    <label className="text-xs text-slate-400">Status</label>
+                    <label className="text-xs text-stone-400">Status</label>
                     <Select value={editing.status ?? "active"} onValueChange={v => setEditing({ ...editing, status: v ?? "active" })}>
-                      <SelectTrigger className="bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="active">Active</SelectItem>
                         <SelectItem value="inactive">Inactive</SelectItem>
@@ -215,7 +203,7 @@ export default function CustomersPage() {
 
       {/* Customer Detail + Collections */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700 text-white">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white">
           {detail && (
             <>
               <DialogHeader>
@@ -225,11 +213,11 @@ export default function CustomersPage() {
               </DialogHeader>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="text-sm text-slate-400">
-                    {detail.customer.type} · {detail.customer.contact ?? "no contact"}
+                  <div className="text-sm text-stone-400">
+                    {detail.customer.contact ? `${detail.customer.contact}` : "no contact"}
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-slate-400">Outstanding Balance</p>
+                    <p className="text-xs text-stone-400">Outstanding Balance</p>
                     <p className={`text-xl font-bold ${detail.balance > 0 ? "text-yellow-400" : "text-emerald-400"}`}>
                       ₱{detail.balance.toFixed(2)}
                     </p>
@@ -244,13 +232,13 @@ export default function CustomersPage() {
 
                 {/* Record Collection */}
                 {detail.balance > 0 && (
-                  <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-3 space-y-3">
+                  <div className="rounded-lg border border-amber-600/30 bg-stone-800/50 p-3 space-y-3">
                     <p className="text-sm font-semibold flex items-center gap-1"><CreditCard className="h-4 w-4" /> Record Payment (Collection)</p>
                     <div className="flex gap-2">
                       <Input type="number" step="0.01" placeholder="Amount" value={collectAmount}
-                        onChange={e => setCollectAmount(e.target.value)} className="bg-slate-800 border-slate-700 flex-1" />
+                        onChange={e => setCollectAmount(e.target.value)} className="bg-stone-800 border-amber-600/30 flex-1" />
                       <Select value={collectMethod} onValueChange={v => setCollectMethod(v ?? "cash")}>
-                        <SelectTrigger className="w-28 bg-slate-800 border-slate-700"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-28 bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="cash">Cash</SelectItem>
                           <SelectItem value="gcash">GCash</SelectItem>
@@ -267,27 +255,27 @@ export default function CustomersPage() {
                 <div>
                   <p className="text-sm font-semibold mb-2">Unpaid Sales</p>
                   {detail.openSales.length === 0 ? (
-                    <p className="text-xs text-slate-500">No unpaid sales</p>
+                    <p className="text-xs text-stone-500">No unpaid sales</p>
                   ) : (
-                    <div className="rounded border border-slate-700 overflow-hidden">
+                    <div className="rounded border border-amber-600/30 overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow className="border-slate-700 hover:bg-transparent">
-                            <TableHead className="text-slate-400 text-xs">Sale #</TableHead>
-                            <TableHead className="text-slate-400 text-xs text-right">Total</TableHead>
-                            <TableHead className="text-slate-400 text-xs text-right">Paid</TableHead>
-                            <TableHead className="text-slate-400 text-xs text-right">Balance</TableHead>
-                            <TableHead className="text-slate-400 text-xs text-right">Days</TableHead>
+                          <TableRow className="border-amber-600/30 hover:bg-transparent">
+                            <TableHead className="text-stone-400 text-xs">Sale #</TableHead>
+                            <TableHead className="text-stone-400 text-xs text-right">Total</TableHead>
+                            <TableHead className="text-stone-400 text-xs text-right">Paid</TableHead>
+                            <TableHead className="text-stone-400 text-xs text-right">Balance</TableHead>
+                            <TableHead className="text-stone-400 text-xs text-right">Days</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {detail.openSales.map((s: any) => (
-                            <TableRow key={s.id} className="border-slate-800">
+                            <TableRow key={s.id} className="border-amber-600/30">
                               <TableCell className="text-xs text-white">#{String(s.sale_number).padStart(6, "0")}</TableCell>
-                              <TableCell className="text-xs text-right text-slate-300">₱{Number(s.total).toFixed(2)}</TableCell>
-                              <TableCell className="text-xs text-right text-slate-400">₱{Number(s.amount_paid).toFixed(2)}</TableCell>
+                              <TableCell className="text-xs text-right text-stone-300">₱{Number(s.total).toFixed(2)}</TableCell>
+                              <TableCell className="text-xs text-right text-stone-400">₱{Number(s.amount_paid).toFixed(2)}</TableCell>
                               <TableCell className="text-xs text-right text-yellow-400">₱{Number(s.balance).toFixed(2)}</TableCell>
-                              <TableCell className="text-xs text-right text-slate-500">{s.daysSince}d</TableCell>
+                              <TableCell className="text-xs text-right text-stone-500">{s.daysSince}d</TableCell>
                             </TableRow>
                           ))}
                         </TableBody>
@@ -302,8 +290,8 @@ export default function CustomersPage() {
                     <p className="text-sm font-semibold mb-2">Payment History</p>
                     <div className="space-y-1 max-h-40 overflow-y-auto">
                       {detail.collections.map((c: any) => (
-                        <div key={c.id} className="flex justify-between items-center text-xs bg-slate-800/50 rounded px-2 py-1">
-                          <span className="text-slate-400">{new Date(c.created_at).toLocaleDateString("en-PH")} · {c.method}{c.is_collection ? " (collection)" : ""}</span>
+                        <div key={c.id} className="flex justify-between items-center text-xs bg-stone-800/50 rounded px-2 py-1">
+                          <span className="text-stone-400">{new Date(c.created_at).toLocaleDateString("en-PH")} · {c.method}{c.is_collection ? " (collection)" : ""}</span>
                           <span className="text-emerald-400 font-medium">₱{Number(c.amount).toFixed(2)}</span>
                         </div>
                       ))}
