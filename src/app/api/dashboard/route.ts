@@ -2,113 +2,116 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db/client"
 import { getSession, unauth } from "@/lib/auth/session"
 
-function todayStart(): Date {
-  const now = new Date()
-  return new Date(now.getFullYear(), now.getMonth(), now.getDate())
-}
-
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getSession()
     const storeId = session.storeId
+    const today = new Date().toISOString().split("T")[0]
 
-    const start = todayStart()
+    const [
+      { data: todaySales },
+      { data: todayCash },
+      { data: todayGcash },
+      { data: outstanding },
+      { data: lowStock },
+      { data: todayExpenses },
+      { data: recentSales },
+      { data: topProducts },
+      { data: lastCashCount },
+      { data: salesTrend },
+    ] = await Promise.all([
+      // Today's sales total
+      db.from("sales").select("total, balance, status").eq("store_id", storeId)
+        .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`)
+        .not("status", "in", '("voided","refunded")'),
+      // Cash today
+      db.from("payments").select("amount").eq("method", "cash")
+        .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`).eq("is_collection", false),
+      // GCash today
+      db.from("payments").select("amount").eq("method", "gcash")
+        .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`).eq("is_collection", false),
+      // Outstanding utang
+      db.from("sales").select("balance").eq("store_id", storeId).in("status", ["unpaid", "partial"]),
+      // Low stock
+      db.from("items").select("id, stock_qty, min_stock").eq("store_id", storeId).eq("status", "active"),
+      // Expenses today
+      db.from("expenses").select("amount").eq("store_id", storeId).eq("date", today),
+      // Recent 10 sales
+      db.from("sales").select("id, sale_number, total, status, created_at")
+        .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
+        .order("created_at", { ascending: false }).limit(10),
+      // Top 5 products today (from sale_items)
+      db.from("sale_items")
+        .select("item_name, deducted_qty")
+        .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`)
+        .eq("status", "completed").limit(50),
+      // Last cash count
+      db.from("cash_counts").select("*").eq("store_id", storeId).order("created_at", { ascending: false }).limit(1).single(),
+      // Sales trend (last 14 days)
+      db.from("sales").select("total, created_at")
+        .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
+        .gte("created_at", new Date(Date.now() - 14 * 86400000).toISOString())
+        .order("created_at", { ascending: true }),
+    ])
 
-    const { data: todaySales } = await db
-      .from("sales")
-      .select("total, created_at, id")
-      .eq("store_id", storeId)
+    const todayTotal = (todaySales ?? []).reduce((s: number, r: any) => s + Number(r.total), 0)
+    const cashTotal = (todayCash ?? []).reduce((s: number, r: any) => s + Number(r.amount), 0)
+    const gcashTotal = (todayGcash ?? []).reduce((s: number, r: any) => s + Number(r.amount), 0)
+    const outstandingTotal = (outstanding ?? []).reduce((s: number, r: any) => s + Number(r.balance), 0)
+    const expensesToday = (todayExpenses ?? []).reduce((s: number, r: any) => s + Number(r.amount), 0)
+
+    // Cost of goods sold today (rough — from sale_items cost_at_sale)
+    const { data: todayCost } = await db.from("sale_items")
+      .select("cost_at_sale, base_qty_snapshot, qty")
+      .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`)
       .eq("status", "completed")
-      .gte("created_at", start.toISOString())
+    const cogs = (todayCost ?? []).reduce((s: number, r: any) => {
+      if (r.cost_at_sale == null) return s
+      return s + (Number(r.cost_at_sale) * Number(r.qty) * Number(r.base_qty_snapshot))
+    }, 0)
 
-    const completedSales = todaySales ?? []
+    // Count unknown-cost items
+    const unknownCostCount = (todayCost ?? []).filter((r: any) => r.cost_at_sale == null).length
+    const profitToday = todayTotal - cogs - expensesToday
 
-    let totalSales = 0
-    let orderCount = completedSales.length
-    for (const s of completedSales as Record<string, any>[]) {
-      totalSales += Number(s.total)
+    // Top products
+    const productMap = new Map<string, number>()
+    for (const si of (topProducts ?? [])) {
+      const name = si.item_name || "Unknown"
+      productMap.set(name, (productMap.get(name) || 0) + Number(si.deducted_qty))
     }
-    const avg = orderCount > 0 ? Number((totalSales / orderCount).toFixed(2)) : 0
+    const top5 = [...productMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
 
-    const saleIds = (completedSales as Record<string, any>[]).map((s: Record<string, any>) => s.id)
-    let cashTotal = 0
-    let cardTotal = 0
-
-    if (saleIds.length > 0) {
-      const { data: paymentRows } = await db
-        .from("payments")
-        .select("method, amount")
-        .in("sale_id", saleIds)
-
-      for (const p of paymentRows as Record<string, any>[] ?? []) {
-        if (p.method === "cash") cashTotal += Number(p.amount)
-        else if (p.method === "card") cardTotal += Number(p.amount)
-      }
+    // Sales trend grouped by day
+    const trendMap = new Map<string, number>()
+    for (const s of (salesTrend ?? [])) {
+      const d = new Date(s.created_at).toISOString().split("T")[0]
+      trendMap.set(d, (trendMap.get(d) || 0) + Number(s.total))
     }
-
-    const hourlyMap = new Map<number, { total: number; count: number }>()
-    for (const s of completedSales as Record<string, any>[]) {
-      const hour = new Date(s.created_at).getHours()
-      const entry = hourlyMap.get(hour) ?? { total: 0, count: 0 }
-      entry.total += Number(s.total)
-      entry.count += 1
-      hourlyMap.set(hour, entry)
-    }
-
-    const hourlySales = Array.from(hourlyMap.entries())
-      .sort(([a], [b]) => a - b)
-      .map(([hour, data]) => ({
-        hour: `${String(hour).padStart(2, "0")}:00`,
-        total: Number(data.total.toFixed(2)),
-        count: data.count,
-      }))
-
-    let topItems: { itemName: string; qty: number; total: number }[] = []
-    if (saleIds.length > 0) {
-      const { data: itemRows } = await db
-        .from("sale_items")
-        .select("item_name, qty, total")
-        .in("sale_id", saleIds)
-
-      const itemMap = new Map<string, { qty: number; total: number }>()
-      for (const row of itemRows as Record<string, any>[] ?? []) {
-        const entry = itemMap.get(row.item_name) ?? { qty: 0, total: 0 }
-        entry.qty += Number(row.qty)
-        entry.total += Number(row.total)
-        itemMap.set(row.item_name, entry)
-      }
-
-      topItems = Array.from(itemMap.entries())
-        .sort(([, a], [, b]) => b.qty - a.qty)
-        .slice(0, 5)
-        .map(([itemName, data]) => ({
-          itemName,
-          qty: data.qty,
-          total: Number(data.total.toFixed(2)),
-        }))
-    }
+    const trend = [...trendMap.entries()].sort((a, b) => a[0].localeCompare(b[0]))
 
     return NextResponse.json({
-      today: {
-        totalSales: Number(totalSales.toFixed(2)),
-        orderCount,
-        averageOrder: avg,
-        cashTotal: Number(cashTotal.toFixed(2)),
-        cardTotal: Number(cardTotal.toFixed(2)),
-      },
-      hourlySales,
-      topItems,
-      recentSales: (completedSales as Record<string, any>[]).slice(0, 5).map(s => ({
-        saleNumber: s.sale_number,
-        total: Number(s.total),
-        createdAt: s.created_at,
-        paymentMethod: "cash",
+      todaySales: todayTotal,
+      todayProfit: profitToday,
+      todayCash: cashTotal,
+      todayGcash: gcashTotal,
+      outstandingUtang: outstandingTotal,
+      lowStockCount: (lowStock ?? []).filter((i: any) => Number(i.stock_qty) <= Number(i.min_stock)).length,
+      expensesToday,
+      unknownCostItems: unknownCostCount,
+      recentSales: (recentSales ?? []).map((s: any) => ({
+        id: s.id, saleNumber: s.sale_number, total: Number(s.total),
+        status: s.status, createdAt: s.created_at,
       })),
-      items: await db.from("items").select("*").eq("store_id", storeId).then(r => r.data ?? []),
+      topProducts: top5.map(([name, qty]) => ({ name, qty })),
+      salesTrend: trend.map(([date, total]) => ({ date, total })),
+      lastCashCount: lastCashCount ? {
+        variance: Number(lastCashCount.variance),
+        date: lastCashCount.date,
+      } : null,
     })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
-    if (error.message === "Store not found") return NextResponse.json({ error: "Store not found" }, { status: 404 })
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
