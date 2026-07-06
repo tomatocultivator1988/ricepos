@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         store_id: storeId,
         name: name.trim(),
         type,
-        value: String(Number(value).toFixed(2)),
+        value: Number(value),
       })
       .select()
       .single()

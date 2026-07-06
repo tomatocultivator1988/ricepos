@@ -64,7 +64,7 @@ export async function PUT(
 
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (name !== undefined) updateData.name = name.trim()
-    if (rate !== undefined) updateData.rate = String(Number(rate).toFixed(2))
+    if (rate !== undefined) updateData.rate = Number(rate)
 
     const { data: updated } = await db
       .from("tax_rates")

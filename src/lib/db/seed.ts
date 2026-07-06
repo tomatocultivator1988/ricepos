@@ -28,7 +28,7 @@ async function seed() {
 
   // ── TAX RATES ──
   await db.from("tax_rates").insert([
-    { id: uuid(), store_id: store.id, name: "VAT 12%", rate: "12.00" },
+    { id: uuid(), store_id: store.id, name: "VAT 12%", rate: "0.12" },
     { id: uuid(), store_id: store.id, name: "VAT Exempt", rate: "0.00" },
   ])
   const { data: taxRates } = await db.from("tax_rates").select("*").eq("store_id", store.id)

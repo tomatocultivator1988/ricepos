@@ -15,8 +15,6 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({ taxRates: list })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
-    if (error.message === "Store not found")
-      return NextResponse.json({ error: "Store not found" }, { status: 404 })
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -31,14 +29,12 @@ export async function POST(request: NextRequest) {
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Validation failed", errors: { name: ["Name is required"] } } },
-        { status: 400 }
+        { error: "Name is required" }, { status: 400 }
       )
     }
-    if (rate === undefined || isNaN(Number(rate)) || Number(rate) < 0) {
+    if (rate === undefined || Number(rate) < 0) {
       return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Validation failed", errors: { rate: ["Valid rate is required"] } } },
-        { status: 400 }
+        { error: "Valid rate is required" }, { status: 400 }
       )
     }
 
@@ -47,7 +43,7 @@ export async function POST(request: NextRequest) {
       .insert({
         store_id: storeId,
         name: name.trim(),
-        rate: String(Number(rate).toFixed(2)),
+        rate: Number(rate),
       })
       .select()
       .single()
@@ -55,8 +51,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ taxRate: created }, { status: 201 })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
-    if (error.message === "Store not found")
-      return NextResponse.json({ error: "Store not found" }, { status: 404 })
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
