@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0.15 0.04 300.0;
+    --foreground: 0.90 0.02 300.0;
+    --card: 0.12 0.03 300.0;
+    --card-foreground: 0.90 0.02 300.0;
+    --popover: 0.12 0.03 300.0;
+    --popover-foreground: 0.90 0.02 300.0;
+    --primary: 0.35 0.10 300.0;
+    --primary-foreground: 0.99 0.005 300.0;
+    --secondary: 0.20 0.04 300.0;
+    --secondary-foreground: 0.90 0.02 300.0;
+    --muted: 0.18 0.03 300.0;
+    --muted-foreground: 0.60 0.03 300.0;
+    --accent: 0.78 0.15 85.0;
+    --accent-foreground: 0.12 0.04 300.0;
+    --destructive: 0.55 0.23 27.0;
+    --destructive-foreground: 0.99 0.005 300.0;
+    --border: 0.25 0.04 300.0;
+    --input: 0.18 0.04 300.0;
+    --ring: 0.78 0.15 85.0;
+    --radius: 0.75rem;
+    --sidebar: 0.12 0.03 300.0;
+    --sidebar-foreground: 0.90 0.02 300.0;
+    --sidebar-primary: 0.35 0.10 300.0;
+    --sidebar-primary-foreground: 0.99 0.005 300.0;
+    --sidebar-accent: 0.20 0.04 300.0;
+    --sidebar-accent-foreground: 0.90 0.02 300.0;
+    --sidebar-border: 0.25 0.04 300.0;
+    --sidebar-ring: 0.78 0.15 85.0;
+  }
+  * {
+    border-color: var(--border);
+  }
+  html {
+    font-size: 17px;
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Brewhas-themed toasts — sonner overrides */
+[data-sonner-toast] {
+  --normal-bg: linear-gradient(135deg, #2a1b3d, #3d2260) !important;
+  --normal-text: #f5e6b0 !important;
+  --normal-border: rgba(212, 175, 55, 0.3) !important;
+  --success-bg: linear-gradient(135deg, #2a1b3d, #3d2260) !important;
+  --success-text: #f5e6b0 !important;
+  --success-border: rgba(212, 175, 55, 0.3) !important;
+  --error-bg: linear-gradient(135deg, #2a1b3d, #3d2260) !important;
+  --error-text: #f5e6b0 !important;
+  --error-border: rgba(212, 175, 55, 0.3) !important;
+  --info-bg: linear-gradient(135deg, #2a1b3d, #3d2260) !important;
+  --info-text: #f5e6b0 !important;
+  --info-border: rgba(212, 175, 55, 0.3) !important;
+  --warning-bg: linear-gradient(135deg, #2a1b3d, #3d2260) !important;
+  --warning-text: #f5e6b0 !important;
+  --warning-border: rgba(212, 175, 55, 0.3) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(212, 175, 55, 0.15) !important;
+  font-family: inherit !important;
+}
+[data-sonner-toast] [data-icon] {
+  color: #e8c24e !important;
+}
+[data-sonner-toast] [data-close-button] {
+  background: rgba(232, 194, 78, 0.3) !important;
+  color: #e8c24e !important;
+  border: 1px solid rgba(232, 194, 78, 0.3) !important;
+}
+[data-sonner-toast] [data-close-button]:hover {
+  background: #efd57f !important;
+}
+[data-sonner-toast] [data-title] {
+  color: #f5e6b0 !important;
+  font-weight: 600 !important;
+}
+[data-sonner-toast] [data-description] {
+  color: #d4af37 !important;
+}
+
+/* Brewhas-themed scrollbar: violet track + gold thumb */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #2a1b3d;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #e8c24e 0%, #d4af37 100%);
+  border-radius: 999px;
+  border: 1.5px solid #2a1b3d;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #efd57f 0%, #e8c24e 100%);
+}
+* {
+  scrollbar-color: #d4af37 #2a1b3d;
+  scrollbar-width: thin;
+}

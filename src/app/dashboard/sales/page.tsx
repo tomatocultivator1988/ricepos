@@ -1,0 +1,500 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { useRouter, usePathname } from "next/navigation"
+import { Search, ChevronLeft, ChevronRight, X, LogOutIcon, LayoutDashboardIcon, StoreIcon, PackageIcon, BoxesIcon, UsersIcon, TrendingUpIcon, Loader2Icon, RotateCcwIcon, PrinterIcon, Trash2Icon } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { toast } from "sonner"
+import { ReceiptView } from "@/app/pos/_components/receipt-view"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+type Sale = {
+  id: string
+  saleNumber: number | null
+  employeeName: string
+  paymentMethod: string
+  total: number
+  status: string
+  createdAt: string | null
+}
+
+type SalesResponse = {
+  sales: Sale[]
+  total: number
+  page: number
+  pages: number
+}
+
+type Employee = {
+  id: string
+  name: string
+}
+
+function formatTime(iso: string | null): string {
+  if (!iso) return "N/A"
+  const d = new Date(iso)
+  return d.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" })
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "N/A"
+  const d = new Date(iso)
+  return d.toLocaleDateString("en-PH", { month: "short", day: "numeric" })
+}
+
+function paymentMethodBadge(method: string) {
+  const map: Record<string, { label: string; className: string }> = {
+    cash: { label: "Cash", className: "bg-gold-400/20 text-gold-200 border-brewhas-700/40" },
+    card: { label: "Card", className: "bg-blue-100 text-blue-700 border-blue-200" },
+    gcash: { label: "GCash", className: "bg-purple-100 text-purple-700 border-purple-200" },
+  }
+  const cfg = map[method.toLowerCase()] ?? { label: method, className: "bg-slate-100 text-gold-400 border-slate-200" }
+  return (
+    <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>
+      {cfg.label}
+    </span>
+  )
+}
+
+function statusBadge(status: string) {
+  const map: Record<string, { label: string; className: string }> = {
+    completed: { label: "Completed", className: "bg-green-50 text-green-700 border-green-200" },
+    refunded: { label: "Refunded", className: "bg-red-50 text-red-700 border-red-200" },
+    voided: { label: "Voided", className: "bg-slate-100 text-gold-400 border-slate-200" },
+  }
+  const cfg = map[status.toLowerCase()] ?? { label: status, className: "bg-slate-100 text-gold-400 border-slate-200" }
+  return (
+    <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>
+      {cfg.label}
+    </span>
+  )
+}
+
+export default function SalesPage() {
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null)
+  const [data, setData] = useState<SalesResponse | null>(null)
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const [page, setPage] = useState(1)
+  const [from, setFrom] = useState("")
+  const [to, setTo] = useState("")
+  const [employeeId, setEmployeeId] = useState("")
+  const [search, setSearch] = useState("")
+  const [searchInput, setSearchInput] = useState("")
+  const [actionOpen, setActionOpen] = useState(false)
+  const [actionSale, setActionSale] = useState<Sale | null>(null)
+  const [actionType, setActionType] = useState<"refund" | "void" | "reprint" | "">("")
+  const [actionReason, setActionReason] = useState("")
+  const [actionLoading, setActionLoading] = useState(false)
+  const [receiptSaleId, setReceiptSaleId] = useState<string | null>(null)
+
+  const router = useRouter()
+  const pathname = usePathname()
+
+  useEffect(() => {
+    fetch("/api/pos/me").then(r => r.json()).then(d => {
+      if (d.employee) setUser({ name: d.employee.name, role: d.employee.role })
+      else { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") }
+    }).catch(() => { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") })
+  }, [router])
+
+  const handleLogout = async () => {
+    document.cookie = "session=; max-age=0; path=/"
+    await fetch("/api/auth/logout", { method: "POST" })
+    router.push("/auth/login")
+  }
+
+  const fetchSales = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const params = new URLSearchParams()
+      params.set("page", String(page))
+      params.set("limit", "20")
+      if (from) params.set("from", from)
+      if (to) params.set("to", to)
+      if (employeeId && employeeId !== "all") params.set("employeeId", employeeId)
+      if (search) params.set("search", search)
+
+      const res = await fetch(`/api/dashboard/sales?${params.toString()}`)
+      if (!res.ok) throw new Error("Failed to fetch sales")
+      const json = await res.json()
+      setData(json)
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong")
+    } finally {
+      setLoading(false)
+    }
+  }, [page, from, to, employeeId, search])
+
+  const fetchEmployees = useCallback(async () => {
+    try {
+      const res = await fetch("/api/backoffice/employees")
+      if (res.ok) {
+        const json = await res.json()
+        setEmployees(json.employees ?? [])
+      }
+    } catch {
+      // non-critical
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchEmployees()
+  }, [fetchEmployees])
+
+  const handleAction = async () => {
+    if (!actionSale) return
+    setActionLoading(true)
+    try {
+      if (actionType === "reprint") {
+        setReceiptSaleId(actionSale.id)
+        setActionOpen(false)
+      } else {
+        const res = await fetch(`/api/sales/${actionSale.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: actionType, reason: actionReason || `${actionType} requested` }),
+        })
+        if (!res.ok) throw new Error()
+        toast.success(`${actionType === "void" ? "Sale voided" : "Sale refunded"}`)
+        setActionOpen(false)
+        fetchSales()
+      }
+    } catch { toast.error("Action failed") }
+    finally { setActionLoading(false) }
+  }
+
+  const openAction = (sale: Sale, type: "refund" | "void" | "reprint") => {
+    if (type === "reprint") {
+      setReceiptSaleId(sale.id)
+      return
+    }
+    setActionSale(sale)
+    setActionType(type)
+    setActionReason("")
+    setActionOpen(true)
+  }
+
+  useEffect(() => {
+    fetchSales()
+  }, [fetchSales])
+
+  function handleSearchSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setPage(1)
+    setSearch(searchInput.trim())
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
+  const hasFilters = from || to || (employeeId && employeeId !== "all") || search
+
+  const navLinks = [
+    { label: "POS", href: "/pos", icon: StoreIcon },
+    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
+        { label: "Sales", href: "/dashboard/sales", icon: TrendingUpIcon },
+{ label: "Items", href: "/backoffice/items", icon: PackageIcon },
+    { label: "Inventory", href: "/backoffice/inventory", icon: BoxesIcon },
+    { label: "Employees", href: "/backoffice/employees", icon: UsersIcon },
+  ]
+
+  if (!user) return (
+    <div className="flex items-center justify-center min-h-screen bg-transparent"><Loader2Icon className="h-8 w-8 animate-spin text-gold-300" /></div>
+  )
+
+  return (
+    <div className="flex h-screen flex-col bg-transparent">
+
+
+      <div className="flex-1 overflow-y-auto p-5">
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold text-gold-300">Sales History</h1>
+
+          <Card className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl shadow-md">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium text-slate-400">From</label>
+                  <Input
+                    type="date"
+                    value={from}
+                    max={to || today}
+                    onChange={(e) => {
+                      setFrom(e.target.value)
+                      setPage(1)
+                    }}
+                    className="rounded-xl border-brewhas-700/40 bg-brewhas-900/60 backdrop-blur-xl"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium text-slate-400">To</label>
+                  <Input
+                    type="date"
+                    value={to}
+                    min={from}
+                    max={today}
+                    onChange={(e) => {
+                      setTo(e.target.value)
+                      setPage(1)
+                    }}
+                    className="rounded-xl border-brewhas-700/40 bg-brewhas-900/60 backdrop-blur-xl"
+                  />
+                </div>
+                <div className="grid gap-1.5">
+                  <label className="text-xs font-medium text-slate-400">Cashier</label>
+                  <Select
+                    value={employeeId === "all" || !employeeId ? "all" : (employees.find(e => e.id === employeeId)?.name || "")}
+                    onValueChange={(v) => {
+                      if (v === "all" || !v) { setEmployeeId("all"); setPage(1); return }
+                      const emp = employees.find(e => e.name === v)
+                      setEmployeeId(emp?.id || "all")
+                      setPage(1)
+                    }}
+                  >
+                    <SelectTrigger className="w-40 rounded-xl border-brewhas-700/40 bg-brewhas-900/60 backdrop-blur-xl">
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      {employees.map((emp) => (
+                        <SelectItem key={emp.id} value={emp.name}>
+                          {emp.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <form onSubmit={handleSearchSubmit} className="grid gap-1.5">
+                  <label className="text-xs font-medium text-slate-400">Search</label>
+                  <div className="relative">
+                    <Input
+                      placeholder="Sale # or item..."
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      className="w-52 rounded-xl border-brewhas-700/40 bg-brewhas-900/60 backdrop-blur-xl pr-8"
+                    />
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="absolute right-0 top-0 text-slate-400 hover:text-gold-200"
+                    >
+                      <Search className="size-3.5" />
+                    </Button>
+                  </div>
+                </form>
+                {hasFilters && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full text-slate-400 hover:text-gold-200"
+                    onClick={() => {
+                      setFrom("")
+                      setTo("")
+                      setEmployeeId("")
+                      setSearch("")
+                      setSearchInput("")
+                      setPage(1)
+                    }}
+                  >
+                    <X className="size-3.5" />
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {error && (
+            <Card className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl shadow-md">
+              <CardContent className="py-12 text-center">
+                <p className="text-slate-400">{error}</p>
+                <button
+                  onClick={fetchSales}
+                  className="mt-3 text-sm font-medium text-gold-300 underline underline-offset-4 hover:text-gold-200"
+                >
+                  Retry
+                </button>
+              </CardContent>
+            </Card>
+          )}
+
+          {!error && (
+            <>
+              {/* Mobile Cards */}
+              <div className="grid grid-cols-1 gap-3 lg:hidden">
+                {loading ? (
+                  <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">Loading...</div>
+                ) : !data || data.sales.length === 0 ? (
+                  <div className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-8 text-center text-slate-400 shadow-md">No sales found</div>
+                ) : (
+                  data.sales.map((sale) => (
+                    <div key={sale.id} className="rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl p-4 shadow-md">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="font-bold text-gold-200 text-sm">#{(sale.saleNumber ? String(sale.saleNumber).padStart(6,'0') : '-')} Â· {sale.employeeName}</span>
+                        <span className="text-gold-200 font-extrabold">P{sale.total.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1.5">
+                          {paymentMethodBadge(sale.paymentMethod)}
+                          {statusBadge(sale.status)}
+                        </div>
+                        <span className="text-slate-400">{formatDate(sale.createdAt)} {formatTime(sale.createdAt)}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* Desktop Table */}
+              <Card className="hidden lg:block overflow-hidden rounded-2xl border-2 border-brewhas-700/50 bg-brewhas-900/60 backdrop-blur-xl shadow-md">
+                <CardContent className="p-0">
+                  <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent bg-transparent">
+                      <TableHead className="w-16 pl-6 text-xs font-semibold uppercase text-gold-300">#</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase text-gold-300">Cashier</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase text-gold-300">Method</TableHead>
+                      <TableHead className="text-right text-xs font-semibold uppercase text-gold-300">Total</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase text-gold-300">Status</TableHead>
+                      <TableHead className="pr-6 text-right text-xs font-semibold uppercase text-gold-300">Time</TableHead>
+                      <TableHead className="pr-2 text-xs font-semibold uppercase text-gold-300">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="py-16 text-center text-slate-400">
+                          Loading...
+                        </TableCell>
+                      </TableRow>
+                    ) : !data || data.sales.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="py-16 text-center text-slate-400">
+                          No sales found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      data.sales.map((sale) => (
+                        <TableRow key={sale.id} className="hover:bg-transparent/50">
+                          <TableCell className="pl-6">
+                            <span className="text-xs text-slate-400">
+                              {(sale.saleNumber ? String(sale.saleNumber).padStart(6,'0') : '-')}
+                            </span>
+                          </TableCell>
+                          <TableCell className="font-medium text-green-900">{sale.employeeName}</TableCell>
+                          <TableCell>{paymentMethodBadge(sale.paymentMethod)}</TableCell>
+                          <TableCell className="text-right font-semibold tabular-nums text-gold-200">
+                            P{sale.total.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
+                          </TableCell>
+                          <TableCell>{statusBadge(sale.status)}</TableCell>
+                          <TableCell className="pr-2 text-right text-xs text-slate-400">
+                            {formatDate(sale.createdAt)} {formatTime(sale.createdAt)}
+                          </TableCell>
+                          <TableCell className="pr-2">
+                            <div className="flex gap-1 justify-end">
+                              {sale.status === "completed" && (
+                                <>
+                                  <Button variant="ghost" size="sm" onClick={() => openAction(sale, "void")} className="h-7 rounded-lg text-xs text-red-500 hover:bg-red-50 hover:text-red-700"><Trash2Icon className="h-3 w-3 mr-1"/>Void</Button>
+                                  <Button variant="ghost" size="sm" onClick={() => openAction(sale, "refund")} className="h-7 rounded-lg text-xs text-amber-500 hover:bg-amber-50 hover:text-amber-700"><RotateCcwIcon className="h-3 w-3 mr-1"/>Refund</Button>
+                                </>
+                              )}
+                              <Button variant="ghost" size="sm" onClick={() => openAction(sale, "reprint")} className="h-7 rounded-lg text-xs text-blue-500 hover:bg-blue-50 hover:text-blue-700"><PrinterIcon className="h-3 w-3 mr-1"/>Print</Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+            </>
+          )}
+
+          {data && data.pages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-slate-400">
+                Page {data.page} of {data.pages} ({data.total} sales)
+              </p>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="size-4" />
+                  Prev
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full border-2 border-brewhas-700/40 text-gold-300 font-medium hover:bg-slate-100"
+                  disabled={page >= data.pages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  Next
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Dialog */}
+        <Dialog open={actionOpen} onOpenChange={setActionOpen}>
+          <DialogContent className="sm:max-w-sm rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-gold-300">
+                {actionType === "refund" ? "Refund Sale" : actionType === "void" ? "Void Sale" : "Reprint"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <p className="text-sm text-gold-400">
+                {actionType === "reprint"
+                  ? "Open receipt for printing?"
+                  : `This will ${actionType} sale #${actionSale ? (actionSale.saleNumber ? String(actionSale.saleNumber).padStart(6,'0') : '-') : '-'} (P${actionSale?.total.toLocaleString("en-PH", {minimumFractionDigits:2})}). This action cannot be undone.`}
+              </p>
+              {actionType !== "reprint" && (
+                <div>
+                  <label className="text-xs font-medium text-slate-400">Reason</label>
+                  <Input value={actionReason} onChange={e => setActionReason(e.target.value)} placeholder="Required"
+                    className="h-10 rounded-xl border-brewhas-700/40 mt-1" />
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setActionOpen(false)}>Cancel</Button>
+              <Button onClick={handleAction} disabled={actionLoading || (actionType !== "reprint" && !actionReason.trim())}
+                className={actionType === "void" ? "bg-red-600 hover:bg-red-700 text-white" : actionType === "refund" ? "bg-amber-600 hover:bg-amber-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}>
+                {actionLoading ? "Processing..." : actionType === "refund" ? "Refund" : actionType === "void" ? "Void" : "Print"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {receiptSaleId && (
+          <ReceiptView
+            saleId={receiptSaleId}
+            onClose={() => setReceiptSaleId(null)}
+            backLabel="Back to Sales"
+          />
+        )}
+      </div>
+    </div>
+  )
+}
