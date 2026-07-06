@@ -32,7 +32,7 @@ export function AdminShell({ name, children }: AdminShellProps) {
             <img src="/logo.png" alt="Brewhas" className="h-full w-full object-contain p-0.5" />
           </div>
           <div>
-            <h1 className="hidden sm:block text-sm sm:text-base font-bold leading-tight tracking-tight truncate">Brewhas Coffeehouse</h1>
+            <h1 className="hidden sm:block text-sm sm:text-base font-bold leading-tight tracking-tight truncate">GroceryPOS</h1>
             <p className="hidden sm:block text-[0.6rem] sm:text-[0.7rem] font-medium text-gold-300 leading-tight">Admin Panel</p>
           </div>
         </div>
