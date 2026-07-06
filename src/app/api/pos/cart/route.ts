@@ -2,31 +2,32 @@ import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db/client"
 import { getSession, unauth } from "@/lib/auth/session"
 
-export async function PUT(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
     const storeId = session.storeId
-
     const body = await request.json()
-    const { shiftId, items, subtotal, taxTotal, total, status } = body
+    const { cart_data } = body
 
-    const cartData = { items: items || [], subtotal, taxTotal, total, status: status || "active" }
+    // Use store_id as the cart key (no shifts)
+    const cartKey = storeId
 
     const { data: existing } = await db
       .from("pos_carts")
       .select("id")
-      .eq("shift_id", shiftId)
+      .eq("shift_id", cartKey)
       .limit(1)
       .single()
 
     if (existing) {
       await db.from("pos_carts")
-        .update({ cart_data: cartData, updated_at: new Date().toISOString() })
+        .update({ cart_data, updated_at: new Date().toISOString() })
         .eq("id", existing.id)
     } else {
       await db.from("pos_carts").insert({
-        shift_id: shiftId,
-        cart_data: cartData,
+        shift_id: cartKey,
+        cart_data,
+        status: "active",
       })
     }
 
@@ -37,24 +38,27 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const url = new URL(request.url)
-    const shiftId = url.searchParams.get("shift_id")
-
-    if (!shiftId) return NextResponse.json({ cart: null })
+    const session = await getSession()
+    const storeId = session.storeId
+    const cartKey = storeId
 
     const { data } = await db
       .from("pos_carts")
       .select("cart_data, status, updated_at")
-      .eq("shift_id", shiftId)
+      .eq("shift_id", cartKey)
       .limit(1)
       .single()
 
     if (!data) return NextResponse.json({ cart: null })
 
     return NextResponse.json({
-      cart: { ...(data.cart_data as any), updatedAt: data.updated_at },
+      cart: {
+        cart_data: data.cart_data,
+        status: data.status,
+        updated_at: data.updated_at,
+      }
     })
   } catch {
     return NextResponse.json({ cart: null })

@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import { ReceiptView } from "@/app/pos/_components/receipt-view"
 import {
   Select,
   SelectContent,
@@ -486,14 +485,6 @@ export default function SalesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        {receiptSaleId && (
-          <ReceiptView
-            saleId={receiptSaleId}
-            onClose={() => setReceiptSaleId(null)}
-            backLabel="Back to Sales"
-          />
-        )}
       </div>
     </div>
   )

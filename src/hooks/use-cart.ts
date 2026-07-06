@@ -1,99 +1,160 @@
 "use client"
 
-import { useState, useMemo, useCallback } from "react"
-import { computeTotals } from "@/lib/calc/totals"
-import type { TotalsInput } from "@/lib/calc/totals"
-import type { DiscountInput } from "@/lib/calc/discount"
-
-export interface CartModifier {
-  modifierName: string
-  optionName: string
-  extraPrice: number
-}
+import { useState, useEffect, useCallback, useRef } from "react"
 
 export interface CartItem {
-  id: string
-  name: string
-  unitPrice: number
+  itemId: string
+  itemName: string
+  categoryId: string | null
+  unitId: string
+  unitName: string
+  baseQty: number
   qty: number
+  unitPrice: number
+  stockQty: number
+  sellBy: "weight" | "unit"
   taxRate: number
-  variantId?: string
-  modifiers: CartModifier[]
+  discountEligible: boolean
 }
 
-export interface UseCartReturn {
+export interface CartDiscount {
+  type: "senior" | "pwd" | "custom_pct" | "custom_fixed" | null
+  value: number
+  name: string
+}
+
+export interface CartState {
   items: CartItem[]
-  customerId: string | null
-  discount: DiscountInput | undefined
-  addItem: (item: { id: string; name: string; unitPrice: number; taxRate: number; variantId?: string }, modifiers?: CartModifier[]) => void
-  removeItem: (index: number) => void
-  updateQty: (index: number, qty: number) => void
-  clearCart: () => void
-  setDiscount: (discount: DiscountInput | undefined) => void
-  setCustomer: (customerId: string | null) => void
-  totals: ReturnType<typeof computeTotals>
-  itemCount: number
+  discount: CartDiscount
 }
 
-export function useCart(): UseCartReturn {
+export function useCart() {
   const [items, setItems] = useState<CartItem[]>([])
-  const [customerId, setCustomer] = useState<string | null>(null)
-  const [discount, setDiscount] = useState<DiscountInput>()
+  const [discount, setDiscount] = useState<CartDiscount>({ type: null, value: 0, name: "" })
+  const [customerId, setCustomerId] = useState<string | null>(null)
+  const [customerName, setCustomerName] = useState("")
+  const [customerBalance, setCustomerBalance] = useState(0)
+  const syncRef = useRef<NodeJS.Timeout | null>(null)
 
-  const addItem = useCallback((item: { id: string; name: string; unitPrice: number; taxRate: number; variantId?: string }, modifiers?: CartModifier[]) => {
-    const modifierExtra = (modifiers || []).reduce((sum, m) => sum + m.extraPrice, 0)
-    const effectivePrice = item.unitPrice + modifierExtra
+  // Load cart from pos_carts on mount
+  useEffect(() => {
+    fetch("/api/pos/cart").then(r => r.json()).then(d => {
+      if (d.cart?.cart_data) {
+        try {
+          const data = typeof d.cart.cart_data === "string" ? JSON.parse(d.cart.cart_data) : d.cart.cart_data
+          if (data.items) setItems(data.items)
+          if (data.discount) setDiscount(data.discount)
+          if (data.customerId) setCustomerId(data.customerId)
+          if (data.customerName) setCustomerName(data.customerName)
+          if (data.customerBalance !== undefined) setCustomerBalance(data.customerBalance)
+        } catch { /* ignore corrupt cart */ }
+      }
+    }).catch(() => {})
+  }, [])
 
+  // Sync cart to DB every 500ms
+  const scheduleSync = useCallback((cartData: any) => {
+    if (syncRef.current) clearTimeout(syncRef.current)
+    syncRef.current = setTimeout(() => {
+      fetch("/api/pos/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cart_data: {
+            items: cartData.items,
+            discount: cartData.discount,
+            customerId: cartData.customerId,
+            customerName: cartData.customerName,
+            customerBalance: cartData.customerBalance,
+          }
+        }),
+      }).catch(() => {})
+    }, 500)
+  }, [])
+
+  const sync = useCallback(() => {
+    scheduleSync({ items, discount, customerId, customerName, customerBalance })
+  }, [items, discount, customerId, customerName, customerBalance, scheduleSync])
+
+  useEffect(() => { sync() }, [sync])
+
+  // Merge key: itemId + unitId
+  function mergeKey(item: Pick<CartItem, "itemId" | "unitId">) {
+    return `${item.itemId}::${item.unitId}`
+  }
+
+  function addItem(item: CartItem) {
     setItems(prev => {
-      const newMods = (modifiers || []).map(m => `${m.modifierName}:${m.optionName}`).sort().join(",")
-      const existingIdx = prev.findIndex(i => {
-        const existingMods = (i.modifiers || []).map(m => `${m.modifierName}:${m.optionName}`).sort().join(",")
-        return i.id === item.id && existingMods === newMods
-      })
-      if (existingIdx >= 0) {
+      const key = mergeKey(item)
+      const existing = prev.findIndex(i => mergeKey(i) === key)
+      if (existing >= 0) {
         const updated = [...prev]
-        updated[existingIdx] = { ...updated[existingIdx], qty: updated[existingIdx].qty + 1 }
+        updated[existing] = {
+          ...updated[existing],
+          qty: updated[existing].qty + item.qty,
+        }
         return updated
       }
-      return [...prev, {
-        id: item.id,
-        name: item.name,
-        unitPrice: effectivePrice,
-        qty: 1,
-        taxRate: item.taxRate,
-        variantId: item.variantId,
-        modifiers: modifiers || [],
-      }]
+      return [...prev, item]
     })
-  }, [])
+  }
 
-  const removeItem = useCallback((index: number) => {
-    setItems(prev => prev.filter((_, i) => i !== index))
-  }, [])
+  function updateQty(itemKey: string, qty: number) {
+    setItems(prev => prev.map(i =>
+      mergeKey(i) === itemKey ? { ...i, qty } : i
+    ).filter(i => i.qty > 0))
+  }
 
-  const updateQty = useCallback((index: number, qty: number) => {
-    if (qty <= 0) { removeItem(index); return }
-    setItems(prev => prev.map((item, i) => i === index ? { ...item, qty } : item))
-  }, [removeItem])
+  function removeItem(itemKey: string) {
+    setItems(prev => prev.filter(i => mergeKey(i) !== itemKey))
+  }
 
-  const clearCart = useCallback(() => {
+  function clearCart() {
     setItems([])
-    setCustomer(null)
-    setDiscount(undefined)
-  }, [])
+    setDiscount({ type: null, value: 0, name: "" })
+    setCustomerId(null)
+    setCustomerName("")
+    setCustomerBalance(0)
+  }
 
-  const totalsInput: TotalsInput = useMemo(() => ({
-    items: items.map(i => ({ unitPrice: i.unitPrice, qty: i.qty, taxRate: i.taxRate })),
-    discount,
-  }), [items, discount])
+  function setCustomer(custId: string | null, name: string, balance: number) {
+    setCustomerId(custId)
+    setCustomerName(name)
+    setCustomerBalance(balance)
+  }
 
-  const totals = useMemo(() => computeTotals(totalsInput), [totalsInput])
-  const itemCount = useMemo(() => items.reduce((sum, i) => sum + i.qty, 0), [items])
+  // Calculations
+  const subtotal = items.reduce((sum, i) => sum + (i.unitPrice * i.qty), 0)
+
+  const discountAmount = (() => {
+    if (!discount.type || discount.value <= 0) return 0
+    const eligibleItems = items.filter(i => i.discountEligible)
+    if (eligibleItems.length === 0) return 0
+    const eligibleTotal = eligibleItems.reduce((s, i) => s + (i.unitPrice * i.qty), 0)
+    if (discount.type === "custom_fixed") return Math.min(discount.value, eligibleTotal)
+    return eligibleTotal * (discount.value / 100)
+  })()
+
+  const afterDiscount = subtotal - discountAmount
+
+  const taxTotal = items.reduce((sum, i) => {
+    const lineTotal = i.unitPrice * i.qty
+    if (i.discountEligible && discount.type && discount.value > 0) {
+      const discountShare = discountAmount * (lineTotal / (subtotal || 1))
+      return sum + ((lineTotal - discountShare) * i.taxRate)
+    }
+    return sum + (lineTotal * i.taxRate)
+  }, 0)
+
+  const total = afterDiscount + taxTotal
+
+  const totalDeductedQty = items.reduce((sum, i) => sum + (i.qty * i.baseQty), 0)
 
   return {
-    items, customerId, discount,
-    addItem, removeItem, updateQty, clearCart,
-    setDiscount, setCustomer,
-    totals, itemCount,
+    items, discount,
+    customerId, customerName, customerBalance,
+    subtotal, discountAmount, taxTotal, total, totalDeductedQty,
+    addItem, updateQty, removeItem, clearCart,
+    setDiscount, setCustomer, mergeKey,
   }
 }
