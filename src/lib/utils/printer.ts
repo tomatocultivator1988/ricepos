@@ -308,7 +308,8 @@ export function openBrowserReceipt(data: ReceiptData) {
       <div class="line"></div>
       <div style="font-size:10px">
         ${data.paymentMethod}<br/>
-        ${data.amountTendered > 0 ? `Tendered: ₱${data.amountTendered.toFixed(2)}<br/>Change: ₱${data.change.toFixed(2)}` : ""}
+        ${data.amountTendered > 0 ? `Tendered: ₱${data.amountTendered.toFixed(2)}` : ""}
+        ${data.amountTendered > 0 && data.change > 0 ? `<br/>Change: ₱${data.change.toFixed(2)}` : ""}
       </div>
       <div class="line"></div>
       <div class="center" style="font-size:11px">${data.footer}</div>
