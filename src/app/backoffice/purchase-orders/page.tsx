@@ -220,26 +220,26 @@ export default function PurchaseOrdersPage() {
               </div>
               <div className="space-y-2 overflow-x-auto">
                 {cLines.map((l, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-3 items-end bg-stone-800/50 rounded-lg p-4 border border-amber-600/30">
-                    <div className="col-span-6 space-y-1.5 mb-1">
+                  <div key={i} className="grid grid-cols-[1fr_80px_100px_80px_44px] gap-3 items-end bg-stone-800/50 rounded-lg p-4 border border-amber-600/30">
+                    <div className="space-y-1.5 mb-1">
                       <label className="text-xs font-medium text-stone-400 mb-1">Product</label>
                       <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
                         <SelectTrigger className="bg-stone-700 border-stone-600 h-10 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
-                    <div className="col-span-1 space-y-1.5 mb-1">
+                    <div className="space-y-1.5 mb-1">
                       <label className="text-xs font-medium text-stone-400 mb-1">Qty</label>
                       <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-stone-700 border-stone-600 h-10 text-xs" />
                     </div>
-                    <div className="col-span-2 space-y-1.5 mb-1">
+                    <div className="space-y-1.5 mb-1">
                       <label className="text-xs font-medium text-stone-400 mb-1">Buy Cost</label>
                       <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-stone-700 border-stone-600 h-10 text-xs" />
                     </div>
-                    <div className="col-span-2 text-right text-xs text-stone-300 self-center pt-4">
+                    <div className="text-right text-xs text-stone-300 self-center pt-4">
                       ₱{(Number(l.qty_ordered || 0) * Number(l.unit_cost || 0)).toFixed(2)}
                     </div>
-                    <div className="col-span-1 flex justify-center pt-4">
+                    <div className="flex justify-center pt-4">
                       <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => removeLine(i)} disabled={cLines.length <= 1}><Trash2 className="h-3 w-3" /></Button>
                     </div>
                   </div>

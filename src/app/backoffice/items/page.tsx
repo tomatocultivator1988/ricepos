@@ -383,7 +383,7 @@ export default function ItemsPage() {
 
                 <div className="space-y-2 overflow-x-auto">
                   {(editing.selling_units ?? []).map((unit, idx) => (
-                    <div key={idx} className="grid grid-cols-12 gap-3 items-end bg-stone-800/50 rounded-lg p-4 border border-amber-600/30">
+                    <div key={idx} className="grid grid-cols-[1fr_90px_90px_70px_60px_44px_44px] gap-3 items-end bg-stone-800/50 rounded-lg p-4 border border-amber-600/30">
                       <div className="col-span-3 space-y-1.5 mb-1">
                         <Label className="text-xs font-medium text-stone-400 mb-1">Name</Label>
                         <Input value={unit.name} onChange={e => updateUnit(idx, "name", e.target.value)}
