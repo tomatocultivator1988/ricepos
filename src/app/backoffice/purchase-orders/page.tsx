@@ -194,7 +194,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── CREATE PO DIALOG ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-stone-900/40 border-amber-600/30 text-white p-6">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto bg-stone-900/30 backdrop-blur-md border-amber-600/30 text-white p-6">
           <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -220,7 +220,7 @@ export default function PurchaseOrdersPage() {
               </div>
               <div className="space-y-2">
                 {cLines.map((l, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_90px_110px_90px_44px] gap-4 items-end bg-stone-800/40 rounded-lg p-4 border border-amber-600/30">
+                  <div key={i} className="grid grid-cols-[1fr_120px_140px_110px_44px] gap-4 items-end bg-stone-800/30 rounded-lg p-4 border border-amber-600/30">
                     <div className="space-y-1.5 mb-1">
                       <label className="text-xs font-medium text-stone-400 mb-1">Product</label>
                       <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
@@ -264,7 +264,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── DETAIL / RECEIVE DIALOG ── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-stone-900/40 border-amber-600/30 text-white p-6">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto bg-stone-900/30 backdrop-blur-md border-amber-600/30 text-white p-6">
           {detail && (
             <>
               <DialogHeader>
