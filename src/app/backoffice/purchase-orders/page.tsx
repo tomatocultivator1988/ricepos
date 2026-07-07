@@ -167,7 +167,7 @@ export default function PurchaseOrdersPage() {
                   <TableHead className="text-stone-300">Supplier</TableHead>
                   <TableHead className="text-stone-300">Order Date</TableHead>
                   <TableHead className="text-stone-300">Expected</TableHead>
-                  <TableHead className="text-stone-300 text-right">Total</TableHead>
+                  <TableHead className="text-stone-300 text-right">Purchase</TableHead>
                   <TableHead className="text-stone-300 text-center">Received</TableHead>
                   <TableHead className="text-stone-300">Status</TableHead>
                 </TableRow>
@@ -233,7 +233,7 @@ export default function PurchaseOrdersPage() {
                       <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-stone-700 border-stone-600 h-8 text-xs" />
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <label className="text-[10px] text-stone-500">Unit Cost</label>
+                      <label className="text-[10px] text-stone-500">Buy Cost (₱/unit)</label>
                       <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-stone-700 border-stone-600 h-8 text-xs" />
                     </div>
                     <div className="col-span-2 text-right text-xs text-stone-300 self-center pt-4">
@@ -250,7 +250,7 @@ export default function PurchaseOrdersPage() {
             <Input placeholder="Note (optional)" value={cNote} onChange={e => setCNote(e.target.value)} className="bg-stone-800 border-amber-600/30" />
 
             <div className="flex justify-between items-center border-t border-amber-600/30 pt-3">
-              <span className="text-sm text-stone-400">Total Cost</span>
+              <span className="text-sm text-stone-400">Total Purchase Cost</span>
               <span className="text-lg font-bold text-white">₱{createTotal.toFixed(2)}</span>
             </div>
 
@@ -284,9 +284,9 @@ export default function PurchaseOrdersPage() {
                       <th className="text-left px-3 py-2">Product</th>
                       <th className="text-right px-3 py-2">Ordered</th>
                       <th className="text-right px-3 py-2">Received</th>
-                      <th className="text-right px-3 py-2">Unit Cost</th>
+                      <th className="text-right px-3 py-2">Buy Cost/unit</th>
                       {canReceive && <th className="text-center px-3 py-2">Receive Now</th>}
-                      {canReceive && <th className="text-center px-3 py-2">Update Cost?</th>}
+                      {canReceive && <th className="text-center px-3 py-2">Sync Buy Cost?</th>}
                     </tr></thead>
                     <tbody>
                       {detail.items.map((it: any) => (
@@ -322,12 +322,14 @@ export default function PurchaseOrdersPage() {
 
                 {canReceive && (
                   <p className="text-[11px] text-stone-500">
-                    Tick "Update Cost?" to set the product's selling cost to this PO's unit cost when received. Leave unchecked to keep the current cost.
+                    Tick "Sync Buy Cost?" to set the product's buying/wholesale cost (what you paid the supplier).
+                    This affects <strong>profit</strong> on future sales. Leave unchecked to keep the current cost.
+                    Your <strong>selling prices</strong> (what customers pay) are never changed.
                   </p>
                 )}
 
                 <div className="flex justify-between items-center border-t border-amber-600/30 pt-3">
-                  <span className="text-sm text-stone-400">Total PO Cost</span>
+                  <span className="text-sm text-stone-400">Total Purchase Cost</span>
                   <span className="text-lg font-bold text-white">₱{Number(detail.total_cost).toFixed(2)}</span>
                 </div>
 
