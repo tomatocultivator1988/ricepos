@@ -33,7 +33,7 @@ export default function DashboardPage() {
     return () => clearInterval(interval)
   }, [fetchData])
 
-  if (loading) return <div className="flex items-center justify-center py-32"><Loader2Icon className="h-8 w-8 animate-spin text-emerald-400" /></div>
+  if (loading) return <div className="flex items-center justify-center py-32"><Loader2Icon className="h-8 w-8 animate-spin text-amber-400" /></div>
 
   const kpis = [
     { label: "Sales Today", value: `₱${(data?.todaySales ?? 0).toFixed(2)}`, color: "text-white" },

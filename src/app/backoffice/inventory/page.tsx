@@ -84,7 +84,7 @@ export default function InventoryPage() {
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
         <Input placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)}
           className="pl-9 bg-stone-800 border-amber-600/30 text-white" />
       </div>
@@ -111,13 +111,13 @@ export default function InventoryPage() {
                     <TableCell className="text-right text-stone-500">{Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</TableCell>
                     <TableCell className="text-right text-stone-400">₱{i.value.toFixed(2)}</TableCell>
                     <TableCell>
-                      <Badge className={i.stock_status === "ok" ? "bg-emerald-600" : i.stock_status === "low" ? "bg-yellow-600" : "bg-red-600"}>
+                      <Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-yellow-600" : "bg-red-600"}>
                         {i.stock_status.toUpperCase()}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-1 justify-end">
-                        <Button variant="ghost" size="sm" className="h-7 text-xs text-emerald-400" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}>
+                        <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-400" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}>
                           <TruckIcon className="h-3 w-3 mr-1" />Receive
                         </Button>
                         <Button variant="ghost" size="sm" className="h-7 text-xs text-yellow-400" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}>
@@ -151,7 +151,7 @@ export default function InventoryPage() {
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setDeliverItem(null)}>Cancel</Button>
-                <Button onClick={saveDelivery} disabled={delivSaving} className="bg-emerald-600 hover:bg-emerald-500">{delivSaving ? "..." : "Receive"}</Button>
+                <Button onClick={saveDelivery} disabled={delivSaving} className="bg-amber-600 hover:bg-amber-500">{delivSaving ? "..." : "Receive"}</Button>
               </div>
             </div>
           )}
