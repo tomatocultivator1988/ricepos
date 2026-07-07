@@ -233,14 +233,16 @@ export default function PosPage() {
   }
 
   async function processPayment() {
-    const cash = Number(payCash) || 0
-    const gcash = Number(payGcash) || 0
+    const cash = Math.round((Number(payCash) || 0) * 100) / 100
+    const gcash = Math.round((Number(payGcash) || 0) * 100) / 100
+    const total = Math.round(cart.total * 100) / 100
     if (cash + gcash <= 0 && !cart.customerId) {
       toast.error("Enter a payment amount or select a customer for utang"); return
     }
-    if (cash + gcash > cart.total) {
+    if (cash + gcash > total) {
       toast.error("Payment exceeds total"); return
     }
+    const change = cash > total ? Math.round((cash - total) * 100) / 100 : 0
     setPaySaving(true)
     const payments: { method: string; amount: number }[] = []
     if (cash > 0) payments.push({ method: "cash", amount: cash })
@@ -255,7 +257,9 @@ export default function PosPage() {
           customerId: cart.customerId,
           discountType: cart.discount.type, discountValue: cart.discount.value,
           discountAmount: cart.discountAmount, discountName: cart.discount.name,
-          subtotal: cart.subtotal, taxTotal: cart.taxTotal, total: cart.total,
+          subtotal: Math.round(cart.subtotal * 100) / 100,
+          taxTotal: Math.round(cart.taxTotal * 100) / 100,
+          total,
         }),
       })
       const json = await res.json()
@@ -269,10 +273,10 @@ export default function PosPage() {
           header: "GroceryPOS",
           subtitle: `TIN: — | Address: —`,
           items: cart.items.map(i => ({ name: `${i.itemName} (${i.unitName})`, qty: i.qty, price: i.unitPrice * i.qty })),
-          subtotal: cart.subtotal, discount: cart.discountAmount, tax: cart.taxTotal, total: cart.total,
+          subtotal: cart.subtotal, discount: cart.discountAmount, tax: cart.taxTotal, total,
           paymentMethod: payments.map(p => `${p.method} ₱${p.amount}`).join(" + "),
           amountTendered: cash + gcash,
-          change: Math.max(0, cash + gcash - cart.total),
+          change,
           orderNumber: sn,
           date: new Date().toLocaleString("en-PH"),
           cashier: user?.name || "Cashier",
