@@ -194,7 +194,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── CREATE PO DIALOG ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
           <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
@@ -218,22 +218,22 @@ export default function PurchaseOrdersPage() {
                 <label className="text-sm font-semibold text-amber-300">Order Items</label>
                 <Button variant="outline" size="sm" onClick={addLine} className="text-xs gap-1"><Plus className="h-3 w-3" /> Add</Button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 overflow-x-auto">
                 {cLines.map((l, i) => (
                   <div key={i} className="grid grid-cols-12 gap-2 items-end bg-stone-800/50 rounded-lg p-2 border border-amber-600/30">
-                    <div className="col-span-5 space-y-1">
+                    <div className="col-span-6 space-y-1">
                       <label className="text-[10px] text-stone-500">Product</label>
                       <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
                         <SelectTrigger className="bg-stone-700 border-stone-600 h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
-                    <div className="col-span-2 space-y-1">
+                    <div className="col-span-1 space-y-1">
                       <label className="text-[10px] text-stone-500">Qty</label>
                       <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-stone-700 border-stone-600 h-8 text-xs" />
                     </div>
                     <div className="col-span-2 space-y-1">
-                      <label className="text-[10px] text-stone-500">Buy Cost (₱/unit)</label>
+                      <label className="text-[10px] text-stone-500">Buy Cost</label>
                       <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-stone-700 border-stone-600 h-8 text-xs" />
                     </div>
                     <div className="col-span-2 text-right text-xs text-stone-300 self-center pt-4">
@@ -264,7 +264,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── DETAIL / RECEIVE DIALOG ── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
           {detail && (
             <>
               <DialogHeader>

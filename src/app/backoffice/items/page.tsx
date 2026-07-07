@@ -381,7 +381,7 @@ export default function ItemsPage() {
                   </Button>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 overflow-x-auto">
                   {(editing.selling_units ?? []).map((unit, idx) => (
                     <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-stone-800/50 rounded-lg p-3 border border-amber-600/30">
                       <div className="col-span-3 space-y-1">
