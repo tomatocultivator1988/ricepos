@@ -282,7 +282,7 @@ export default function ItemsPage() {
 
       {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-6">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
@@ -373,9 +373,12 @@ export default function ItemsPage() {
               </div>
 
               {/* Selling Units */}
-              <div className="mt-6 pt-4 border-t border-amber-600/20">
-                <div className="flex items-center justify-between mb-3">
-                  <Label className="text-base text-xs font-medium text-stone-400 mb-1">Selling Units</Label>
+              <div className="border-t border-amber-600/20 pt-4 mt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <Label className="text-base font-semibold text-amber-300">Selling Units</Label>
+                    <p className="text-xs text-stone-500 mt-0.5">Configure how this product is sold (Sack, Per Kilo, Pack, etc.)</p>
+                  </div>
                   <Button variant="outline" size="sm" onClick={addUnit} className="gap-1 text-xs">
                     <Plus className="h-3 w-3" /> Add Unit
                   </Button>
@@ -438,8 +441,8 @@ export default function ItemsPage() {
                 )}
               </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-amber-600/30">
+              {/* Actions — sticky */}
+              <div className="sticky bottom-0 flex justify-end gap-3 pt-4 border-t border-amber-600/20 bg-stone-900/60 -mx-6 px-6 pb-2">
                 <Button variant="outline" onClick={() => { setDialogOpen(false); setEditing(null) }}>
                   Cancel
                 </Button>

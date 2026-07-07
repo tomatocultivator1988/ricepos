@@ -96,7 +96,7 @@ export default function SuppliersPage() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Supplier" : "Add Supplier"}</DialogTitle></DialogHeader>
           {editing && (
             <div className="space-y-4">

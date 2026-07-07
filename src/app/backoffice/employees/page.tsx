@@ -276,7 +276,7 @@ export default function EmployeesPage() {
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="sm:max-w-md rounded-2xl">
+            <DialogContent className="sm:max-w-md rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
               <DialogHeader>
                 <DialogTitle>{editingEmployee ? "Edit Employee" : "Add Employee"}</DialogTitle>
               </DialogHeader>
@@ -328,7 +328,7 @@ export default function EmployeesPage() {
           </Dialog>
 
           <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null) }}>
-            <DialogContent className="sm:max-w-sm rounded-2xl">
+            <DialogContent className="sm:max-w-sm rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
               <DialogHeader>
                 <DialogTitle>Deactivate Employee</DialogTitle>
               </DialogHeader>

@@ -194,7 +194,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── CREATE PO DIALOG ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -264,7 +264,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── DETAIL / RECEIVE DIALOG ── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           {detail && (
             <>
               <DialogHeader>

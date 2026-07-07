@@ -480,7 +480,7 @@ export default function SalesPage() {
 
         {/* Action Dialog */}
         <Dialog open={actionOpen} onOpenChange={setActionOpen}>
-          <DialogContent className="sm:max-w-sm rounded-2xl p-5">
+          <DialogContent className="sm:max-w-sm rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
             <DialogHeader>
               <DialogTitle className="text-amber-300">
                 {actionType === "refund" ? "Refund Sale" : actionType === "void" ? "Void Sale" : "Reprint"}
