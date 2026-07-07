@@ -483,7 +483,7 @@ export default function PosPage() {
 
       {/* ══ UNIT PICKER ══ */}
       <Dialog open={!!upItem} onOpenChange={()=>setUpItem(null)}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>{upItem?.name}</DialogTitle></DialogHeader>
           {upItem&&(<div className="space-y-5">
             <p className="text-xs text-stone-400">Available: {Number(upItem.stock_qty).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"}</p>
@@ -508,7 +508,7 @@ export default function PosPage() {
 
       {/* ══ CUSTOMER SEARCH ══ */}
       <Dialog open={custModal} onOpenChange={setCustModal}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5"><DialogHeader><DialogTitle>Select Customer</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5"><DialogHeader><DialogTitle>Select Customer</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <Input placeholder="Search customer..." value={custSearch} onChange={e=>searchCustomers(e.target.value)} className="bg-stone-800 border-amber-600/30"/>
             <button onClick={()=>{cart.setCustomer(null,"",0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-stone-800 text-sm text-stone-400 hover:bg-stone-700">Walk-in (no customer)</button>
@@ -521,7 +521,7 @@ export default function PosPage() {
 
       {/* ══ PAYMENT OVERLAY ══ */}
       <Dialog open={payModal} onOpenChange={setPayModal}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Payment</DialogTitle></DialogHeader>
           <div className="space-y-5">
             <p className="text-center"><span className="text-3xl font-bold text-white">₱{cart.total.toFixed(2)}</span></p>
@@ -638,7 +638,7 @@ export default function PosPage() {
 
       {/* ══ OPEN SHIFT MODAL ══ */}
       <Dialog open={shiftOpenModal} onOpenChange={setShiftOpenModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorOpenIcon className="h-5 w-5 text-amber-400" /> Open Shift — Count Starting Cash</DialogTitle></DialogHeader>
           <div className="space-y-5">
             <p className="text-xs text-stone-400">Count the cash in the drawer before you start selling. Enter how many pieces of each denomination.</p>
@@ -655,7 +655,7 @@ export default function PosPage() {
 
       {/* ══ CLOSE SHIFT MODAL ══ */}
       <Dialog open={shiftCloseModal} onOpenChange={setShiftCloseModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorClosedIcon className="h-5 w-5 text-amber-400" /> Close Shift — Count Cash</DialogTitle></DialogHeader>
           <div className="space-y-5">
             {shift && (
@@ -687,7 +687,7 @@ export default function PosPage() {
 
       {/* ══ COLLECTIONS MODAL ══ */}
       <Dialog open={collModal} onOpenChange={setCollModal}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Collections (Utang Payment)</DialogTitle></DialogHeader>
           <div className="space-y-4">
             {!collSelected ? (

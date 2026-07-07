@@ -274,7 +274,7 @@ export default function DiscountsPage() {
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="sm:max-w-lg rounded-2xl">
+            <DialogContent className="sm:max-w-lg rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
               <DialogHeader>
                 <DialogTitle>{editingItem ? "Edit Discount" : "Add Discount"}</DialogTitle>
               </DialogHeader>
@@ -314,7 +314,7 @@ export default function DiscountsPage() {
           </Dialog>
 
           <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null) }}>
-            <DialogContent className="sm:max-w-sm rounded-2xl">
+            <DialogContent className="sm:max-w-sm rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
               <DialogHeader>
                 <DialogTitle>Delete Discount</DialogTitle>
               </DialogHeader>

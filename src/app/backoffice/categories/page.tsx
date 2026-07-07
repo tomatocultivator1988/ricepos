@@ -275,7 +275,7 @@ export default function CategoriesPage() {
           </div>
 
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogContent className="sm:max-w-lg rounded-2xl">
+            <DialogContent className="sm:max-w-lg rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
               <DialogHeader>
                 <DialogTitle>{editingItem ? "Edit Category" : "Add Category"}</DialogTitle>
               </DialogHeader>
@@ -307,7 +307,7 @@ export default function CategoriesPage() {
           </Dialog>
 
           <Dialog open={!!deleteConfirm} onOpenChange={(open) => { if (!open) setDeleteConfirm(null) }}>
-            <DialogContent className="sm:max-w-sm rounded-2xl">
+            <DialogContent className="sm:max-w-sm rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
               <DialogHeader>
                 <DialogTitle>Delete Category</DialogTitle>
               </DialogHeader>
