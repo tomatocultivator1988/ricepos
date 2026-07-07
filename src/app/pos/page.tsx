@@ -190,8 +190,9 @@ export default function PosPage() {
 
   function openUnitPicker(item: CatalogItem) {
     if (item.stock_status === "out") return
+    if (!shift) { toast.error("Open a shift first before selling"); setShiftOpenModal(true); return }
     const d = item.units.find(u => u.is_default) ?? item.units[0]
-    setUpItem(item); setUpUnit(d?.id ?? ""); setUpQty(String(d?.min_qty ?? (item.sell_by === "weight" ? 0.001 : 1)))
+    setUpItem(item); setUpUnit(d?.id ?? ""); setUpQty("1")
   }
 
   function addToCart() {

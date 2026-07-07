@@ -111,10 +111,11 @@ async function seed() {
     taxId: vatExempt, discountEligible: true,
     units: [
       { name: "Sack 50kg", baseQty: "50", price: "2500", sortOrder: 0 },
-      { name: "Per Kilo", baseQty: "1", price: "55", isDefault: true, sortOrder: 1 },
-      { name: "Sack 25kg", baseQty: "25", price: "1300", sortOrder: 2 },
-      { name: "5kg Pack", baseQty: "5", price: "275", sortOrder: 3 },
-      { name: "1kg Pack", baseQty: "1", price: "56", sortOrder: 4 },
+      { name: "Sack 25kg", baseQty: "25", price: "1300", sortOrder: 1 },
+      { name: "10kg Pack", baseQty: "10", price: "523", sortOrder: 2 },
+      { name: "Per Kilo", baseQty: "1", price: "55", isDefault: true, sortOrder: 3 },
+      { name: "5kg Pack", baseQty: "5", price: "275", sortOrder: 4 },
+      { name: "1kg Pack", baseQty: "1", price: "56", sortOrder: 5 },
     ],
   })
 
@@ -124,9 +125,10 @@ async function seed() {
     taxId: vatExempt, discountEligible: true,
     units: [
       { name: "Sack 50kg", baseQty: "50", price: "2800", sortOrder: 0 },
-      { name: "Per Kilo", baseQty: "1", price: "62", isDefault: true, sortOrder: 1 },
-      { name: "Sack 25kg", baseQty: "25", price: "1450", sortOrder: 2 },
-      { name: "5kg Pack", baseQty: "5", price: "310", sortOrder: 3 },
+      { name: "Sack 25kg", baseQty: "25", price: "1450", sortOrder: 1 },
+      { name: "10kg Pack", baseQty: "10", price: "589", sortOrder: 2 },
+      { name: "Per Kilo", baseQty: "1", price: "62", isDefault: true, sortOrder: 3 },
+      { name: "5kg Pack", baseQty: "5", price: "310", sortOrder: 4 },
     ],
   })
 
@@ -136,8 +138,10 @@ async function seed() {
     taxId: vatExempt, discountEligible: true,
     units: [
       { name: "Sack 50kg", baseQty: "50", price: "3000", sortOrder: 0 },
-      { name: "Per Kilo", baseQty: "1", price: "68", isDefault: true, sortOrder: 1 },
-      { name: "5kg Pack", baseQty: "5", price: "340", sortOrder: 2 },
+      { name: "Sack 25kg", baseQty: "25", price: "1550", sortOrder: 1 },
+      { name: "10kg Pack", baseQty: "10", price: "646", sortOrder: 2 },
+      { name: "Per Kilo", baseQty: "1", price: "68", isDefault: true, sortOrder: 3 },
+      { name: "5kg Pack", baseQty: "5", price: "340", sortOrder: 4 },
     ],
   })
 

@@ -282,7 +282,7 @@ export default function ItemsPage() {
 
       {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
