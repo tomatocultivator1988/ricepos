@@ -36,6 +36,10 @@ export default function PosPage() {
   const [payGcash, setPayGcash] = useState("")
   const [paySaving, setPaySaving] = useState(false)
 
+  // Receipt preview state
+  const [receiptData, setReceiptData] = useState<any>(null)
+  const [receiptModal, setReceiptModal] = useState(false)
+
   // Unit picker state
   const [upItem, setUpItem] = useState<CatalogItem | null>(null)
   const [upUnit, setUpUnit] = useState<string>("")
@@ -277,24 +281,26 @@ export default function PosPage() {
       const json = await res.json()
       if (!res.ok) { toast.error(json.error || "Sale failed"); setPaySaving(false); return }
 
-      // Receipt
+      // Receipt — show preview modal first
       const sn = String(json.sale.sale_number).padStart(6, "0")
-      try {
-        const { printReceipt } = await import("@/lib/utils/printer")
-        await printReceipt({
-          header: "GroceryPOS",
-          subtitle: `TIN: — | Address: —`,
-          items: cart.items.map(i => ({ name: `${i.itemName} (${i.unitName})`, qty: i.qty, price: i.unitPrice * i.qty })),
-          subtotal: cart.subtotal, discount: cart.discountAmount, tax: cart.taxTotal, total,
-          paymentMethod: payments.map(p => `${p.method} ₱${p.amount}`).join(" + "),
-          amountTendered: cash + gcash,
-          change,
-          orderNumber: sn,
-          date: new Date().toLocaleString("en-PH"),
-          cashier: user?.name || "Cashier",
-          footer: "Salamat po! Come again!",
-        })
-      } catch { /* print failed */ }
+      const receiptText = {
+        header: "GroceryPOS",
+        subtitle: `Receipt #${sn}`,
+        items: cart.items.map(i => ({ name: `${i.itemName} (${i.unitName})`, qty: i.qty, price: i.unitPrice * i.qty })),
+        subtotal: Math.round(cart.subtotal * 100) / 100,
+        discount: cart.discountAmount,
+        tax: cart.taxTotal,
+        total,
+        paymentMethod: payments.map(p => `${p.method} ₱${p.amount}`).join(" + "),
+        amountTendered: cash + gcash,
+        change,
+        orderNumber: sn,
+        date: new Date().toLocaleString("en-PH"),
+        cashier: user?.name || "Cashier",
+        footer: "Salamat po! Come again!",
+      }
+      setReceiptData(receiptText)
+      setReceiptModal(true)
 
       // Cash drawer
       if (cash > 0) {
@@ -541,6 +547,93 @@ export default function PosPage() {
               <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={processPayment} disabled={paySaving}>{paySaving?<Loader2Icon className="h-4 w-4 animate-spin"/>:"Confirm Payment"}</Button>
             </div>
           </div></DialogContent>
+      </Dialog>
+
+      {/* ══ RECEIPT PREVIEW MODAL ══ */}
+      <Dialog open={receiptModal} onOpenChange={setReceiptModal}>
+        <DialogContent className="max-w-sm bg-white text-black font-mono text-sm">
+          {receiptData && (
+            <div className="space-y-2 text-[13px]">
+              {/* Store header */}
+              <div className="text-center border-b border-dashed border-gray-300 pb-2">
+                <p className="font-bold text-base">{receiptData.header}</p>
+                <p className="text-[11px] text-gray-500">{receiptData.subtitle}</p>
+              </div>
+
+              {/* Order info */}
+              <div className="text-[11px] space-y-0.5">
+                <div className="flex justify-between"><span>Receipt #:</span><span className="font-semibold">{receiptData.orderNumber}</span></div>
+                <div className="flex justify-between"><span>Date:</span><span>{receiptData.date}</span></div>
+                <div className="flex justify-between"><span>Cashier:</span><span>{receiptData.cashier}</span></div>
+              </div>
+
+              <div className="border-t border-dashed border-gray-300 pt-2" />
+
+              {/* Items */}
+              <table className="w-full text-[12px]">
+                <tbody>
+                  {receiptData.items.map((i: any, idx: number) => (
+                    <tr key={idx}>
+                      <td className="py-0.5">{i.name}</td>
+                      <td className="text-center py-0.5">x{i.qty}</td>
+                      <td className="text-right py-0.5">₱{i.price.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="border-t border-dashed border-gray-300 pt-1" />
+
+              {/* Totals */}
+              <div className="space-y-0.5 text-[12px]">
+                <div className="flex justify-between"><span>Subtotal</span><span>₱{receiptData.subtotal.toFixed(2)}</span></div>
+                {receiptData.discount > 0 && (
+                  <div className="flex justify-between text-red-600"><span>Discount</span><span>-₱{receiptData.discount.toFixed(2)}</span></div>
+                )}
+                {receiptData.tax > 0 && (
+                  <div className="flex justify-between"><span>Tax</span><span>₱{receiptData.tax.toFixed(2)}</span></div>
+                )}
+                <div className="flex justify-between font-bold text-base pt-1">
+                  <span>TOTAL</span><span>₱{receiptData.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="border-t border-dashed border-gray-300 pt-1" />
+
+              {/* Payment */}
+              <div className="text-[12px] space-y-0.5">
+                <span>{receiptData.paymentMethod}</span>
+                {receiptData.amountTendered > 0 && (
+                  <div className="flex justify-between"><span>Tendered</span><span>₱{receiptData.amountTendered.toFixed(2)}</span></div>
+                )}
+                {receiptData.change > 0 && (
+                  <div className="flex justify-between"><span>Change</span><span>₱{receiptData.change.toFixed(2)}</span></div>
+                )}
+              </div>
+
+              <div className="border-t border-dashed border-gray-300 pt-2" />
+
+              {/* Footer */}
+              <p className="text-center text-[11px]">{receiptData.footer}</p>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <Button variant="outline" className="flex-1 text-black border-gray-300" onClick={async () => {
+                  try {
+                    const { printReceipt } = await import("@/lib/utils/printer")
+                    await printReceipt(receiptData)
+                    toast.success("Receipt printing...")
+                  } catch { toast.error("Print failed — try Reprint from Sales History") }
+                }}>
+                  Print
+                </Button>
+                <Button className="flex-1 bg-stone-800 hover:bg-stone-700 text-white" onClick={() => { setReceiptModal(false); setReceiptData(null) }}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
       </Dialog>
 
       {/* ══ OPEN SHIFT MODAL ══ */}
