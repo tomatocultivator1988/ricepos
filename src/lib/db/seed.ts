@@ -46,7 +46,7 @@ async function seed() {
   const cashierHash = await hash("5678", 10)
   await db.from("employees").insert([
     { id: uuid(), store_id: store.id, name: "Admin", role: "admin", pin_hash: adminHash, is_active: true },
-    { id: uuid(), store_id: store.id, name: "Maria (Cashier)", role: "cashier", pin_hash: cashierHash, is_active: true },
+    { id: uuid(), store_id: store.id, name: "Maria", role: "cashier", pin_hash: cashierHash, is_active: true },
   ])
 
   // ── CATEGORIES ──
@@ -274,8 +274,8 @@ async function seed() {
 
   console.log("Seed complete!")
   console.log("  Store: GroceryPOS Store")
-  console.log("  Admin PIN: 1234")
-  console.log("  Cashier PIN: 5678")
+  console.log("  Admin login:   Admin / 1234")
+  console.log("  Cashier login: Maria / 5678")
   console.log("  Products: 3 rice + 10 grocery + 3 loose = 16 items")
   console.log("  Customers: 5")
   process.exit(0)
