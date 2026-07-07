@@ -203,7 +203,7 @@ export default function CustomersPage() {
 
       {/* Customer Detail + Collections */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-[90vw] max-h-[85vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
+        <DialogContent className="sm:max-w-[90vw] max-h-[85vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           {detail && (
             <>
               <DialogHeader>
