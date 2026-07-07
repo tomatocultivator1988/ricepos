@@ -239,14 +239,26 @@ export default function PosPage() {
     if (cash + gcash <= 0 && !cart.customerId) {
       toast.error("Enter a payment amount or select a customer for utang"); return
     }
-    if (cash + gcash > total) {
-      toast.error("Payment exceeds total"); return
+    // Overpayment = change back to customer. Only record what covers the total.
+    const paidTotal = cash + gcash
+    const isShort = paidTotal < total
+    if (isShort && !cart.customerId) {
+      toast.error("Select a customer to have a balance"); return
     }
-    const change = cash > total ? Math.round((cash - total) * 100) / 100 : 0
+    // Allocate payments: excess from overpayment is change (not recorded)
+    let remaining = total
+    let cashPayment = Math.min(cash, remaining); remaining -= cashPayment
+    let gcashPayment = Math.min(gcash, remaining)
+    // If still short and customer exists, that's the balance
+    const balance = isShort ? Math.round((total - cash - gcash) * 100) / 100 : 0
+    const change = paidTotal > total ? Math.round((paidTotal - total) * 100) / 100 : 0
+    // Total payments recorded = exactly what covers the sale (or less for short-pay)
+    const totalPaid = cashPayment + gcashPayment
+    
     setPaySaving(true)
     const payments: { method: string; amount: number }[] = []
-    if (cash > 0) payments.push({ method: "cash", amount: cash })
-    if (gcash > 0) payments.push({ method: "gcash", amount: gcash })
+    if (cashPayment > 0) payments.push({ method: "cash", amount: cashPayment })
+    if (gcashPayment > 0) payments.push({ method: "gcash", amount: gcashPayment })
 
     try {
       const res = await fetch("/api/sales", {
