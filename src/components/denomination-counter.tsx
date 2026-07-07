@@ -33,9 +33,9 @@ export function DenominationCounter({
   return (
     <div className="space-y-2">
       <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 gap-y-2 text-sm">
-        <div className="text-xs font-semibold text-stone-400">Denomination</div>
-        <div className="text-xs font-semibold text-stone-400 text-center w-16">Count</div>
-        <div className="text-xs font-semibold text-stone-400 text-right w-24">Subtotal</div>
+        <div className="text-xs font-semibold text-stone-500">Denomination</div>
+        <div className="text-xs font-semibold text-stone-500 text-center w-16">Count</div>
+        <div className="text-xs font-semibold text-stone-500 text-right w-24">Subtotal</div>
         {PESO_DENOMS.map(d => {
           const count = denoms[String(d)] || 0
           const sub = d * count
@@ -50,17 +50,17 @@ export function DenominationCounter({
                 value={count || ""}
                 onChange={e => update(d, e.target.value)}
                 placeholder="0"
-                className="w-16 h-9 rounded bg-stone-800 border border-amber-600/30 text-center text-white text-sm focus:outline-none focus:border-amber-500 py-1"
+                className="w-16 h-9 rounded bg-gold-100 border border-amber-300/60 text-center text-stone-800 text-sm focus:outline-none focus:border-primary py-1"
               />
-              <div className="text-right w-24 tabular-nums text-stone-300 self-center py-1">
+              <div className="text-right w-24 tabular-nums text-stone-700 self-center py-1">
                 {sub > 0 ? `₱${sub.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "—"}
               </div>
             </div>
           )
         })}
       </div>
-      <div className="flex justify-between items-center border-t border-amber-600/30 pt-2 mt-2">
-        <span className="font-semibold text-amber-300">TOTAL CASH</span>
+      <div className="flex justify-between items-center border-t border-amber-300/60 pt-2 mt-2">
+        <span className="font-semibold text-amber-600">TOTAL CASH</span>
         <span className="text-lg font-bold text-white tabular-nums">₱{total.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
       </div>
     </div>

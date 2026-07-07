@@ -54,38 +54,38 @@ export default function SuppliersPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2"><Truck className="h-6 w-6 text-amber-400" /> Suppliers</h1>
-          <p className="text-sm text-stone-400">{suppliers.length} suppliers</p>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2"><Truck className="h-6 w-6 text-amber-600" /> Suppliers</h1>
+          <p className="text-sm text-stone-500">{suppliers.length} suppliers</p>
         </div>
-        <Button onClick={openNew} className="gap-2 bg-amber-600 hover:bg-amber-500"><Plus className="h-4 w-4" /> Add Supplier</Button>
+        <Button onClick={openNew} className="gap-2 bg-primary hover:bg-amber-400"><Plus className="h-4 w-4" /> Add Supplier</Button>
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
         <Input placeholder="Search suppliers..." value={search} onChange={e => setSearch(e.target.value)}
-          className="pl-9 bg-stone-800 border-amber-600/30 text-white" />
+          className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
       </div>
 
-      {loading ? <div className="text-center text-stone-400 py-12">Loading...</div> : (
-        <Card className="bg-stone-900/60 border-amber-600/30">
+      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : (
+        <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-amber-600/30 hover:bg-transparent">
-                  <TableHead className="text-stone-300">Name</TableHead>
-                  <TableHead className="text-stone-300">Contact</TableHead>
-                  <TableHead className="text-stone-300">Address</TableHead>
-                  <TableHead className="text-stone-300">Status</TableHead>
+                <TableRow className="border-amber-300/60 hover:bg-transparent">
+                  <TableHead className="text-stone-700">Name</TableHead>
+                  <TableHead className="text-stone-700">Contact</TableHead>
+                  <TableHead className="text-stone-700">Address</TableHead>
+                  <TableHead className="text-stone-700">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {suppliers.length === 0 ? (
                   <TableRow><TableCell colSpan={4} className="text-center text-stone-500 py-8">No suppliers yet</TableCell></TableRow>
                 ) : suppliers.map(s => (
-                  <TableRow key={s.id} className="border-amber-600/30 cursor-pointer hover:bg-stone-800/50" onClick={() => openEdit(s)}>
-                    <TableCell className="text-white font-medium">{s.name}</TableCell>
-                    <TableCell className="text-stone-400">{s.contact ?? "—"}</TableCell>
-                    <TableCell className="text-stone-400">{s.address ?? "—"}</TableCell>
+                  <TableRow key={s.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openEdit(s)}>
+                    <TableCell className="text-stone-800 font-medium">{s.name}</TableCell>
+                    <TableCell className="text-stone-500">{s.contact ?? "—"}</TableCell>
+                    <TableCell className="text-stone-500">{s.address ?? "—"}</TableCell>
                     <TableCell><Badge variant={s.status === "active" ? "default" : "secondary"}>{s.status}</Badge></TableCell>
                   </TableRow>
                 ))}
@@ -96,38 +96,38 @@ export default function SuppliersPage() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-md bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Supplier" : "Add Supplier"}</DialogTitle></DialogHeader>
           {editing && (
             <div className="space-y-4">
               <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Name *</label>
-                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
+                <label className="text-xs font-medium text-stone-500 mb-1">Name *</label>
+                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-gold-100 border-amber-300/60 h-10" />
               </div>
               <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Contact</label>
-                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
+                <label className="text-xs font-medium text-stone-500 mb-1">Contact</label>
+                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-gold-100 border-amber-300/60 h-10" />
               </div>
               <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Address</label>
-                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
+                <label className="text-xs font-medium text-stone-500 mb-1">Address</label>
+                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-gold-100 border-amber-300/60 h-10" />
               </div>
               <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Note</label>
-                <Input value={editing.note ?? ""} onChange={e => setEditing({ ...editing, note: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
+                <label className="text-xs font-medium text-stone-500 mb-1">Note</label>
+                <Input value={editing.note ?? ""} onChange={e => setEditing({ ...editing, note: e.target.value })} className="bg-gold-100 border-amber-300/60 h-10" />
               </div>
               {editing.id && (
                 <div className="space-y-1.5 mb-1">
-                  <label className="text-xs font-medium text-stone-400 mb-1">Status</label>
+                  <label className="text-xs font-medium text-stone-500 mb-1">Status</label>
                   <Select value={editing.status ?? "active"} onValueChange={v => setEditing({ ...editing, status: v ?? "active" })}>
-                    <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
                   </Select>
                 </div>
               )}
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => { setOpen(false); setEditing(null) }}>Cancel</Button>
-                <Button onClick={save} disabled={saving} className="bg-amber-600 hover:bg-amber-500">{saving ? "Saving..." : "Save"}</Button>
+                <Button onClick={save} disabled={saving} className="bg-primary hover:bg-amber-400">{saving ? "Saving..." : "Save"}</Button>
               </div>
             </div>
           )}

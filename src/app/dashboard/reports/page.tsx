@@ -48,13 +48,13 @@ export default function ReportsPage() {
         <div className="flex justify-end mb-2">
           <Button variant="outline" size="sm" onClick={() => exportCSV(rows, columns.map(c => c.key))} className="text-xs gap-1"><DownloadIcon className="h-3 w-3" /> CSV</Button>
         </div>
-        <Card className="bg-stone-900/60 border-amber-600/30 overflow-x-auto">
+        <Card className="bg-gold-200/90 border-amber-300/60 overflow-x-auto">
           <CardContent className="p-0">
             <table className="w-full text-xs">
-              <thead><tr className="border-b border-amber-600/30">{columns.map(c => <th key={c.key} className="text-left px-3 py-2 text-stone-400 font-medium">{c.label}</th>)}</tr></thead>
+              <thead><tr className="border-b border-amber-300/60">{columns.map(c => <th key={c.key} className="text-left px-3 py-2 text-stone-500 font-medium">{c.label}</th>)}</tr></thead>
               <tbody>
                 {rows.length === 0 ? <tr><td colSpan={columns.length} className="text-center text-stone-500 py-8">No data</td></tr> :
-                  rows.map((r, i) => <tr key={i} className="border-b border-amber-600/30 hover:bg-stone-800/50">
+                  rows.map((r, i) => <tr key={i} className="border-b border-amber-300/60 hover:bg-gold-200/50">
                     {columns.map(c => {
                       const v = r[c.key]
                       let display = ""
@@ -63,7 +63,7 @@ export default function ReportsPage() {
                       else if (c.format === "date") display = fdate(v)
                       else if (c.format === "percent") display = fnum(v, 1) + "%"
                       else display = String(v ?? "—")
-                      return <td key={c.key} className={`px-3 py-1.5 text-stone-300 ${c.format !== "text" ? "text-right tabular-nums" : ""}`}>{display}</td>
+                      return <td key={c.key} className={`px-3 py-1.5 text-stone-700 ${c.format !== "text" ? "text-right tabular-nums" : ""}`}>{display}</td>
                     })}
                   </tr>)}
               </tbody>
@@ -85,7 +85,7 @@ export default function ReportsPage() {
   ]
 
   function renderContent() {
-    if (loading) return <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-amber-400" /></div>
+    if (loading) return <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-amber-600" /></div>
     if (!data) return null
 
     if (activeTab === "sales" && data.rows) {
@@ -144,31 +144,31 @@ export default function ReportsPage() {
     }
     if (activeTab === "zreading" && data) {
       return (
-        <Card className="bg-stone-900/60 border-amber-600/30 max-w-lg mx-auto text-white text-sm">
+        <Card className="bg-gold-200/90 border-amber-300/60 max-w-lg mx-auto text-stone-800 text-sm">
           <CardContent className="p-6 space-y-3">
             <div className="text-center">
               <h2 className="font-bold text-lg">Z-READING</h2>
-              <p className="text-xs text-stone-400">{from} to {to}</p>
+              <p className="text-xs text-stone-500">{from} to {to}</p>
             </div>
-            <div className="space-y-1 border-y border-amber-600/30 py-2">
+            <div className="space-y-1 border-y border-amber-300/60 py-2">
               <div className="flex justify-between"><span>Gross Sales</span><span>{fmoney(data.gross)}</span></div>
-              <div className="flex justify-between"><span className="text-red-400">Discounts</span><span className="text-red-400">-{fmoney(data.discounts)}</span></div>
+              <div className="flex justify-between"><span className="text-red-600">Discounts</span><span className="text-red-600">-{fmoney(data.discounts)}</span></div>
               <div className="flex justify-between"><span>Tax</span><span>{fmoney(data.tax)}</span></div>
-              <div className="flex justify-between font-bold text-amber-300"><span>NET SALES</span><span>{fmoney(data.net)}</span></div>
+              <div className="flex justify-between font-bold text-amber-600"><span>NET SALES</span><span>{fmoney(data.net)}</span></div>
             </div>
             <div className="flex justify-between"><span>Cash</span><span>{fmoney(data.cash)}</span></div>
             <div className="flex justify-between"><span>GCash</span><span>{fmoney(data.gcash)}</span></div>
             <div className="flex justify-between"><span>Sales Count</span><span>{data.saleCount}</span></div>
-            <div className="flex justify-between"><span className="text-red-400">Voids</span><span>{data.voids}</span></div>
-            <div className="flex justify-between"><span className="text-amber-400">Refunds</span><span>{data.refunds}</span></div>
+            <div className="flex justify-between"><span className="text-red-600">Voids</span><span>{data.voids}</span></div>
+            <div className="flex justify-between"><span className="text-amber-600">Refunds</span><span>{data.refunds}</span></div>
             {data.hourly?.length > 0 && (
-              <div className="border-t border-amber-600/30 pt-2">
+              <div className="border-t border-amber-300/60 pt-2">
                 <p className="font-semibold mb-1">Hourly</p>
                 {data.hourly.map((h: any) => <div key={h.hour} className="flex justify-between text-xs"><span>{String(h.hour).padStart(2, "0")}:00</span><span>{h.count} sales · {fmoney(h.total)}</span></div>)}
               </div>
             )}
             {data.topItems?.length > 0 && (
-              <div className="border-t border-amber-600/30 pt-2">
+              <div className="border-t border-amber-300/60 pt-2">
                 <p className="font-semibold mb-1">Top 5 Items</p>
                 {data.topItems.map((t: any, i: number) => <div key={i} className="flex justify-between text-xs"><span>{i + 1}. {t.name}</span><span>{fmoney(t.revenue)}</span></div>)}
               </div>
@@ -186,13 +186,13 @@ export default function ReportsPage() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-2xl font-bold text-white">Reports</h1>
         <div className="flex gap-2">
-          <select value={period} onChange={e => setPeriod(e.target.value)} className="bg-stone-800 border border-amber-600/30 text-white rounded-lg px-3 py-1.5 text-sm">
+            <select value={period} onChange={e => setPeriod(e.target.value)} className="bg-gold-100 border border-amber-300/60 text-stone-800 rounded-lg px-3 py-1.5 text-sm">
             <option value="daily">Daily</option>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
           </select>
-          <Input type="date" value={from} onChange={e => setFrom(e.target.value)} className="w-36 bg-stone-800 border-amber-600/30 text-white h-9" />
-          <Input type="date" value={to} onChange={e => setTo(e.target.value)} className="w-36 bg-stone-800 border-amber-600/30 text-white h-9" />
+          <Input type="date" value={from} onChange={e => setFrom(e.target.value)} className="w-36 bg-gold-100 border-amber-300/60 text-stone-800 h-9" />
+          <Input type="date" value={to} onChange={e => setTo(e.target.value)} className="w-36 bg-gold-100 border-amber-300/60 text-stone-800 h-9" />
         </div>
       </div>
 
@@ -200,7 +200,7 @@ export default function ReportsPage() {
       <div className="flex gap-1.5 flex-wrap">
         {tabs.map(t => (
           <button key={t.key} onClick={() => setActiveTab(t.key)}
-            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${activeTab === t.key ? "bg-amber-600 text-white" : "bg-stone-800 text-stone-400 hover:text-white"}`}>
+            className={`px-4 py-1.5 rounded-full text-xs font-medium transition-colors ${activeTab === t.key ? "bg-primary text-white" : "bg-gold-100 text-stone-500 hover:text-white"}`}>
             {t.label}
           </button>
         ))}

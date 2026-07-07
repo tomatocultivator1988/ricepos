@@ -20,7 +20,7 @@ interface Supplier { id: string; name: string }
 interface Product { id: string; name: string; sell_by: string; cost: number }
 
 const STATUS_COLORS: Record<string, string> = {
-  ordered: "bg-blue-600", partial: "bg-yellow-600", received: "bg-green-600", cancelled: "bg-stone-600",
+  ordered: "bg-blue-600", partial: "bg-gold-200 text-amber-700", received: "bg-green-600", cancelled: "bg-stone-600",
 }
 
 export default function PurchaseOrdersPage() {
@@ -139,12 +139,12 @@ export default function PurchaseOrdersPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2"><ClipboardList className="h-6 w-6 text-amber-400" /> Purchase Orders</h1>
-          <p className="text-sm text-stone-400">{pos.length} orders</p>
+          <h1 className="text-2xl font-bold text-white flex items-center gap-2"><ClipboardList className="h-6 w-6 text-amber-600" /> Purchase Orders</h1>
+          <p className="text-sm text-stone-500">{pos.length} orders</p>
         </div>
         <div className="flex gap-2">
           <Select value={filterStatus} onValueChange={v => setFilterStatus(v ?? "all")}>
-            <SelectTrigger className="w-36 bg-stone-800 border-amber-600/30 text-white"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-36 bg-gold-100 border-amber-300/60 text-stone-800"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               <SelectItem value="ordered">Ordered</SelectItem>
@@ -153,36 +153,36 @@ export default function PurchaseOrdersPage() {
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => setCreateOpen(true)} className="gap-2 bg-amber-600 hover:bg-amber-500"><Plus className="h-4 w-4" /> New PO</Button>
+          <Button onClick={() => setCreateOpen(true)} className="gap-2 bg-primary hover:bg-amber-400"><Plus className="h-4 w-4" /> New PO</Button>
         </div>
       </div>
 
-      {loading ? <div className="text-center text-stone-400 py-12">Loading...</div> : (
-        <Card className="bg-stone-900/60 border-amber-600/30">
+      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : (
+        <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-amber-600/30 hover:bg-transparent">
-                  <TableHead className="text-stone-300">PO #</TableHead>
-                  <TableHead className="text-stone-300">Supplier</TableHead>
-                  <TableHead className="text-stone-300">Order Date</TableHead>
-                  <TableHead className="text-stone-300">Expected</TableHead>
-                  <TableHead className="text-stone-300 text-right">Purchase</TableHead>
-                  <TableHead className="text-stone-300 text-center">Received</TableHead>
-                  <TableHead className="text-stone-300">Status</TableHead>
+                <TableRow className="border-amber-300/60 hover:bg-transparent">
+                  <TableHead className="text-stone-700">PO #</TableHead>
+                  <TableHead className="text-stone-700">Supplier</TableHead>
+                  <TableHead className="text-stone-700">Order Date</TableHead>
+                  <TableHead className="text-stone-700">Expected</TableHead>
+                  <TableHead className="text-stone-700 text-right">Purchase</TableHead>
+                  <TableHead className="text-stone-700 text-center">Received</TableHead>
+                  <TableHead className="text-stone-700">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {pos.length === 0 ? (
                   <TableRow><TableCell colSpan={7} className="text-center text-stone-500 py-8">No purchase orders</TableCell></TableRow>
                 ) : pos.map(p => (
-                  <TableRow key={p.id} className="border-amber-600/30 cursor-pointer hover:bg-stone-800/50" onClick={() => openDetail(p.id)}>
-                    <TableCell className="text-white font-medium">{p.po_number}</TableCell>
-                    <TableCell className="text-stone-300">{p.supplier_name}</TableCell>
-                    <TableCell className="text-stone-400">{p.order_date}</TableCell>
-                    <TableCell className="text-stone-400">{p.expected_date ?? "—"}</TableCell>
-                    <TableCell className="text-right text-stone-300">₱{Number(p.total_cost).toFixed(2)}</TableCell>
-                    <TableCell className="text-center text-stone-400">{p.pct_received}%</TableCell>
+                  <TableRow key={p.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openDetail(p.id)}>
+                    <TableCell className="text-stone-800 font-medium">{p.po_number}</TableCell>
+                    <TableCell className="text-stone-700">{p.supplier_name}</TableCell>
+                    <TableCell className="text-stone-500">{p.order_date}</TableCell>
+                    <TableCell className="text-stone-500">{p.expected_date ?? "—"}</TableCell>
+                    <TableCell className="text-right text-stone-700">₱{Number(p.total_cost).toFixed(2)}</TableCell>
+                    <TableCell className="text-center text-stone-500">{p.pct_received}%</TableCell>
                     <TableCell><Badge className={STATUS_COLORS[p.status]}>{p.status.toUpperCase()}</Badge></TableCell>
                   </TableRow>
                 ))}
@@ -194,69 +194,66 @@ export default function PurchaseOrdersPage() {
 
       {/* ── CREATE PO DIALOG ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-[90vw] max-h-[85vh] overflow-y-auto bg-stone-900/30 backdrop-blur-md border-amber-600/30 text-white p-6">
+        <DialogContent className="max-h-[85vh] overflow-y-auto bg-gold-200/80 backdrop-blur-md border-amber-300/60 text-stone-800 p-6">
           <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Supplier *</label>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-stone-500">Supplier *</label>
                 <Select value={cSupplier} onValueChange={v => setCSupplier(v ?? "")}>
-                  <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue placeholder="Select supplier" /></SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                  </SelectContent>
+                  <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                  <SelectContent>{suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Expected Date</label>
-                <Input type="date" value={cExpected} onChange={e => setCExpected(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-stone-500">Expected Date</label>
+                <Input type="date" value={cExpected} onChange={e => setCExpected(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10" />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-semibold text-amber-300">Order Items</label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-semibold text-amber-600">Order Items</label>
                 <Button variant="outline" size="sm" onClick={addLine} className="text-xs gap-1"><Plus className="h-3 w-3" /> Add</Button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {cLines.map((l, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_120px_140px_110px_44px] gap-4 items-end bg-stone-800/30 rounded-lg p-4 border border-amber-600/30">
-                    <div className="space-y-1.5 mb-1">
-                      <label className="text-xs font-medium text-stone-400 mb-1">Product</label>
-                      <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
-                        <SelectTrigger className="bg-stone-700 border-stone-600 h-10 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
-                        <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-1.5 mb-1">
-                      <label className="text-xs font-medium text-stone-400 mb-1">Qty</label>
-                      <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-stone-700 border-stone-600 h-10 text-xs" />
-                    </div>
-                    <div className="space-y-1.5 mb-1">
-                      <label className="text-xs font-medium text-stone-400 mb-1">Buy Cost</label>
-                      <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-stone-700 border-stone-600 h-10 text-xs" />
-                    </div>
-                    <div className="text-right text-xs text-stone-300 self-center pt-4">
-                      ₱{(Number(l.qty_ordered || 0) * Number(l.unit_cost || 0)).toFixed(2)}
-                    </div>
-                    <div className="flex justify-center pt-4">
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-400" onClick={() => removeLine(i)} disabled={cLines.length <= 1}><Trash2 className="h-3 w-3" /></Button>
+                  <div key={i} className="bg-gold-200 rounded-lg p-4 border border-amber-300/60 space-y-3">
+                    <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
+                      <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10 text-sm"><SelectValue placeholder="Select product" /></SelectTrigger>
+                      <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                    </Select>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-stone-500">Qty</span>
+                        <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-gold-100 border-amber-300/60 h-9 text-sm" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-stone-500">Buy Cost</span>
+                        <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-gold-100 border-amber-300/60 h-9 text-sm" />
+                      </div>
+                      <div className="flex items-end justify-between">
+                        <span className="text-sm text-stone-700 pb-2">₱{(Number(l.qty_ordered || 0) * Number(l.unit_cost || 0)).toFixed(2)}</span>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-300 mb-1" onClick={() => removeLine(i)} disabled={cLines.length <= 1}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <Input placeholder="Note (optional)" value={cNote} onChange={e => setCNote(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
+            <Input placeholder="Note (optional)" value={cNote} onChange={e => setCNote(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10" />
 
-            <div className="flex justify-between items-center border-t border-amber-600/30 pt-3">
-              <span className="text-sm text-stone-400">Total Purchase Cost</span>
+            <div className="flex justify-between items-center border-t border-amber-300/60 pt-3">
+              <span className="text-sm text-stone-500">Total Purchase Cost</span>
               <span className="text-lg font-bold text-white">₱{createTotal.toFixed(2)}</span>
             </div>
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-              <Button onClick={createPO} disabled={saving} className="bg-amber-600 hover:bg-amber-500">{saving ? "Creating..." : "Create PO"}</Button>
+              <Button onClick={createPO} disabled={saving} className="bg-primary hover:bg-amber-400">{saving ? "Creating..." : "Create PO"}</Button>
             </div>
           </div>
         </DialogContent>
@@ -264,78 +261,72 @@ export default function PurchaseOrdersPage() {
 
       {/* ── DETAIL / RECEIVE DIALOG ── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="sm:max-w-[90vw] max-h-[85vh] overflow-y-auto bg-stone-900/30 backdrop-blur-md border-amber-600/30 text-white p-6">
+        <DialogContent className="max-h-[85vh] overflow-y-auto bg-gold-200/80 backdrop-blur-md border-amber-300/60 text-stone-800 p-6">
           {detail && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2 flex-wrap">
                   {detail.po_number}
                   <Badge className={STATUS_COLORS[detail.status]}>{detail.status.toUpperCase()}</Badge>
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div className="text-sm text-stone-400">
+                <div className="text-sm text-stone-500">
                   {detail.supplier_name} · Ordered {detail.order_date}{detail.expected_date ? ` · Expected ${detail.expected_date}` : ""}
                 </div>
-
-                <div className="rounded-lg border border-amber-600/30 overflow-hidden">
-                  <table className="w-full text-xs">
-                    <thead><tr className="border-b border-amber-600/30 text-stone-400">
-                      <th className="text-left px-3 py-2">Product</th>
-                      <th className="text-right px-3 py-2">Ordered</th>
-                      <th className="text-right px-3 py-2">Received</th>
-                      <th className="text-right px-3 py-2">Buy Cost/unit</th>
-                      {canReceive && <th className="text-center px-3 py-2">Receive Now</th>}
-                      {canReceive && <th className="text-center px-3 py-2">Sync Buy Cost?</th>}
-                    </tr></thead>
-                    <tbody>
-                      {detail.items.map((it: any) => (
-                        <tr key={it.id} className="border-b border-amber-600/20">
-                          <td className="px-3 py-2 text-white">{it.item_name}</td>
-                          <td className="px-3 py-2 text-right text-stone-300">{Number(it.qty_ordered)}</td>
-                          <td className="px-3 py-2 text-right text-stone-400">{Number(it.qty_received)}</td>
-                          <td className="px-3 py-2 text-right text-stone-400">₱{Number(it.unit_cost).toFixed(2)}</td>
-                          {canReceive && (
-                            <td className="px-3 py-2 text-center">
-                              {it.remaining > 0 ? (
-                                <Input type="number" step="0.001" min="0" max={it.remaining}
-                                  value={recvLines[it.id]?.qty ?? ""}
-                                  onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], qty: e.target.value } })}
-                                  className="w-20 h-10 bg-stone-800 border-amber-600/30 text-center text-xs mx-auto" />
-                              ) : <span className="text-green-400 text-[10px]">✓ done</span>}
-                            </td>
-                          )}
-                          {canReceive && (
-                            <td className="px-3 py-2 text-center">
-                              {it.remaining > 0 && (
-                                <input type="checkbox" checked={recvLines[it.id]?.updateCost ?? false}
-                                  onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], updateCost: e.target.checked } })}
-                                  className="accent-amber-500" title={`Set product cost to ₱${Number(it.unit_cost).toFixed(2)}`} />
-                              )}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-2">
+                  {detail.items.map((it: any) => (
+                    <div key={it.id} className="bg-gold-200 rounded-lg p-3 border border-amber-300/60">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-stone-800">{it.item_name}</span>
+                        <span className="text-xs text-stone-500">Remaining: {Number(it.remaining)}</span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-2 text-center text-xs mb-2">
+                        <div><span className="block text-stone-500 mb-1">Ordered</span><span className="text-stone-800">{Number(it.qty_ordered)}</span></div>
+                        <div><span className="block text-stone-500 mb-1">Received</span><span className="text-stone-500">{Number(it.qty_received)}</span></div>
+                        <div><span className="block text-stone-500 mb-1">Buy Cost</span><span className="text-stone-500">₱{Number(it.unit_cost).toFixed(2)}</span></div>
+                        <div><span className="block text-stone-500 mb-1">Subtotal</span><span className="text-stone-700">₱{(Number(it.qty_ordered) * Number(it.unit_cost)).toFixed(2)}</span></div>
+                      </div>
+                      {canReceive && it.remaining > 0 && (
+                        <div className="flex items-center gap-3 pt-2 border-t border-amber-200/50">
+                          <div className="flex items-center gap-1.5 flex-1">
+                            <span className="text-[10px] text-stone-500">Receive:</span>
+                            <Input type="number" step="0.001" min="0" max={it.remaining}
+                              value={recvLines[it.id]?.qty ?? ""}
+                              onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], qty: e.target.value } })}
+                              className="w-20 h-9 bg-gold-100 border-amber-300/60 text-center text-xs" />
+                          </div>
+                          <label className="flex items-center gap-1.5 text-[10px] text-stone-500 cursor-pointer">
+                            <input type="checkbox" checked={recvLines[it.id]?.updateCost ?? false}
+                              onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], updateCost: e.target.checked } })}
+                              className="accent-amber-500" />
+                            Sync cost
+                          </label>
+                        </div>
+                      )}
+                      {canReceive && it.remaining <= 0 && (
+                        <div className="text-center text-[10px] text-green-400 pt-1">✓ Fully received</div>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {canReceive && (
                   <p className="text-[11px] text-stone-500">
-                    Tick "Sync Buy Cost?" to set the product's buying/wholesale cost (what you paid the supplier).
-                    This affects <strong>profit</strong> on future sales. Leave unchecked to keep the current cost.
-                    Your <strong>selling prices</strong> (what customers pay) are never changed.
+                    Tick "Sync cost" to update the product's cost (what you paid the supplier).
+                    This affects <strong>profit</strong> on future sales. Leave unchecked to keep current cost.
+                    <strong>Selling prices</strong> are never changed.
                   </p>
                 )}
 
-                <div className="flex justify-between items-center border-t border-amber-600/30 pt-3">
-                  <span className="text-sm text-stone-400">Total Purchase Cost</span>
+                <div className="flex justify-between items-center border-t border-amber-300/60 pt-3">
+                  <span className="text-sm text-stone-500">Total Purchase Cost</span>
                   <span className="text-lg font-bold text-white">₱{Number(detail.total_cost).toFixed(2)}</span>
                 </div>
 
                 <div className="flex justify-between gap-2">
                   {canReceive && (
-                    <Button variant="outline" onClick={cancelPO} className="text-red-400 border-red-500/40 hover:bg-red-500/10">Cancel PO</Button>
+                    <Button variant="outline" onClick={cancelPO} className="text-red-600 border-red-500/40 hover:bg-red-500/10">Cancel PO</Button>
                   )}
                   <div className="flex gap-2 ml-auto">
                     <Button variant="outline" onClick={() => setDetailOpen(false)}>Close</Button>

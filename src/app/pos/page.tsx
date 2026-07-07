@@ -335,6 +335,25 @@ export default function PosPage() {
     return true
   })
 
+  const riceCatId = categories.find(c => c.name.toLowerCase() === "rice")?.id
+  const showSplit = activeCat === "all" && riceCatId
+  const riceItems = showSplit ? filtered.filter(i => i.category_id === riceCatId) : []
+  const otherItems = showSplit ? filtered.filter(i => i.category_id !== riceCatId) : filtered
+
+  const renderItem = (item: CatalogItem) => (
+    <button key={item.id} onClick={() => openUnitPicker(item)} disabled={item.stock_status==="out"}
+      className={`relative flex flex-col items-center p-3 rounded-xl border transition-all text-left ${item.stock_status==="out"?"bg-stone-100 border-amber-300/60 opacity-50 cursor-not-allowed":"bg-gold-200/60 border-amber-300/60 hover:border-amber-500 hover:bg-gold-100 cursor-pointer"}`}>
+      {item.stock_status==="out"&&<Badge className="absolute top-1 right-1 text-[10px] bg-red-500">OUT</Badge>}
+      {item.stock_status==="low"&&<Badge className="absolute top-1 right-1 text-[10px] bg-gold-200 text-amber-700">LOW</Badge>}
+      <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center mb-2">
+        <span className="text-lg">{item.sell_by==="weight"?"⚖":"📦"}</span>
+      </div>
+      <span className="text-xs font-medium text-stone-800 text-center leading-tight line-clamp-2">{item.name}</span>
+      <span className="text-xs text-amber-600 mt-1 font-semibold">₱{Number(item.default_price).toFixed(2)}</span>
+      <span className="text-[10px] text-stone-500 mt-0.5">Stock: {Number(item.stock_qty).toFixed(item.sell_by==="weight"?1:0)}</span>
+    </button>
+  )
+
   const handleLogout = async () => {
     document.cookie = "session=; max-age=0; path=/"
     await fetch("/api/auth/logout", { method: "POST" })
@@ -343,22 +362,22 @@ export default function PosPage() {
 
   if (!user) return (
     <div className="flex h-screen items-center justify-center rices-bg">
-      <Loader2Icon className="h-8 w-8 animate-spin text-amber-400" />
+      <Loader2Icon className="h-8 w-8 animate-spin text-amber-600" />
     </div>
   )
 
   return (
     <div className="flex h-screen flex-col rices-bg">
       {/* ══ HEADER — same theme as admin shell ══ */}
-      <header className="relative z-10 flex items-center justify-between border-b border-amber-700/40 bg-gradient-to-r from-stone-900/90 via-stone-900/90 to-stone-800/90 px-3 sm:px-4 py-3 text-white shrink-0 shadow-md">
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/85 to-transparent animate-gold-shimmer bg-[length:200%_100%]" />
+      <header className="relative z-10 flex items-center justify-between border-b border-amber-300/60 bg-gradient-to-r from-[#0D3B1E]/95 via-[#0D3B1E]/95 to-[#1B4D2E]/95 px-3 sm:px-4 py-3 text-white shrink-0 shadow-md">
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent animate-gold-shimmer bg-[length:200%_100%]" />
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-white/15 ring-1 ring-amber-500/40 overflow-hidden">
-            <img src="/logo.png" alt="GroceryPOS" className="h-full w-full object-contain p-0.5" />
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-white/15 ring-1 ring-amber-400/20 overflow-hidden">
+            <img src="/new logo.png" alt="RicePOS" className="h-full w-full object-contain p-0.5" />
           </div>
           <div>
             <h1 className="hidden sm:block text-sm sm:text-base font-bold leading-tight tracking-tight truncate">GroceryPOS</h1>
-            <p className="hidden sm:block text-[0.6rem] sm:text-[0.7rem] font-medium text-amber-300 leading-tight">Point of Sale</p>
+            <p className="hidden sm:block text-[0.6rem] sm:text-[0.7rem] font-medium text-amber-600 leading-tight">Point of Sale</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -367,25 +386,25 @@ export default function PosPage() {
               <DoorClosedIcon className="h-3.5 w-3.5" /> Shift Open · Close
             </button>
           ) : (
-            <button onClick={() => { setShiftOpenDenoms({}); setShiftOpenTotal(0); setShiftOpenModal(true) }} className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/25 transition-all">
+            <button onClick={() => { setShiftOpenDenoms({}); setShiftOpenTotal(0); setShiftOpenModal(true) }} className="flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium text-primary hover:bg-primary/25 transition-all">
               <DoorOpenIcon className="h-3.5 w-3.5" /> Open Shift
             </button>
           )}
-          <div className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/15 px-2 sm:px-3 py-1">
-            <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-extrabold text-stone-900">
+          <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 px-2 sm:px-3 py-1">
+            <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-primary-foreground">
               {user.name.charAt(0).toUpperCase()}
             </div>
-            <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-amber-200 truncate max-w-[80px]">{user.name}</span>
+            <span className="hidden sm:inline text-xs sm:text-sm font-semibold text-amber-500 truncate max-w-[80px]">{user.name}</span>
           </div>
           {user.role === "admin" && (
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-amber-300 hover:bg-amber-400/20 hover:text-amber-200" onClick={() => router.push("/dashboard")}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-primary hover:bg-primary/20 hover:text-primary" onClick={() => router.push("/dashboard")}>
               <LayoutDashboardIcon className="h-5 w-5" />
             </Button>
           )}
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-yellow-400" onClick={() => { setCollModal(true); setCollSearch(""); setCollResults([]) }} title="Collections">
+          <Button variant="ghost" size="icon" className="h-7 w-7 text-amber-600" onClick={() => { setCollModal(true); setCollSearch(""); setCollResults([]) }} title="Collections">
             <BanknoteIcon className="h-4 w-4" />
           </Button>
-          <button onClick={handleLogout} className="rounded-full border border-amber-500/30 bg-amber-500/15 p-2 text-amber-300 hover:bg-red-500/30 hover:text-white transition-all" title="Logout">
+          <button onClick={handleLogout} className="rounded-full border border-primary/30 bg-primary/15 p-2 text-primary hover:bg-red-500/30 hover:text-white transition-all" title="Logout">
             <LogOutIcon className="h-5 w-5" />
           </button>
         </div>
@@ -398,14 +417,14 @@ export default function PosPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-500" />
               <Input ref={searchRef} placeholder="Search or scan barcode..." value={search} onChange={e => setSearch(e.target.value)}
-                className="pl-9 bg-stone-800 border-amber-600/30 text-white h-9" />
+                className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800 h-9" />
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
               <button onClick={() => setActiveCat("all")}
-                className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activeCat==="all"?"bg-amber-600 text-white":"bg-stone-800 text-stone-400 hover:text-white"}`}>All</button>
+                className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activeCat==="all"?"bg-primary text-primary-foreground":"bg-gold-100 text-stone-500 hover:text-stone-800"}`}>All</button>
               {categories.map(c => (
                 <button key={c.id} onClick={() => setActiveCat(c.id)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activeCat===c.id?"bg-amber-600 text-white":"bg-stone-800 text-stone-400 hover:text-white"}`}>{c.name}</button>
+                  className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activeCat===c.id?"bg-primary text-primary-foreground":"bg-gold-100 text-stone-600 hover:text-stone-800"}`}>{c.name}</button>
               ))}
             </div>
           </div>
@@ -414,144 +433,158 @@ export default function PosPage() {
           ) : (
             <div className="flex-1 overflow-y-auto px-2 pb-2">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-                {filtered.map(item => (
-                  <button key={item.id} onClick={() => openUnitPicker(item)} disabled={item.stock_status==="out"}
-                    className={`relative flex flex-col items-center p-3 rounded-xl border transition-all text-left ${item.stock_status==="out"?"bg-stone-900/50 border-amber-600/30 opacity-50 cursor-not-allowed":"bg-stone-800/60 border-amber-600/30 hover:border-amber-500 hover:bg-stone-800 cursor-pointer"}`}>
-                    {item.stock_status==="out"&&<Badge className="absolute top-1 right-1 text-[10px] bg-red-600">OUT</Badge>}
-                    {item.stock_status==="low"&&<Badge className="absolute top-1 right-1 text-[10px] bg-yellow-600">LOW</Badge>}
-                    <div className="h-10 w-10 rounded-lg bg-stone-700 flex items-center justify-center mb-2">
-                      <span className="text-lg">{item.sell_by==="weight"?"⚖":"📦"}</span>
-                    </div>
-                    <span className="text-xs font-medium text-white text-center leading-tight line-clamp-2">{item.name}</span>
-                    <span className="text-xs text-amber-400 mt-1 font-semibold">₱{Number(item.default_price).toFixed(2)}</span>
-                    <span className="text-[10px] text-stone-500 mt-0.5">Stock: {Number(item.stock_qty).toFixed(item.sell_by==="weight"?1:0)}</span>
-                  </button>
-                ))}
-                {filtered.length===0&&<div className="col-span-full text-center text-stone-500 py-12">No products found</div>}
+                {showSplit ? (
+                  <>
+                    {riceItems.length > 0 && (
+                      <>
+                        <div className="col-span-full flex items-center gap-2 mt-1 mb-1">
+                          <span className="text-xs font-bold text-amber-600 tracking-wider uppercase">Rice</span>
+                          <div className="flex-1 h-px bg-primary/30" />
+                        </div>
+                        {riceItems.map(item => renderItem(item))}
+                      </>
+                    )}
+                    {otherItems.length > 0 && (
+                      <>
+                        <div className="col-span-full flex items-center gap-2 mt-3 mb-1">
+                          <span className="text-xs font-bold text-stone-500 tracking-wider uppercase">Other Items</span>
+                          <div className="flex-1 h-px bg-stone-600/20" />
+                        </div>
+                        {otherItems.map(item => renderItem(item))}
+                      </>
+                    )}
+                    {filtered.length === 0 && <div className="col-span-full text-center text-stone-500 py-12">No products found</div>}
+                  </>
+                ) : (
+                  <>
+                    {filtered.map(item => renderItem(item))}
+                    {filtered.length === 0 && <div className="col-span-full text-center text-stone-500 py-12">No products found</div>}
+                  </>
+                )}
               </div>
             </div>
           )}
         </div>
 
         {/* ══ CART SIDEBAR ══ */}
-        <div className={`${showCart?"fixed inset-0 z-40":"hidden"} lg:relative lg:flex lg:z-0 w-full lg:w-[380px] flex-col border-l border-amber-600/30 bg-stone-900/60 shrink-0`}>
-          <div className="flex items-center justify-between p-3 border-b border-amber-600/30">
-            <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-amber-400"/><span className="font-semibold text-white text-sm">Cart ({cart.items.length})</span></div>
+        <div className={`${showCart?"fixed inset-0 z-40":"hidden"} lg:relative lg:flex lg:z-0 w-full lg:w-[380px] flex-col border-l border-amber-300/60 bg-gold-200/90 shrink-0`}>
+          <div className="flex items-center justify-between p-3 border-b border-amber-300/60">
+            <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-amber-600"/><span className="font-semibold text-stone-800 text-sm">Cart ({cart.items.length})</span></div>
             <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden" onClick={()=>setShowCart(false)}><X className="h-4 w-4"/></Button>
           </div>
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {cart.items.length===0?<div className="text-center text-stone-500 py-8 text-sm">Cart is empty</div>:cart.items.map(item=>{const k=cart.mergeKey(item);return(
-              <div key={k} className="flex items-center gap-2 bg-stone-800/50 rounded-lg p-2">
-                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-white truncate">{item.itemName}</p><p className="text-[10px] text-stone-400">{item.unitName} · ₱{Number(item.unitPrice).toFixed(2)}</p></div>
+              <div key={k} className="flex items-center gap-2 bg-gold-200/50 rounded-lg p-2">
+                <div className="flex-1 min-w-0"><p className="text-xs font-medium text-stone-800 truncate">{item.itemName}</p><p className="text-[10px] text-stone-500">{item.unitName} · ₱{Number(item.unitPrice).toFixed(2)}</p></div>
                 <div className="flex items-center gap-1">
-                  <button onClick={()=>cart.updateQty(k,item.qty-(item.sellBy==="weight"?0.1:1))} className="h-6 w-6 rounded bg-stone-700 flex items-center justify-center text-stone-300 hover:text-white"><Minus className="h-3 w-3"/></button>
-                  <span className="text-xs font-medium text-white w-10 text-center">{item.sellBy==="weight"?Number(item.qty).toFixed(item.qty%1===0?1:3):item.qty}</span>
-                  <button onClick={()=>cart.updateQty(k,item.qty+(item.sellBy==="weight"?0.1:1))} className="h-6 w-6 rounded bg-stone-700 flex items-center justify-center text-stone-300 hover:text-white"><Plus className="h-3 w-3"/></button>
+                  <button onClick={()=>cart.updateQty(k,item.qty-(item.sellBy==="weight"?0.1:1))} className="h-6 w-6 rounded bg-white flex items-center justify-center btnQuantity text-stone-500 hover:text-stone-800"><Minus className="h-3 w-3"/></button>
+                  <span className="text-xs font-medium text-stone-800 w-10 text-center">{item.sellBy==="weight"?Number(item.qty).toFixed(item.qty%1===0?1:3):item.qty}</span>
+                  <button onClick={()=>cart.updateQty(k,item.qty+(item.sellBy==="weight"?0.1:1))} className="h-6 w-6 rounded bg-white flex items-center justify-center btnQuantity text-stone-500 hover:text-stone-800"><Plus className="h-3 w-3"/></button>
                 </div>
-                <button onClick={()=>cart.removeItem(k)} className="h-6 w-6 rounded flex items-center justify-center text-stone-500 hover:text-red-400"><X className="h-3 w-3"/></button>
+                <button onClick={()=>cart.removeItem(k)} className="h-6 w-6 rounded flex items-center justify-center text-stone-500 hover:text-red-600"><X className="h-3 w-3"/></button>
               </div>
             )})}
           </div>
-          <div className="border-t border-amber-600/30 p-3 space-y-2 shrink-0">
+          <div className="border-t border-amber-300/60 p-3 space-y-2 shrink-0">
             <div className="flex items-center gap-2">
-              <span className="text-xs text-stone-400">Discount:</span>
+              <span className="text-xs text-stone-500">Discount:</span>
               <Select value={cart.discount.type??"none"} onValueChange={v=>{if(v==="none")cart.setDiscount({type:null,value:0,name:""});else if(v==="senior")cart.setDiscount({type:"senior",value:20,name:"Senior 20%"});else if(v==="pwd")cart.setDiscount({type:"pwd",value:20,name:"PWD 20%"})}}>
-                <SelectTrigger className="h-7 text-xs w-[140px] bg-stone-800 border-amber-600/30"><SelectValue placeholder="No Discount"/></SelectTrigger>
+                <SelectTrigger className="h-7 text-xs w-[140px] bg-gold-100 border-amber-300/60"><SelectValue placeholder="No Discount"/></SelectTrigger>
                 <SelectContent>{discountOptions.map(o=><SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-stone-400">Customer:</span>
-              {cart.customerId?<button onClick={openCustomerSearch} className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300"><User className="h-3 w-3"/>{cart.customerName}{cart.customerBalance>0&&<span className="text-yellow-400">(utang: ₱{cart.customerBalance.toFixed(2)})</span>}</button>:<button onClick={openCustomerSearch} className="text-xs text-stone-500 hover:text-white">Walk-in ▾</button>}
+              <span className="text-xs text-stone-500">Customer:</span>
+              {cart.customerId?<button onClick={openCustomerSearch} className="flex items-center gap-1 text-xs text-primary hover:text-primary"><User className="h-3 w-3"/>{cart.customerName}{cart.customerBalance>0&&<span className="text-primary">(utang: ₱{cart.customerBalance.toFixed(2)})</span>}</button>:<button onClick={openCustomerSearch} className="text-xs text-stone-500 hover:text-stone-700">Walk-in ▾</button>}
             </div>
-            <div className="space-y-0.5 text-xs border-t border-amber-600/30 pt-2">
-              <div className="flex justify-between text-stone-400"><span>Subtotal</span><span>₱{cart.subtotal.toFixed(2)}</span></div>
-              {cart.discountAmount>0&&<div className="flex justify-between text-red-400"><span>{cart.discount.name}</span><span>-₱{cart.discountAmount.toFixed(2)}</span></div>}
-              <div className="flex justify-between text-stone-400"><span>Tax</span><span>₱{cart.taxTotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-base font-bold text-white pt-1"><span>TOTAL</span><span>₱{cart.total.toFixed(2)}</span></div>
+            <div className="space-y-0.5 text-xs border-t border-amber-300/60 pt-2">
+              <div className="flex justify-between text-stone-500"><span>Subtotal</span><span>₱{cart.subtotal.toFixed(2)}</span></div>
+              {cart.discountAmount>0&&<div className="flex justify-between text-red-600"><span>{cart.discount.name}</span><span>-₱{cart.discountAmount.toFixed(2)}</span></div>}
+              <div className="flex justify-between text-stone-500"><span>Tax</span><span>₱{cart.taxTotal.toFixed(2)}</span></div>
+              <div className="flex justify-between text-base font-bold text-stone-800 pt-1"><span>TOTAL</span><span>₱{cart.total.toFixed(2)}</span></div>
             </div>
             <div className="flex gap-2"><Button variant="outline" size="sm" className="flex-1" onClick={cart.clearCart} disabled={cart.items.length===0}>Clear</Button>
-              <Button size="sm" className="flex-1 bg-amber-600 hover:bg-amber-500" disabled={cart.items.length===0} onClick={openPay}><CreditCard className="h-3 w-3 mr-1"/>Pay</Button></div>
+              <Button size="sm" className="flex-1 bg-primary hover:bg-amber-400" disabled={cart.items.length===0} onClick={openPay}><CreditCard className="h-3 w-3 mr-1"/>Pay</Button></div>
           </div>
         </div>
 
         {/* Mobile cart toggle */}
-        <button onClick={()=>setShowCart(true)} className="lg:hidden fixed bottom-4 right-4 z-30 h-14 w-14 rounded-full bg-amber-600 text-white shadow-lg flex items-center justify-center">
+        <button onClick={()=>setShowCart(true)} className="lg:hidden fixed bottom-4 right-4 z-30 h-14 w-14 rounded-full bg-primary text-white shadow-lg flex items-center justify-center">
           <ShoppingCart className="h-6 w-6"/>{cart.items.length>0&&<span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-[10px] font-bold flex items-center justify-center">{cart.items.length}</span>}
         </button>
       </div>
 
       {/* ══ UNIT PICKER ══ */}
       <Dialog open={!!upItem} onOpenChange={()=>setUpItem(null)}>
-        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
           <DialogHeader><DialogTitle>{upItem?.name}</DialogTitle></DialogHeader>
           {upItem&&(<div className="space-y-5">
-            <p className="text-xs text-stone-400">Available: {Number(upItem.stock_qty).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"}</p>
+            <p className="text-xs text-stone-500">Available: {Number(upItem.stock_qty).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"}</p>
             <div className="space-y-1.5">
-              {upItem.units.map(u=>(<label key={u.id} className={`flex items-center gap-3 p-2 rounded cursor-pointer border ${upUnit===u.id?"border-amber-500 bg-amber-500/10":"border-amber-600/30 bg-stone-800"}`}>
-                <input type="radio" name="unit" value={u.id} checked={upUnit===u.id} onChange={()=>{setUpUnit(u.id);setUpQty(String(u.min_qty??(upItem.sell_by==="weight"?0.001:1)))}} className="accent-amber-500"/>
-                <div className="flex-1"><span className="text-sm font-medium">{u.name}</span><span className="text-xs text-stone-400 ml-2">({u.base_qty} {upItem.sell_by==="weight"?"kg":"pc"} base)</span></div>
-                <span className="text-sm font-bold text-amber-400">₱{Number(u.price).toFixed(2)}</span>
+              {upItem.units.map(u=>(<label key={u.id} className={`flex items-center gap-3 p-2 rounded cursor-pointer border ${upUnit===u.id?"border-amber-500 bg-amber-500/10":"border-amber-300/60 bg-gold-100"}`}>
+                <input type="radio" name="unit" value={u.id} checked={upUnit===u.id} onChange={()=>{setUpUnit(u.id);setUpQty("1")}} className="accent-amber-500"/>
+                <div className="flex-1"><span className="text-sm font-medium">{u.name}</span><span className="text-xs text-stone-500 ml-2">({u.base_qty} {upItem.sell_by==="weight"?"kg":"pc"} base)</span></div>
+                <span className="text-sm font-bold text-amber-600">₱{Number(u.price).toFixed(2)}</span>
               </label>))}
             </div>
             <div className="space-y-1.5 mb-1">
-              <span className="text-xs font-medium text-stone-400 mb-1">Quantity:</span>
+              <span className="text-xs font-medium text-stone-500 mb-1">Quantity:</span>
               <Input type="number" value={upQty} onChange={e=>setUpQty(e.target.value)}
                 step={upItem.sell_by==="weight"?"0.1":"1"} min={upItem.units.find(u=>u.id===upUnit)?.min_qty??(upItem.sell_by==="weight"?0.001:1)}
-                className="bg-stone-800 border-amber-600/30 h-10 text-sm"/>
+                className="bg-gold-100 border-amber-300/60 h-10 text-sm"/>
             </div>
             {upUnit&&(<p className="text-xs text-stone-500">Total: {(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.base_qty??1)).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"} = ₱{(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.price??0)).toFixed(2)}</p>)}
-            <Button onClick={addToCart} className="w-full bg-amber-600 hover:bg-amber-500">Add to Cart</Button>
+            <Button onClick={addToCart} className="w-full bg-primary hover:bg-amber-400">Add to Cart</Button>
           </div>)}
         </DialogContent>
       </Dialog>
 
       {/* ══ CUSTOMER SEARCH ══ */}
       <Dialog open={custModal} onOpenChange={setCustModal}>
-        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5"><DialogHeader><DialogTitle>Select Customer</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5"><DialogHeader><DialogTitle>Select Customer</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="Search customer..." value={custSearch} onChange={e=>searchCustomers(e.target.value)} className="bg-stone-800 border-amber-600/30"/>
-            <button onClick={()=>{cart.setCustomer(null,"",0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-stone-800 text-sm text-stone-400 hover:bg-stone-700">Walk-in (no customer)</button>
-            {custResults.map(c=>(<button key={c.id} onClick={()=>{cart.setCustomer(c.id,c.name,c.balance??0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-stone-800 text-sm hover:bg-stone-700">
-               <div className="font-medium text-white">{c.name}</div><div className="text-xs text-stone-400">{c.contact ? `${c.contact}` : ""}</div>
-              {c.balance!==undefined&&c.balance>0&&<div className="text-xs text-yellow-400">Utang: ₱{c.balance.toFixed(2)}</div>}
+            <Input placeholder="Search customer..." value={custSearch} onChange={e=>searchCustomers(e.target.value)} className="bg-gold-100 border-amber-300/60"/>
+            <button onClick={()=>{cart.setCustomer(null,"",0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-gold-100 text-sm text-stone-500 hover:bg-white">Walk-in (no customer)</button>
+            {custResults.map(c=>(<button key={c.id} onClick={()=>{cart.setCustomer(c.id,c.name,c.balance??0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-gold-100 text-sm hover:bg-white">
+               <div className="font-medium text-stone-800">{c.name}</div><div className="text-xs text-stone-500">{c.contact ? `${c.contact}` : ""}</div>
+              {c.balance!==undefined&&c.balance>0&&<div className="text-xs text-amber-600">Utang: ₱{c.balance.toFixed(2)}</div>}
             </button>))}
           </div></DialogContent>
       </Dialog>
 
       {/* ══ PAYMENT OVERLAY ══ */}
       <Dialog open={payModal} onOpenChange={setPayModal}>
-        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
           <DialogHeader><DialogTitle>Payment</DialogTitle></DialogHeader>
           <div className="space-y-5">
             <p className="text-center"><span className="text-3xl font-bold text-white">₱{cart.total.toFixed(2)}</span></p>
             <div className="space-y-3">
               <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">Cash</label>
-                <Input type="number" step="0.01" value={payCash} onChange={e=>setPayCash(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10"/>
+                <label className="text-xs font-medium text-stone-500 mb-1">Cash</label>
+                <Input type="number" step="0.01" value={payCash} onChange={e=>setPayCash(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10"/>
               </div>
               <div className="space-y-1.5 mb-1">
-                <label className="text-xs font-medium text-stone-400 mb-1">GCash</label>
-                <Input type="number" step="0.01" value={payGcash} onChange={e=>setPayGcash(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10"/>
+                <label className="text-xs font-medium text-stone-500 mb-1">GCash</label>
+                <Input type="number" step="0.01" value={payGcash} onChange={e=>setPayGcash(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10"/>
               </div>
-              <div className="border-t border-amber-600/30 pt-2 space-y-1 text-sm">
-                <div className="flex justify-between"><span className="text-stone-400">Paid</span><span className="text-white font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)).toFixed(2)}</span></div>
-                {((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&(<div className="flex justify-between"><span className="text-yellow-400">To Balance</span><span className="text-yellow-400 font-semibold">₱{(cart.total-(Number(payCash)||0)-(Number(payGcash)||0)).toFixed(2)}</span></div>)}
-                {(Number(payCash)||0)>cart.total&&(<div className="flex justify-between"><span className="text-amber-400">Change</span><span className="text-amber-400 font-semibold">₱{((Number(payCash)||0)-cart.total).toFixed(2)}</span></div>)}
+              <div className="border-t border-amber-300/60 pt-2 space-y-1 text-sm">
+                <div className="flex justify-between"><span className="text-stone-500">Paid</span><span className="text-white font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)).toFixed(2)}</span></div>
+                {((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&(<div className="flex justify-between"><span className="text-amber-600">To Balance</span><span className="text-amber-600 font-semibold">₱{(cart.total-(Number(payCash)||0)-(Number(payGcash)||0)).toFixed(2)}</span></div>)}
+                {(Number(payCash)||0)>cart.total&&(<div className="flex justify-between"><span className="text-amber-600">Change</span><span className="text-amber-600 font-semibold">₱{((Number(payCash)||0)-cart.total).toFixed(2)}</span></div>)}
               </div>
-              {cart.customerId&&<div className="text-xs text-stone-400">Customer: {cart.customerName} {cart.customerBalance>0?`(existing utang: ₱${cart.customerBalance.toFixed(2)})`:""}</div>}
-              {!cart.customerId&&((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&<p className="text-xs text-red-400 text-center">Select a customer to have a balance</p>}
+              {cart.customerId&&<div className="text-xs text-stone-500">Customer: {cart.customerName} {cart.customerBalance>0?`(existing utang: ₱${cart.customerBalance.toFixed(2)})`:""}</div>}
+              {!cart.customerId&&((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&<p className="text-xs text-red-600 text-center">Select a customer to have a balance</p>}
             </div>
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={()=>setPayModal(false)}>Cancel</Button>
-              <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={processPayment} disabled={paySaving}>{paySaving?<Loader2Icon className="h-4 w-4 animate-spin"/>:"Confirm Payment"}</Button>
+              <Button className="flex-1 bg-primary hover:bg-amber-400" onClick={processPayment} disabled={paySaving}>{paySaving?<Loader2Icon className="h-4 w-4 animate-spin"/>:"Confirm Payment"}</Button>
             </div>
           </div></DialogContent>
       </Dialog>
 
       {/* ══ RECEIPT PREVIEW MODAL ══ */}
       <Dialog open={receiptModal} onOpenChange={setReceiptModal}>
-        <DialogContent className="max-w-sm bg-white text-black font-mono text-sm p-6">
+        <DialogContent className="max-w-sm bg-gold-100 text-black font-mono text-sm p-6">
           {receiptData && (
             <div className="space-y-4 text-[13px]">
               {/* Store header */}
@@ -627,7 +660,7 @@ export default function PosPage() {
                 }}>
                   Print
                 </Button>
-                <Button className="flex-1 bg-stone-800 hover:bg-stone-700 text-white" onClick={() => { setReceiptModal(false); setReceiptData(null) }}>
+                <Button className="flex-1 bg-primary hover:bg-amber-400 text-primary-foreground" onClick={() => { setReceiptModal(false); setReceiptData(null) }}>
                   Close
                 </Button>
               </div>
@@ -638,14 +671,14 @@ export default function PosPage() {
 
       {/* ══ OPEN SHIFT MODAL ══ */}
       <Dialog open={shiftOpenModal} onOpenChange={setShiftOpenModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorOpenIcon className="h-5 w-5 text-amber-400" /> Open Shift — Count Starting Cash</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorOpenIcon className="h-5 w-5 text-amber-600" /> Open Shift — Count Starting Cash</DialogTitle></DialogHeader>
           <div className="space-y-5">
-            <p className="text-xs text-stone-400">Count the cash in the drawer before you start selling. Enter how many pieces of each denomination.</p>
+            <p className="text-xs text-stone-500">Count the cash in the drawer before you start selling. Enter how many pieces of each denomination.</p>
             <DenominationCounter value={shiftOpenDenoms} onChange={(d, t) => { setShiftOpenDenoms(d); setShiftOpenTotal(t) }} />
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShiftOpenModal(false)}>Cancel</Button>
-              <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={openShift} disabled={shiftSaving}>
+              <Button className="flex-1 bg-primary hover:bg-amber-400" onClick={openShift} disabled={shiftSaving}>
                 {shiftSaving ? <Loader2Icon className="h-4 w-4 animate-spin" /> : `Open Shift (₱${shiftOpenTotal.toFixed(2)})`}
               </Button>
             </div>
@@ -655,18 +688,18 @@ export default function PosPage() {
 
       {/* ══ CLOSE SHIFT MODAL ══ */}
       <Dialog open={shiftCloseModal} onOpenChange={setShiftCloseModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorClosedIcon className="h-5 w-5 text-amber-400" /> Close Shift — Count Cash</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorClosedIcon className="h-5 w-5 text-amber-600" /> Close Shift — Count Cash</DialogTitle></DialogHeader>
           <div className="space-y-5">
             {shift && (
-              <div className="rounded-lg bg-stone-800/60 border border-amber-600/30 p-3 space-y-1 text-sm">
-                <div className="flex justify-between text-stone-400"><span>Opening Cash</span><span>₱{Number(shift.opening_cash).toFixed(2)}</span></div>
-                <div className="flex justify-between text-stone-400"><span>Cash Sales</span><span>₱{Number(shift.cash_sales).toFixed(2)}</span></div>
-                <div className="flex justify-between text-stone-400"><span>Cash Collections</span><span>₱{Number(shift.cash_collections).toFixed(2)}</span></div>
-                <div className="flex justify-between font-bold text-amber-300 border-t border-amber-600/30 pt-1"><span>Expected in Drawer</span><span>₱{Number(shift.expected_cash).toFixed(2)}</span></div>
+              <div className="rounded-lg bg-gold-200/60 border border-amber-300/60 p-3 space-y-1 text-sm">
+                <div className="flex justify-between text-stone-500"><span>Opening Cash</span><span>₱{Number(shift.opening_cash).toFixed(2)}</span></div>
+                <div className="flex justify-between text-stone-500"><span>Cash Sales</span><span>₱{Number(shift.cash_sales).toFixed(2)}</span></div>
+                <div className="flex justify-between text-stone-500"><span>Cash Collections</span><span>₱{Number(shift.cash_collections).toFixed(2)}</span></div>
+                <div className="flex justify-between font-bold text-amber-600 border-t border-amber-300/60 pt-1"><span>Expected in Drawer</span><span>₱{Number(shift.expected_cash).toFixed(2)}</span></div>
               </div>
             )}
-            <p className="text-xs text-stone-400">Now count the actual cash in the drawer:</p>
+            <p className="text-xs text-stone-500">Now count the actual cash in the drawer:</p>
             <DenominationCounter value={shiftCloseDenoms} onChange={(d, t) => { setShiftCloseDenoms(d); setShiftCloseTotal(t) }} />
             {shift && (
               <div className={`rounded-lg p-2 text-center text-sm font-semibold ${(shiftCloseTotal - Number(shift.expected_cash)) === 0 ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}>
@@ -674,10 +707,10 @@ export default function PosPage() {
                 {(shiftCloseTotal - Number(shift.expected_cash)) > 0 ? " (over)" : (shiftCloseTotal - Number(shift.expected_cash)) < 0 ? " (short)" : " (balanced)"}
               </div>
             )}
-            <Input placeholder="Note (optional)" value={shiftCloseNote} onChange={e => setShiftCloseNote(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
+            <Input placeholder="Note (optional)" value={shiftCloseNote} onChange={e => setShiftCloseNote(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10" />
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShiftCloseModal(false)}>Cancel</Button>
-              <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={closeShift} disabled={shiftSaving}>
+              <Button className="flex-1 bg-primary hover:bg-amber-400" onClick={closeShift} disabled={shiftSaving}>
                 {shiftSaving ? <Loader2Icon className="h-4 w-4 animate-spin" /> : "Close Shift & Print"}
               </Button>
             </div>
@@ -687,7 +720,7 @@ export default function PosPage() {
 
       {/* ══ COLLECTIONS MODAL ══ */}
       <Dialog open={collModal} onOpenChange={setCollModal}>
-        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
+        <DialogContent className="max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
           <DialogHeader><DialogTitle>Collections (Utang Payment)</DialogTitle></DialogHeader>
           <div className="space-y-4">
             {!collSelected ? (
@@ -696,31 +729,31 @@ export default function PosPage() {
                   setCollSearch(e.target.value)
                   if (e.target.value.length < 1) { setCollResults([]); return }
                   fetch(`/api/backoffice/customers?q=${encodeURIComponent(e.target.value)}`).then(r => r.json()).then(d => setCollResults(d.customers ?? []))
-                }} className="bg-stone-800 border-amber-600/30 h-10" />
+                }} className="bg-gold-100 border-amber-300/60 h-10" />
                 {collResults.map((c: any) => (
                   <button key={c.id} onClick={() => setCollSelected({ id: c.id, name: c.name, balance: c.balance ?? 0 })}
-                    className="w-full text-left p-2 rounded bg-stone-800 text-sm hover:bg-stone-700">
+                    className="w-full text-left p-2 rounded bg-gold-100 text-sm hover:bg-white">
                     <div className="font-medium text-white">{c.name}</div>
-                    <div className="text-xs text-yellow-400">Utang: ₱{(c.balance ?? 0).toFixed(2)}</div>
+                    <div className="text-xs text-amber-600">Utang: ₱{(c.balance ?? 0).toFixed(2)}</div>
                   </button>
                 ))}
               </>
             ) : (
               <>
-                <div className="p-3 rounded bg-stone-800">
+                <div className="p-3 rounded bg-gold-100">
                   <p className="text-sm font-medium">{collSelected.name}</p>
-                  <p className="text-xl font-bold text-yellow-400">Balance: ₱{collSelected.balance.toFixed(2)}</p>
+                  <p className="text-xl font-bold text-amber-600">Balance: ₱{collSelected.balance.toFixed(2)}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Input type="number" step="0.01" placeholder="Amount" value={collAmount} onChange={e => setCollAmount(e.target.value)} className="bg-stone-800 border-amber-600/30 flex-1 h-10" />
+                  <Input type="number" step="0.01" placeholder="Amount" value={collAmount} onChange={e => setCollAmount(e.target.value)} className="bg-gold-100 border-amber-300/60 flex-1 h-10" />
                   <Select value={collMethod} onValueChange={v => setCollMethod(v ?? "cash")}>
-                    <SelectTrigger className="w-28 bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-28 bg-gold-100 border-amber-300/60 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="gcash">GCash</SelectItem></SelectContent>
                   </Select>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => { setCollSelected(null); setCollAmount(""); setCollModal(false) }}>Cancel</Button>
-                  <Button className="flex-1 bg-amber-600 hover:bg-amber-500"
+                  <Button className="flex-1 bg-primary hover:bg-amber-400"
                     onClick={async () => {
                       if (!collAmount || Number(collAmount) <= 0) { toast.error("Enter a valid amount"); return }
                       if (Number(collAmount) > collSelected.balance) { toast.error(`Amount exceeds balance (₱${collSelected.balance.toFixed(2)})`); return }

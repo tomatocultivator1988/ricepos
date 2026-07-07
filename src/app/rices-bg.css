@@ -14,10 +14,10 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(160deg, 
-    rgba(28, 25, 23, 0.88) 0%, 
-    rgba(41, 37, 36, 0.78) 35%, 
-    rgba(28, 25, 23, 0.85) 65%, 
-    rgba(41, 32, 23, 0.82) 100%);
+    rgba(13, 59, 30, 0.70) 0%, 
+    rgba(13, 59, 30, 0.60) 35%, 
+    rgba(13, 59, 30, 0.70) 65%, 
+    rgba(13, 59, 30, 0.65) 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -27,11 +27,11 @@
   z-index: 1;
 }
 
-/* Login page — slightly warmer overlay */
+/* Login page — slightly lighter overlay */
 .rices-bg-login::after {
   background: linear-gradient(160deg, 
-    rgba(28, 25, 23, 0.82) 0%, 
-    rgba(41, 37, 36, 0.72) 35%, 
-    rgba(28, 25, 23, 0.80) 65%, 
-    rgba(41, 32, 23, 0.76) 100%);
+    rgba(13, 59, 30, 0.62) 0%, 
+    rgba(13, 59, 30, 0.52) 35%, 
+    rgba(13, 59, 30, 0.62) 65%, 
+    rgba(13, 59, 30, 0.56) 100%);
 }

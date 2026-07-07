@@ -9,14 +9,14 @@ import { Inter } from "next/font/google"
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" })
 
 export const viewport: Viewport = {
-  themeColor: "#059669",
+  themeColor: "#0D3B1E",
 }
 
 export const metadata: Metadata = {
-  title: "GroceryPOS / RicePOS",
+  title: "RicePOS",
   description: "Tablet POS for rice retail & grocery",
   manifest: "/manifest.json",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "GroceryPOS" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "RicePOS" },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -33,8 +33,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         <Toaster closeButton position="top-right"
           toastOptions={{
-            className: "!border !border-amber-500/30 !shadow-lg !shadow-amber-500/20 !text-stone-100",
-            style: { background: "linear-gradient(135deg, #3d2800, #5c3d02)", borderColor: "rgba(245, 158, 11, 0.3)" },
+            className: "!border !border-amber-300/60 !shadow !shadow-black/5 !text-stone-800",
+            style: { background: "#F8F8F8", borderColor: "rgba(212, 175, 55, 0.25)" },
           }}
         />
         <script dangerouslySetInnerHTML={{ __html: `

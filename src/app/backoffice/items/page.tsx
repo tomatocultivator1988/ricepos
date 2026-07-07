@@ -184,12 +184,17 @@ export default function ItemsPage() {
     (i.barcode && i.barcode.includes(search))
   )
 
+  const riceCatId = categories.find(c => c.name.toLowerCase() === "rice")?.id
+  const showSplit = filterCat === "all" && riceCatId
+  const riceItems = showSplit ? filtered.filter(i => i.category_id === riceCatId) : []
+  const otherItems = showSplit ? filtered.filter(i => i.category_id !== riceCatId) : filtered
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white">Products</h1>
-          <p className="text-sm text-stone-400">{items.length} items</p>
+          <p className="text-sm text-stone-500">{items.length} items</p>
         </div>
         <Button onClick={openNew} className="gap-2">
           <Plus className="h-4 w-4" /> Add Product
@@ -199,16 +204,16 @@ export default function ItemsPage() {
       {/* Filters */}
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-400" />
+          <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-500" />
           <Input
             placeholder="Search by name or barcode..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="pl-9 bg-stone-800 border-amber-600/30 text-white"
+            className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800"
           />
         </div>
         <Select value={filterCat} onValueChange={(v) => setFilterCat(v ?? "all")}>
-          <SelectTrigger className="w-[180px] bg-stone-800 border-amber-600/30 text-white">
+          <SelectTrigger className="w-[180px] bg-gold-100 border-amber-300/60 text-stone-800">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
@@ -220,19 +225,19 @@ export default function ItemsPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="text-center text-stone-400 py-12">Loading...</div>
+        <div className="text-center text-stone-500 py-12">Loading...</div>
       ) : (
-        <div className="rounded-lg border border-amber-600/30 bg-stone-900/60 overflow-hidden">
+        <div className="rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="border-amber-600/30 hover:bg-transparent">
-                <TableHead className="text-stone-300">Name</TableHead>
-                <TableHead className="text-stone-300">Category</TableHead>
-                <TableHead className="text-stone-300">Type</TableHead>
-                <TableHead className="text-stone-300">Cost</TableHead>
-                <TableHead className="text-stone-300">Stock</TableHead>
-                <TableHead className="text-stone-300">Selling Units</TableHead>
-                <TableHead className="text-stone-300">Status</TableHead>
+              <TableRow className="border-amber-300/60 hover:bg-transparent">
+                <TableHead className="text-stone-700">Name</TableHead>
+                <TableHead className="text-stone-700">Category</TableHead>
+                <TableHead className="text-stone-700">Type</TableHead>
+                <TableHead className="text-stone-700">Cost</TableHead>
+                <TableHead className="text-stone-700">Stock</TableHead>
+                <TableHead className="text-stone-700">Selling Units</TableHead>
+                <TableHead className="text-stone-700">Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -242,36 +247,59 @@ export default function ItemsPage() {
                     No products found
                   </TableCell>
                 </TableRow>
+              ) : showSplit ? (
+                <>
+                  {riceItems.length > 0 && (
+                    <>
+                      <TableRow className="border-amber-300/60 hover:bg-transparent">
+                        <TableCell colSpan={7} className="px-3 py-2 bg-primary/10">
+                          <span className="text-xs font-bold text-amber-600 tracking-wider uppercase">Rice</span>
+                        </TableCell>
+                      </TableRow>
+                      {riceItems.map(item => (
+                        <TableRow key={item.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openEdit(item)}>
+                          <TableCell className="text-stone-800 font-medium">{item.name}</TableCell>
+                          <TableCell className="text-stone-500">{categories.find(c => c.id === item.category_id)?.name ?? "—"}</TableCell>
+                          <TableCell className="text-stone-500"><Badge variant={item.sell_by === "weight" ? "secondary" : "outline"}>{item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}</Badge></TableCell>
+                          <TableCell className="text-stone-700">₱{Number(item.cost).toFixed(2)}</TableCell>
+                          <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
+                          <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
+                          <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
+                  {otherItems.length > 0 && (
+                    <>
+                      <TableRow className="border-amber-300/60 hover:bg-transparent">
+                        <TableCell colSpan={7} className="px-3 py-2 bg-white/20">
+                          <span className="text-xs font-bold text-stone-500 tracking-wider uppercase">Other Items</span>
+                        </TableCell>
+                      </TableRow>
+                      {otherItems.map(item => (
+                        <TableRow key={item.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openEdit(item)}>
+                          <TableCell className="text-stone-800 font-medium">{item.name}</TableCell>
+                          <TableCell className="text-stone-500">{categories.find(c => c.id === item.category_id)?.name ?? "—"}</TableCell>
+                          <TableCell className="text-stone-500"><Badge variant={item.sell_by === "weight" ? "secondary" : "outline"}>{item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}</Badge></TableCell>
+                          <TableCell className="text-stone-700">₱{Number(item.cost).toFixed(2)}</TableCell>
+                          <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
+                          <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
+                          <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
+                        </TableRow>
+                      ))}
+                    </>
+                  )}
+                </>
               ) : (
                 filtered.map(item => (
-                  <TableRow
-                    key={item.id}
-                    className="border-amber-600/30 cursor-pointer hover:bg-stone-800/50"
-                    onClick={() => openEdit(item)}
-                  >
-                    <TableCell className="text-white font-medium">{item.name}</TableCell>
-                    <TableCell className="text-stone-400">
-                      {categories.find(c => c.id === item.category_id)?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-stone-400">
-                      <Badge variant={item.sell_by === "weight" ? "secondary" : "outline"}>
-                        {item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-stone-300">₱{Number(item.cost).toFixed(2)}</TableCell>
-                    <TableCell>
-                      <span className={item.stock_qty <= 0 ? "text-red-400" : item.stock_qty <= item.min_stock ? "text-yellow-400" : "text-green-400"}>
-                        {Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-stone-400">
-                      {(item.selling_units ?? []).filter(u => u.is_active !== false).length}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={item.status === "active" ? "default" : "secondary"}>
-                        {item.status}
-                      </Badge>
-                    </TableCell>
+                  <TableRow key={item.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openEdit(item)}>
+                    <TableCell className="text-stone-800 font-medium">{item.name}</TableCell>
+                    <TableCell className="text-stone-500">{categories.find(c => c.id === item.category_id)?.name ?? "—"}</TableCell>
+                    <TableCell className="text-stone-500"><Badge variant={item.sell_by === "weight" ? "secondary" : "outline"}>{item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}</Badge></TableCell>
+                    <TableCell className="text-stone-700">₱{Number(item.cost).toFixed(2)}</TableCell>
+                    <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
+                    <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
+                    <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
                   </TableRow>
                 ))
               )}
@@ -282,129 +310,133 @@ export default function ItemsPage() {
 
       {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto bg-stone-900/30 backdrop-blur-md border-amber-600/30 text-white p-6">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto bg-gold-200/80 backdrop-blur-md border-amber-300/60 text-stone-800 p-6">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
 
           {editing && (
             <div className="space-y-6">
-              {/* Basic Info */}
-              <div className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-xs font-medium text-stone-400">Name *</Label>
-                  <Input value={editing.name ?? ""} onChange={e => updateField("name", e.target.value)}
-                    className="bg-stone-800 border-amber-600/30 h-10" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-[1fr_1fr] gap-6">
+                {/* Left: Basic Info */}
+                <div className="space-y-4 min-w-0">
                   <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-400">Category</Label>
-                    <Select value={editing.category_id ?? "none"} onValueChange={v => updateField("category_id", v === "none" ? null : v)}>
-                      <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue placeholder="None" /></SelectTrigger>
-                      <SelectContent>{categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                    </Select>
+                    <Label className="text-xs font-medium text-stone-500">Name *</Label>
+                    <Input value={editing.name ?? ""} onChange={e => updateField("name", e.target.value)}
+                      className="bg-gold-100 border-amber-300/60 h-10" />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-400">Sell By</Label>
-                    <Select value={editing.sell_by ?? "unit"} onValueChange={v => updateField("sell_by", v)}>
-                      <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="weight">Weight (kg)</SelectItem><SelectItem value="unit">Unit (piece)</SelectItem></SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-400">Cost (per base unit)</Label>
-                    <Input type="number" step="0.01" value={editing.cost ?? 0} onChange={e => updateField("cost", e.target.value)}
-                      className="bg-stone-800 border-amber-600/30 h-10" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-400">Min Stock</Label>
-                    <Input type="number" step="0.001" value={editing.min_stock ?? 0} onChange={e => updateField("min_stock", e.target.value)}
-                      className="bg-stone-800 border-amber-600/30 h-10" />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-400">Tax Rate</Label>
-                    <Select value={editing.tax_rate_id ?? "none"} onValueChange={v => updateField("tax_rate_id", v === "none" ? null : v)}>
-                      <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue placeholder="None" /></SelectTrigger>
-                      <SelectContent><SelectItem value="none">None</SelectItem>{taxRates.map(t => <SelectItem key={t.id} value={t.id}>{t.name} ({(t.rate * 100).toFixed(0)}%)</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label className="text-xs font-medium text-stone-400">Status</Label>
-                    <Select value={editing.status ?? "active"} onValueChange={v => updateField("status", v)}>
-                      <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
-                      <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <Label className="text-xs font-medium text-stone-400">Barcode</Label>
-                  <Input value={editing.barcode ?? ""} onChange={e => updateField("barcode", e.target.value || null)}
-                    placeholder="Scan or type..." className="bg-stone-800 border-amber-600/30 h-10" />
-                </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={editing.discount_eligible ?? true}
-                    onChange={e => updateField("discount_eligible", e.target.checked)} />
-                  <span className="text-xs font-medium text-stone-400">Eligible for Senior/PWD discount</span>
-                </label>
-              </div>
-
-              {/* Selling Units — stacked cards, no horizontal overflow */}
-              <div className="border-t border-amber-600/20 pt-4">
-                <div className="flex items-center justify-between mb-4">
-                  <Label className="text-base font-semibold text-amber-300">Selling Units</Label>
-                  <Button variant="outline" size="sm" onClick={addUnit} className="gap-1 text-xs"><Plus className="h-3 w-3" /> Add Unit</Button>
-                </div>
-                <div className="space-y-3">
-                  {(editing.selling_units ?? []).map((unit, idx) => (
-                    <div key={idx} className="bg-stone-800/30 rounded-lg p-4 border border-amber-600/30 space-y-3">
-                      <Input value={unit.name} onChange={e => updateUnit(idx, "name", e.target.value)}
-                        placeholder="Unit name (e.g. Per Kilo, Sack 50kg)"
-                        className="bg-stone-700 border-stone-600 h-10 text-sm w-full" />
-                      <div className="grid grid-cols-4 gap-3">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] text-stone-500">Base Qty</span>
-                          <Input type="number" step="0.001" value={unit.base_qty} onChange={e => updateUnit(idx, "base_qty", e.target.value)}
-                            className="bg-stone-700 border-stone-600 h-9 text-sm" />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] text-stone-500">Price (₱)</span>
-                          <Input type="number" step="0.01" value={unit.price} onChange={e => updateUnit(idx, "price", e.target.value)}
-                            className="bg-stone-700 border-stone-600 h-9 text-sm" />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] text-stone-500">Min Qty</span>
-                          <Input type="number" step="0.001" value={unit.min_qty} onChange={e => updateUnit(idx, "min_qty", e.target.value)}
-                            className="bg-stone-700 border-stone-600 h-9 text-sm" />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] text-stone-500">Sort</span>
-                          <Input type="number" value={unit.sort_order} onChange={e => updateUnit(idx, "sort_order", e.target.value)}
-                            className="bg-stone-700 border-stone-600 h-9 text-sm" />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input type="radio" name="defaultUnit" checked={unit.is_default}
-                            onChange={() => updateUnit(idx, "is_default", !unit.is_default)} />
-                          <span className="text-xs text-stone-400">Default unit (shown on POS)</span>
-                        </label>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-300"
-                          onClick={() => removeUnit(idx)} disabled={(editing.selling_units ?? []).length <= 1}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs font-medium text-stone-500">Category</Label>
+                      <Select value={editing.category_id ?? "none"} onValueChange={v => updateField("category_id", v === "none" ? null : v)}>
+                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue placeholder="None" /></SelectTrigger>
+                        <SelectContent>{categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                      </Select>
                     </div>
-                  ))}
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs font-medium text-stone-500">Sell By</Label>
+                      <Select value={editing.sell_by ?? "unit"} onValueChange={v => updateField("sell_by", v)}>
+                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent><SelectItem value="weight">Weight (kg)</SelectItem><SelectItem value="unit">Unit (piece)</SelectItem></SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs font-medium text-stone-500">Cost</Label>
+                      <Input type="number" step="0.01" value={editing.cost ?? 0} onChange={e => updateField("cost", e.target.value)}
+                        className="bg-gold-100 border-amber-300/60 h-10" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs font-medium text-stone-500">Min Stock</Label>
+                      <Input type="number" step="0.001" value={editing.min_stock ?? 0} onChange={e => updateField("min_stock", e.target.value)}
+                        className="bg-gold-100 border-amber-300/60 h-10" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs font-medium text-stone-500">Tax Rate</Label>
+                      <Select value={editing.tax_rate_id ?? "none"} onValueChange={v => updateField("tax_rate_id", v === "none" ? null : v)}>
+                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue placeholder="None" /></SelectTrigger>
+                        <SelectContent><SelectItem value="none">None</SelectItem>{taxRates.map(t => <SelectItem key={t.id} value={t.id}>{t.name} ({(t.rate * 100).toFixed(0)}%)</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <Label className="text-xs font-medium text-stone-500">Status</Label>
+                      <Select value={editing.status ?? "active"} onValueChange={v => updateField("status", v)}>
+                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label className="text-xs font-medium text-stone-500">Barcode</Label>
+                    <Input value={editing.barcode ?? ""} onChange={e => updateField("barcode", e.target.value || null)}
+                      placeholder="Scan or type..." className="bg-gold-100 border-amber-300/60 h-10" />
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={editing.discount_eligible ?? true}
+                      onChange={e => updateField("discount_eligible", e.target.checked)} className="accent-amber-500" />
+                    <span className="text-xs font-medium text-stone-500">Senior/PWD discount</span>
+                  </label>
                 </div>
-                {(editing.selling_units ?? []).length === 0 && (
-                  <p className="text-sm text-stone-500 text-center py-6 border border-dashed border-stone-700 rounded-lg">No selling units. Add at least one to sell this product.</p>
-                )}
+
+                {/* Right: Selling Units */}
+                <div className="space-y-3 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold text-amber-600">Selling Units</Label>
+                    <Button variant="outline" size="sm" onClick={addUnit} className="gap-1 text-xs"><Plus className="h-3 w-3" /> Add</Button>
+                  </div>
+                  {(editing.selling_units ?? []).length === 0 ? (
+                    <p className="text-xs text-stone-500 text-center py-6 border border-dashed border-stone-700 rounded-lg">No units yet</p>
+                  ) : (
+                    <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                      {(editing.selling_units ?? []).map((unit, idx) => (
+                        <div key={idx} className="bg-gold-200 rounded-lg p-3 border border-amber-300/60 space-y-2">
+                          <Input value={unit.name} onChange={e => updateUnit(idx, "name", e.target.value)}
+                            placeholder="e.g. Per Kilo, Sack 50kg"
+                            className="bg-gold-100 border-amber-300/60 h-9 text-xs w-full" />
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] text-stone-500">Base Qty</span>
+                              <Input type="number" step="0.001" value={unit.base_qty} onChange={e => updateUnit(idx, "base_qty", e.target.value)}
+                                className="bg-gold-100 border-amber-300/60 h-8 text-xs" />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] text-stone-500">Price (₱)</span>
+                              <Input type="number" step="0.01" value={unit.price} onChange={e => updateUnit(idx, "price", e.target.value)}
+                                className="bg-gold-100 border-amber-300/60 h-8 text-xs" />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] text-stone-500">Min Qty</span>
+                              <Input type="number" step="0.001" value={unit.min_qty} onChange={e => updateUnit(idx, "min_qty", e.target.value)}
+                                className="bg-gold-100 border-amber-300/60 h-8 text-xs" />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-[10px] text-stone-500">Sort</span>
+                              <Input type="number" value={unit.sort_order} onChange={e => updateUnit(idx, "sort_order", e.target.value)}
+                                className="bg-gold-100 border-amber-300/60 h-8 text-xs" />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between pt-0.5">
+                            <label className="flex items-center gap-1.5 cursor-pointer">
+                              <input type="radio" name="defaultUnit" checked={unit.is_default}
+                                onChange={() => updateUnit(idx, "is_default", !unit.is_default)}
+                                className="h-3 w-3 accent-amber-500" />
+                              <span className="text-[10px] text-stone-500">Default</span>
+                            </label>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:text-red-300"
+                              onClick={() => removeUnit(idx)} disabled={(editing.selling_units ?? []).length <= 1}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Actions */}
-              <div className="sticky bottom-0 flex justify-end gap-3 pt-4 border-t border-amber-600/20 bg-stone-900/40 -mx-6 px-6 pb-2">
+              <div className="sticky bottom-0 flex justify-end gap-3 pt-4 border-t border-amber-200/50 bg-stone-900/40 -mx-6 px-6 pb-2">
                 <Button variant="outline" onClick={() => { setDialogOpen(false); setEditing(null) }}>Cancel</Button>
-                <Button onClick={save} disabled={saving} className="bg-amber-600 hover:bg-amber-500">
+                <Button onClick={save} disabled={saving} className="bg-primary hover:bg-amber-400">
                   {saving ? "Saving..." : editing?.id ? "Save Changes" : "Create Product"}
                 </Button>
               </div>

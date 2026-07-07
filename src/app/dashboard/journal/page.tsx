@@ -33,15 +33,15 @@ export default function JournalPage() {
         <h1 className="text-2xl font-bold text-white">Electronic Journal</h1>
       </div>
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-400" />
+        <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-500" />
         <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}
-          className="pl-9 bg-stone-800 border-amber-600/30 text-white" />
+          className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
       </div>
 
-      <Card className="bg-stone-900/60 border-amber-600/30">
+      <Card className="bg-gold-200/90 border-amber-300/60">
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-emerald-400" /></div>
+            <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-green-700" /></div>
           ) : filtered.length === 0 ? (
             <div className="text-center text-stone-500 py-16">
               <p>Journal records all sales, voids, refunds, and collections.</p>
@@ -50,19 +50,19 @@ export default function JournalPage() {
           ) : (
             <Table>
               <TableHeader>
-                <TableRow className="border-amber-600/30 hover:bg-transparent">
-                  <TableHead className="text-stone-300">Timestamp</TableHead>
-                  <TableHead className="text-stone-300">Event</TableHead>
-                  <TableHead className="text-stone-300">Sale</TableHead>
-                  <TableHead className="text-stone-300">Details</TableHead>
+                <TableRow className="border-amber-300/60 hover:bg-transparent">
+                  <TableHead className="text-stone-700">Timestamp</TableHead>
+                  <TableHead className="text-stone-700">Event</TableHead>
+                  <TableHead className="text-stone-700">Sale</TableHead>
+                  <TableHead className="text-stone-700">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filtered.map(e => (
-                  <TableRow key={e.id} className="border-amber-600/30">
-                    <TableCell className="text-xs text-stone-400">{new Date(e.created_at).toLocaleString("en-PH")}</TableCell>
-                    <TableCell className="text-stone-300">{e.event_type}</TableCell>
-                    <TableCell className="text-stone-400">{e.sale_id?.slice(0, 8) ?? "—"}</TableCell>
+                  <TableRow key={e.id} className="border-amber-300/60">
+                    <TableCell className="text-xs text-stone-500">{new Date(e.created_at).toLocaleString("en-PH")}</TableCell>
+                    <TableCell className="text-stone-700">{e.event_type}</TableCell>
+                    <TableCell className="text-stone-500">{e.sale_id?.slice(0, 8) ?? "—"}</TableCell>
                     <TableCell className="text-xs text-stone-500 max-w-xs truncate">{JSON.stringify(e.details)}</TableCell>
                   </TableRow>
                 ))}

@@ -53,11 +53,11 @@ function formatDate(iso: string | null): string {
 
 function paymentMethodBadge(method: string) {
   const map: Record<string, { label: string; className: string }> = {
-    cash: { label: "Cash", className: "bg-amber-500/20 text-amber-200 border-amber-500/40" },
-    card: { label: "Card", className: "bg-blue-500/20 text-blue-300 border-blue-500/40" },
-    gcash: { label: "GCash", className: "bg-purple-500/20 text-purple-300 border-purple-500/40" },
+    cash: { label: "Cash", className: "bg-amber-500/20 text-amber-700 border-amber-500/40" },
+    card: { label: "Card", className: "bg-blue-500/20 text-blue-700 border-blue-500/40" },
+    gcash: { label: "GCash", className: "bg-purple-500/20 text-purple-700 border-purple-500/40" },
   }
-  const cfg = map[method.toLowerCase()] ?? { label: method, className: "bg-stone-700/50 text-stone-300 border-stone-600/40" }
+  const cfg = map[method.toLowerCase()] ?? { label: method, className: "bg-white/50 text-stone-700 border-stone-600/40" }
   return (
     <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>
       {cfg.label}
@@ -67,14 +67,14 @@ function paymentMethodBadge(method: string) {
 
 function statusBadge(status: string) {
   const map: Record<string, { label: string; className: string }> = {
-    completed: { label: "Completed", className: "bg-green-500/20 text-green-300 border-green-500/40" },
-    paid: { label: "Paid", className: "bg-green-500/20 text-green-300 border-green-500/40" },
-    partial: { label: "Partial", className: "bg-yellow-500/20 text-yellow-300 border-yellow-500/40" },
-    unpaid: { label: "Unpaid", className: "bg-red-500/20 text-red-300 border-red-500/40" },
-    refunded: { label: "Refunded", className: "bg-red-500/20 text-red-300 border-red-500/40" },
-    voided: { label: "Voided", className: "bg-stone-500/20 text-stone-300 border-stone-500/40" },
+    completed: { label: "Completed", className: "bg-green-500/20 text-green-700 border-green-500/40" },
+    paid: { label: "Paid", className: "bg-green-500/20 text-green-700 border-green-500/40" },
+    partial: { label: "Partial", className: "bg-yellow-500/20 text-yellow-700 border-yellow-500/40" },
+    unpaid: { label: "Unpaid", className: "bg-red-500/20 text-red-600 border-red-500/40" },
+    refunded: { label: "Refunded", className: "bg-red-500/20 text-red-600 border-red-500/40" },
+    voided: { label: "Voided", className: "bg-white0/20 text-stone-700 border-stone-500/40" },
   }
-  const cfg = map[status.toLowerCase()] ?? { label: status, className: "bg-stone-700/50 text-stone-300 border-stone-600/40" }
+  const cfg = map[status.toLowerCase()] ?? { label: status, className: "bg-white/50 text-stone-700 border-stone-600/40" }
   return (
     <span className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium ${cfg.className}`}>
       {cfg.label}
@@ -234,7 +234,7 @@ export default function SalesPage() {
   ]
 
   if (!user) return (
-    <div className="flex items-center justify-center min-h-screen bg-transparent"><Loader2Icon className="h-8 w-8 animate-spin text-amber-300" /></div>
+    <div className="flex items-center justify-center min-h-screen bg-transparent"><Loader2Icon className="h-8 w-8 animate-spin text-amber-600" /></div>
   )
 
   return (
@@ -243,13 +243,13 @@ export default function SalesPage() {
 
       <div className="flex-1 overflow-y-auto p-5">
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold text-amber-300">Sales History</h1>
+          <h1 className="text-2xl font-bold text-amber-600">Sales History</h1>
 
-          <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+          <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
             <CardContent className="p-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div className="grid gap-1.5">
-                  <label className="text-xs font-medium text-stone-400">From</label>
+                  <label className="text-xs font-medium text-stone-500">From</label>
                   <Input
                     type="date"
                     value={from}
@@ -258,11 +258,11 @@ export default function SalesPage() {
                       setFrom(e.target.value)
                       setPage(1)
                     }}
-                    className="rounded-xl border-amber-600/40 bg-stone-900/60 backdrop-blur-xl"
+                    className="rounded-xl border-amber-600/40 bg-gold-200/90 backdrop-blur-xl"
                   />
                 </div>
                 <div className="grid gap-1.5">
-                  <label className="text-xs font-medium text-stone-400">To</label>
+                  <label className="text-xs font-medium text-stone-500">To</label>
                   <Input
                     type="date"
                     value={to}
@@ -272,11 +272,11 @@ export default function SalesPage() {
                       setTo(e.target.value)
                       setPage(1)
                     }}
-                    className="rounded-xl border-amber-600/40 bg-stone-900/60 backdrop-blur-xl"
+                    className="rounded-xl border-amber-600/40 bg-gold-200/90 backdrop-blur-xl"
                   />
                 </div>
                 <div className="grid gap-1.5">
-                  <label className="text-xs font-medium text-stone-400">Cashier</label>
+                  <label className="text-xs font-medium text-stone-500">Cashier</label>
                   <Select
                     value={employeeId === "all" || !employeeId ? "all" : (employees.find(e => e.id === employeeId)?.name || "")}
                     onValueChange={(v) => {
@@ -286,7 +286,7 @@ export default function SalesPage() {
                       setPage(1)
                     }}
                   >
-                    <SelectTrigger className="w-40 rounded-xl border-amber-600/40 bg-stone-900/60 backdrop-blur-xl">
+                    <SelectTrigger className="w-40 rounded-xl border-amber-600/40 bg-gold-200/90 backdrop-blur-xl">
                       <SelectValue placeholder="All" />
                     </SelectTrigger>
                     <SelectContent>
@@ -300,19 +300,19 @@ export default function SalesPage() {
                   </Select>
                 </div>
                 <form onSubmit={handleSearchSubmit} className="grid gap-1.5">
-                  <label className="text-xs font-medium text-stone-400">Search</label>
+                  <label className="text-xs font-medium text-stone-500">Search</label>
                   <div className="relative">
                     <Input
                       placeholder="Sale # or item..."
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      className="w-52 rounded-xl border-amber-600/40 bg-stone-900/60 backdrop-blur-xl pr-8"
+                      className="w-52 rounded-xl border-amber-600/40 bg-gold-200/90 backdrop-blur-xl pr-8"
                     />
                     <Button
                       type="submit"
                       variant="ghost"
                       size="icon-sm"
-                      className="absolute right-0 top-0 text-stone-400 hover:text-amber-200"
+                      className="absolute right-0 top-0 text-stone-500 hover:text-amber-500"
                     >
                       <Search className="size-3.5" />
                     </Button>
@@ -322,7 +322,7 @@ export default function SalesPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="rounded-full text-stone-400 hover:text-amber-200"
+                    className="rounded-full text-stone-500 hover:text-amber-500"
                     onClick={() => {
                       setFrom("")
                       setTo("")
@@ -341,12 +341,12 @@ export default function SalesPage() {
           </Card>
 
           {error && (
-            <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+            <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
               <CardContent className="py-12 text-center">
-                <p className="text-stone-400">{error}</p>
+                <p className="text-stone-500">{error}</p>
                 <button
                   onClick={fetchSales}
-                  className="mt-3 text-sm font-medium text-amber-300 underline underline-offset-4 hover:text-amber-200"
+                  className="mt-3 text-sm font-medium text-amber-600 underline underline-offset-4 hover:text-amber-500"
                 >
                   Retry
                 </button>
@@ -359,22 +359,22 @@ export default function SalesPage() {
               {/* Mobile Cards */}
               <div className="grid grid-cols-1 gap-3 lg:hidden">
                 {loading ? (
-                  <div className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">Loading...</div>
+                  <div className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl p-8 text-center text-stone-500 shadow-md">Loading...</div>
                 ) : !data || data.sales.length === 0 ? (
-                  <div className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl p-8 text-center text-stone-400 shadow-md">No sales found</div>
+                  <div className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl p-8 text-center text-stone-500 shadow-md">No sales found</div>
                 ) : (
                   data.sales.map((sale) => (
-                    <div key={sale.id} className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl p-4 shadow-md">
+                    <div key={sale.id} className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl p-4 shadow-md">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="font-bold text-amber-200 text-sm">#{(sale.saleNumber ? String(sale.saleNumber).padStart(6,'0') : '-')} Â· {sale.employeeName}</span>
-                        <span className="text-amber-200 font-extrabold">P{sale.total.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+                        <span className="font-bold text-amber-600 text-sm">#{(sale.saleNumber ? String(sale.saleNumber).padStart(6,'0') : '-')} Â· {sale.employeeName}</span>
+                        <span className="text-amber-600 font-extrabold">{sale.total.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
                       </div>
                       <div className="flex justify-between items-center text-xs">
                         <div className="flex items-center gap-1.5">
                           {paymentMethodBadge(sale.paymentMethod)}
                           {statusBadge(sale.status)}
                         </div>
-                        <span className="text-stone-400">{formatDate(sale.createdAt)} {formatTime(sale.createdAt)}</span>
+                        <span className="text-stone-500">{formatDate(sale.createdAt)} {formatTime(sale.createdAt)}</span>
                       </div>
                     </div>
                   ))
@@ -382,30 +382,30 @@ export default function SalesPage() {
               </div>
 
               {/* Desktop Table */}
-              <Card className="hidden lg:block overflow-hidden rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+              <Card className="hidden lg:block overflow-hidden rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
                 <CardContent className="p-0">
                   <Table>
                   <TableHeader>
                     <TableRow className="hover:bg-transparent bg-transparent">
-                      <TableHead className="w-16 pl-6 text-xs font-semibold uppercase text-amber-300">#</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase text-amber-300">Cashier</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase text-amber-300">Method</TableHead>
-                      <TableHead className="text-right text-xs font-semibold uppercase text-amber-300">Total</TableHead>
-                      <TableHead className="text-xs font-semibold uppercase text-amber-300">Status</TableHead>
-                      <TableHead className="pr-6 text-right text-xs font-semibold uppercase text-amber-300">Time</TableHead>
-                      <TableHead className="pr-2 text-xs font-semibold uppercase text-amber-300">Actions</TableHead>
+                      <TableHead className="w-16 pl-6 text-xs font-semibold uppercase text-amber-700">#</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase text-amber-700">Cashier</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase text-amber-700">Method</TableHead>
+                      <TableHead className="text-right text-xs font-semibold uppercase text-amber-700">Total</TableHead>
+                      <TableHead className="text-xs font-semibold uppercase text-amber-700">Status</TableHead>
+                      <TableHead className="pr-6 text-right text-xs font-semibold uppercase text-amber-700">Time</TableHead>
+                      <TableHead className="pr-2 text-xs font-semibold uppercase text-amber-700">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-16 text-center text-stone-400">
+                        <TableCell colSpan={6} className="py-16 text-center text-stone-500">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : !data || data.sales.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-16 text-center text-stone-400">
+                        <TableCell colSpan={6} className="py-16 text-center text-stone-500">
                           No sales found
                         </TableCell>
                       </TableRow>
@@ -413,17 +413,17 @@ export default function SalesPage() {
                       data.sales.map((sale) => (
                         <TableRow key={sale.id} className="hover:bg-transparent/50">
                           <TableCell className="pl-6">
-                            <span className="text-xs text-stone-400">
+                            <span className="text-xs text-stone-600">
                               {(sale.saleNumber ? String(sale.saleNumber).padStart(6,'0') : '-')}
                             </span>
                           </TableCell>
                           <TableCell className="font-medium text-green-900">{sale.employeeName}</TableCell>
                           <TableCell>{paymentMethodBadge(sale.paymentMethod)}</TableCell>
-                          <TableCell className="text-right font-semibold tabular-nums text-amber-200">
+                          <TableCell className="text-right font-semibold tabular-nums text-amber-600">
                             P{sale.total.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
                           </TableCell>
                           <TableCell>{statusBadge(sale.status)}</TableCell>
-                          <TableCell className="pr-2 text-right text-xs text-stone-400">
+                          <TableCell className="pr-2 text-right text-xs text-stone-600">
                             {formatDate(sale.createdAt)} {formatTime(sale.createdAt)}
                           </TableCell>
                           <TableCell className="pr-2">
@@ -431,7 +431,7 @@ export default function SalesPage() {
                               {sale.status === "completed" && (
                                 <>
                                   <Button variant="ghost" size="sm" onClick={() => openAction(sale, "void")} className="h-7 rounded-lg text-xs text-red-500 hover:bg-red-50 hover:text-red-700"><Trash2Icon className="h-3 w-3 mr-1"/>Void</Button>
-                                  <Button variant="ghost" size="sm" onClick={() => openAction(sale, "refund")} className="h-7 rounded-lg text-xs text-amber-500 hover:bg-amber-50 hover:text-amber-700"><RotateCcwIcon className="h-3 w-3 mr-1"/>Refund</Button>
+                                  <Button variant="ghost" size="sm" onClick={() => openAction(sale, "refund")} className="h-7 rounded-lg text-xs text-amber-600 hover:text-amber-700"><RotateCcwIcon className="h-3 w-3 mr-1"/>Refund</Button>
                                 </>
                               )}
                               <Button variant="ghost" size="sm" onClick={() => openAction(sale, "reprint")} className="h-7 rounded-lg text-xs text-blue-500 hover:bg-blue-50 hover:text-blue-700"><PrinterIcon className="h-3 w-3 mr-1"/>Print</Button>
@@ -449,14 +449,14 @@ export default function SalesPage() {
 
           {data && data.pages > 1 && (
             <div className="flex items-center justify-between">
-              <p className="text-sm text-stone-400">
+              <p className="text-sm text-stone-500">
                 Page {data.page} of {data.pages} ({data.total} sales)
               </p>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-full border-2 border-amber-600/40 text-amber-300 font-medium hover:bg-stone-100"
+                  className="rounded-full border-2 border-amber-600/40 text-amber-600 font-medium hover:bg-stone-100"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
@@ -466,7 +466,7 @@ export default function SalesPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-full border-2 border-amber-600/40 text-amber-300 font-medium hover:bg-stone-100"
+                  className="rounded-full border-2 border-amber-600/40 text-amber-600 font-medium hover:bg-stone-100"
                   disabled={page >= data.pages}
                   onClick={() => setPage((p) => p + 1)}
                 >
@@ -480,30 +480,30 @@ export default function SalesPage() {
 
         {/* Action Dialog */}
         <Dialog open={actionOpen} onOpenChange={setActionOpen}>
-          <DialogContent className="sm:max-w-sm rounded-2xl bg-stone-900/60 border-amber-600/30 text-white p-5">
+          <DialogContent className="sm:max-w-sm rounded-2xl bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
             <DialogHeader>
-              <DialogTitle className="text-amber-300">
+              <DialogTitle className="text-amber-600">
                 {actionType === "refund" ? "Refund Sale" : actionType === "void" ? "Void Sale" : "Reprint"}
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <p className="text-sm text-amber-400">
+              <p className="text-sm text-amber-600">
                 {actionType === "reprint"
                   ? "Open receipt for printing?"
                   : `This will ${actionType} sale #${actionSale ? (actionSale.saleNumber ? String(actionSale.saleNumber).padStart(6,'0') : '-') : '-'} (P${actionSale?.total.toLocaleString("en-PH", {minimumFractionDigits:2})}). This action cannot be undone.`}
               </p>
               {actionType !== "reprint" && (
                 <div>
-                  <label className="text-xs font-medium text-stone-400 mb-1">Reason</label>
+                  <label className="text-xs font-medium text-stone-500 mb-1">Reason</label>
                   <Input value={actionReason} onChange={e => setActionReason(e.target.value)} placeholder="Required"
-                    className="h-10 rounded-xl border-amber-600/40 mt-1" />
+                    className="h-10 rounded-xl bg-gold-100 border-amber-600/40 mt-1" />
                 </div>
               )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setActionOpen(false)}>Cancel</Button>
               <Button onClick={handleAction} disabled={actionLoading || (actionType !== "reprint" && !actionReason.trim())}
-                className={actionType === "void" ? "bg-red-600 hover:bg-red-700 text-white" : actionType === "refund" ? "bg-amber-600 hover:bg-amber-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}>
+                className={actionType === "void" ? "bg-red-500 hover:bg-red-700 text-white" : actionType === "refund" ? "bg-primary hover:bg-amber-700 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}>
                 {actionLoading ? "Processing..." : actionType === "refund" ? "Refund" : actionType === "void" ? "Void" : "Print"}
               </Button>
             </DialogFooter>

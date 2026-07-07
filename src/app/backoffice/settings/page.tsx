@@ -22,7 +22,7 @@ function ConnectionStatus({ connected }: { connected: boolean }) {
       <CheckCircleIcon className="h-3 w-3" /> Connected
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-stone-50 px-2.5 py-0.5 text-xs font-medium text-amber-400">
+    <span className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-2.5 py-0.5 text-xs font-medium text-amber-600">
       <XCircleIcon className="h-3 w-3" /> Not connected
     </span>
   )
@@ -132,57 +132,57 @@ export default function SettingsPage() {
 
   return (
     <div className="p-5 space-y-6">
-      <h1 className="text-2xl font-bold text-amber-200">Settings</h1>
+      <h1 className="text-2xl font-bold text-amber-500">Settings</h1>
 
       {/* Store Profile */}
-      <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+      <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <StoreIcon className="h-5 w-5 text-amber-300" />
-            <h2 className="text-sm font-bold text-amber-200">Store Profile</h2>
+            <StoreIcon className="h-5 w-5 text-amber-600" />
+            <h2 className="text-sm font-bold text-amber-500">Store Profile</h2>
           </div>
-          <p className="text-xs text-stone-400">Shown on all receipts and documents.</p>
+          <p className="text-xs text-stone-500">Shown on all receipts and documents.</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs text-stone-400">Business Name</label>
-              <Input value={store.name ?? ""} onChange={e => setStore({ ...store, name: e.target.value })} className="bg-stone-900/60 border-amber-600/40" />
+              <label className="text-xs text-stone-500">Business Name</label>
+              <Input value={store.name ?? ""} onChange={e => setStore({ ...store, name: e.target.value })} className="bg-gold-200/90 border-amber-600/40" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-stone-400">TIN</label>
-              <Input value={store.tin ?? ""} onChange={e => setStore({ ...store, tin: e.target.value })} className="bg-stone-900/60 border-amber-600/40" />
+              <label className="text-xs text-stone-500">TIN</label>
+              <Input value={store.tin ?? ""} onChange={e => setStore({ ...store, tin: e.target.value })} className="bg-gold-200/90 border-amber-600/40" />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <label className="text-xs text-stone-400">Address</label>
-              <Input value={store.address ?? ""} onChange={e => setStore({ ...store, address: e.target.value })} className="bg-stone-900/60 border-amber-600/40" />
+              <label className="text-xs text-stone-500">Address</label>
+              <Input value={store.address ?? ""} onChange={e => setStore({ ...store, address: e.target.value })} className="bg-gold-200/90 border-amber-600/40" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs text-stone-400">Contact</label>
-              <Input value={store.contact ?? ""} onChange={e => setStore({ ...store, contact: e.target.value })} className="bg-stone-900/60 border-amber-600/40" />
+              <label className="text-xs text-stone-500">Contact</label>
+              <Input value={store.contact ?? ""} onChange={e => setStore({ ...store, contact: e.target.value })} className="bg-gold-200/90 border-amber-600/40" />
             </div>
           </div>
-          <Button onClick={saveStore} disabled={savingStore} className="bg-stone-800 hover:bg-stone-800 text-white rounded-xl" size="sm">
+          <Button onClick={saveStore} disabled={savingStore} className="bg-gold-100 hover:bg-gold-100 text-stone-800 rounded-xl" size="sm">
             {savingStore ? <Loader2Icon className="mr-2 h-4 w-4 animate-spin" /> : null} Save Profile
           </Button>
         </CardContent>
       </Card>
 
       {/* Printer Section */}
-      <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+      <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <PrinterIcon className="h-5 w-5 text-amber-300" />
-            <h2 className="text-sm font-bold text-amber-200">Bluetooth Printer</h2>
+            <PrinterIcon className="h-5 w-5 text-amber-600" />
+            <h2 className="text-sm font-bold text-amber-500">Bluetooth Printer</h2>
           </div>
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-amber-400">{printerName}</p>
+              <p className="text-sm text-amber-600">{printerName}</p>
               <ConnectionStatus connected={connected} />
             </div>
             <Button
               onClick={handlePair}
               disabled={pairing}
-              className="bg-stone-800 hover:bg-stone-800 text-white rounded-xl"
+              className="bg-gold-100 hover:bg-gold-100 text-stone-800 rounded-xl"
               size="sm"
             >
               {pairing ? <Loader2Icon className="mr-2 h-4 w-4 animate-spin" /> : <LinkIcon className="mr-2 h-4 w-4" />}
@@ -195,7 +195,7 @@ export default function SettingsPage() {
               variant="outline"
               onClick={handleTestPrint}
               disabled={testing}
-              className="rounded-xl border-amber-600/40 text-amber-300 hover:bg-transparent"
+              className="rounded-xl border-amber-600/40 text-amber-600 hover:bg-transparent"
               size="sm"
             >
               {testing ? <Loader2Icon className="mr-1 h-3 w-3 animate-spin" /> : <ReceiptIcon className="mr-1 h-3 w-3" />}
@@ -205,7 +205,7 @@ export default function SettingsPage() {
               variant="outline"
               onClick={handleTestDrawer}
               disabled={testing}
-              className="rounded-xl border-amber-600/40 text-amber-300 hover:bg-transparent"
+              className="rounded-xl border-amber-600/40 text-amber-600 hover:bg-transparent"
               size="sm"
             >
               {testing ? <Loader2Icon className="mr-1 h-3 w-3 animate-spin" /> : <PlugIcon className="mr-1 h-3 w-3" />}
@@ -216,14 +216,14 @@ export default function SettingsPage() {
       </Card>
 
       {/* Cash Drawer Section */}
-      <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+      <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <PlugIcon className="h-5 w-5 text-amber-300" />
-            <h2 className="text-sm font-bold text-amber-200">Cash Drawer</h2>
+            <PlugIcon className="h-5 w-5 text-amber-600" />
+            <h2 className="text-sm font-bold text-amber-500">Cash Drawer</h2>
           </div>
 
-          <p className="text-xs text-stone-400">How is the cash drawer connected?</p>
+          <p className="text-xs text-stone-500">How is the cash drawer connected?</p>
 
           <div className="space-y-2">
             {[
@@ -242,8 +242,8 @@ export default function SettingsPage() {
                   className="mt-0.5"
                 />
                 <div>
-                  <p className="text-sm font-semibold text-amber-300">{option.label}</p>
-                  <p className="text-xs text-stone-400">{option.desc}</p>
+                  <p className="text-sm font-semibold text-amber-600">{option.label}</p>
+                  <p className="text-xs text-stone-500">{option.desc}</p>
                 </div>
               </label>
             ))}
@@ -252,17 +252,17 @@ export default function SettingsPage() {
       </Card>
 
       {/* Receipt Section */}
-      <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+      <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
         <CardContent className="p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <ReceiptIcon className="h-5 w-5 text-amber-300" />
-            <h2 className="text-sm font-bold text-amber-200">Receipt Options</h2>
+            <ReceiptIcon className="h-5 w-5 text-amber-600" />
+            <h2 className="text-sm font-bold text-amber-500">Receipt Options</h2>
           </div>
 
           <label className="flex items-center justify-between rounded-xl border-2 border-stone-200 p-3 cursor-pointer hover:border-amber-600/40">
             <div>
-              <p className="text-sm font-semibold text-amber-300">Auto-print after sale</p>
-              <p className="text-xs text-stone-400">Print receipt automatically when sale completes</p>
+              <p className="text-sm font-semibold text-amber-600">Auto-print after sale</p>
+              <p className="text-xs text-stone-500">Print receipt automatically when sale completes</p>
             </div>
             <input
               type="checkbox"
@@ -275,13 +275,13 @@ export default function SettingsPage() {
       </Card>
 
       {/* Backup & Restore */}
-      <Card className="rounded-2xl border-2 border-amber-600/30 bg-stone-900/60 backdrop-blur-xl shadow-md">
+      <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
         <CardContent className="p-5 space-y-4">
-          <h2 className="text-sm font-bold text-amber-200">Backup & Restore</h2>
-          <p className="text-xs text-stone-400">Export all data or restore from a previous backup.</p>
+          <h2 className="text-sm font-bold text-amber-500">Backup & Restore</h2>
+          <p className="text-xs text-stone-500">Export all data or restore from a previous backup.</p>
           <div className="flex gap-2">
-            <Button onClick={() => window.open("/api/backup", "_blank")} className="bg-stone-800 hover:bg-stone-800 text-white rounded-xl" size="sm">Export All Data</Button>
-            <Button variant="outline" size="sm" className="rounded-xl border-amber-600/40 text-amber-300 hover:bg-transparent relative">
+            <Button onClick={() => window.open("/api/backup", "_blank")} className="bg-gold-100 hover:bg-gold-100 text-stone-800 rounded-xl" size="sm">Export All Data</Button>
+            <Button variant="outline" size="sm" className="rounded-xl border-amber-600/40 text-amber-600 hover:bg-transparent relative">
               <input id="restore-file" type="file" accept=".json" className="absolute inset-0 opacity-0 cursor-pointer" title="Select backup file to restore" onChange={async (e: any) => {
                 const file = e.target.files?.[0]; if (!file) return
                 try {
@@ -299,7 +299,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <p className="text-center text-xs text-stone-400 pb-4">
+      <p className="text-center text-xs text-stone-500 pb-4">
         Settings are saved to this browser automatically.
       </p>
     </div>
