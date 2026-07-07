@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { LogOutIcon, LayoutDashboardIcon, Search, ShoppingCart, X, Plus, Minus, User, CreditCard, Loader2Icon, BanknoteIcon } from "lucide-react"
+import { LogOutIcon, LayoutDashboardIcon, Search, ShoppingCart, X, Plus, Minus, User, CreditCard, Loader2Icon, BanknoteIcon, DoorOpenIcon, DoorClosedIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCart, type CartItem } from "@/hooks/use-cart"
 import { toast } from "sonner"
+import { DenominationCounter, calcDenomTotal, type DenomState } from "@/components/denomination-counter"
 
 interface CatalogItem {
   id: string; name: string; category_id: string | null; sell_by: "weight" | "unit";
@@ -49,7 +50,18 @@ export default function PosPage() {
   const router = useRouter()
   const cart = useCart()
 
-  // Collections
+  // Shift state
+  const [shift, setShift] = useState<any>(null)
+  const [shiftLoading, setShiftLoading] = useState(true)
+  const [shiftOpenModal, setShiftOpenModal] = useState(false)
+  const [shiftCloseModal, setShiftCloseModal] = useState(false)
+  const [shiftOpenDenoms, setShiftOpenDenoms] = useState<DenomState>({})
+  const [shiftOpenTotal, setShiftOpenTotal] = useState(0)
+  const [shiftCloseDenoms, setShiftCloseDenoms] = useState<DenomState>({})
+  const [shiftCloseTotal, setShiftCloseTotal] = useState(0)
+  const [shiftCloseNote, setShiftCloseNote] = useState("")
+  const [shiftSaving, setShiftSaving] = useState(false)
+
   const [collModal, setCollModal] = useState(false)
   const [collSearch, setCollSearch] = useState("")
   const [collResults, setCollResults] = useState<CustomerResult[]>([])
@@ -74,6 +86,83 @@ export default function PosPage() {
       setLoading(false)
     })
   }, [])
+
+  // Load current shift
+  function loadShift() {
+    return fetch("/api/shifts").then(r => r.json()).then(d => {
+      setShift(d.shift ?? null)
+      setShiftLoading(false)
+    }).catch(() => setShiftLoading(false))
+  }
+  useEffect(() => { loadShift() }, [])
+
+  async function openShift() {
+    if (shiftOpenTotal < 0) { toast.error("Enter opening cash"); return }
+    setShiftSaving(true)
+    const res = await fetch("/api/shifts", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ opening_cash: shiftOpenTotal, opening_denoms: shiftOpenDenoms }),
+    })
+    const json = await res.json()
+    if (!res.ok) { toast.error(json.error || "Failed to open shift"); setShiftSaving(false); return }
+    toast.success(`Shift opened — starting cash ₱${shiftOpenTotal.toFixed(2)}`)
+    setShiftSaving(false); setShiftOpenModal(false); setShiftOpenDenoms({}); setShiftOpenTotal(0)
+    await loadShift()
+  }
+
+  async function openCloseShiftModal() {
+    // Refresh shift to get latest expected cash
+    await loadShift()
+    setShiftCloseDenoms({}); setShiftCloseTotal(0); setShiftCloseNote("")
+    setShiftCloseModal(true)
+  }
+
+  async function closeShift() {
+    setShiftSaving(true)
+    const res = await fetch("/api/shifts", {
+      method: "PUT", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ closing_cash: shiftCloseTotal, closing_denoms: shiftCloseDenoms, note: shiftCloseNote }),
+    })
+    const json = await res.json()
+    if (!res.ok) { toast.error(json.error || "Failed to close shift"); setShiftSaving(false); return }
+    const s = json.shift
+    // Print close report
+    printShiftReport(s)
+    toast.success(`Shift closed. Variance: ${s.variance >= 0 ? "+" : ""}₱${Number(s.variance).toFixed(2)}`)
+    setShiftSaving(false); setShiftCloseModal(false)
+    await loadShift()
+  }
+
+  function printShiftReport(s: any) {
+    const w = window.open("", "shift", "width=320,height=700")
+    if (!w) return
+    const denomRows = (obj: any) => Object.keys(obj || {}).filter(k => obj[k] > 0)
+      .sort((a, b) => Number(b) - Number(a))
+      .map(k => `<tr><td>₱${Number(k).toLocaleString()}</td><td style="text-align:center">x${obj[k]}</td><td style="text-align:right">₱${(Number(k) * obj[k]).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td></tr>`).join("")
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Shift Report</title>
+    <style>@page{size:80mm auto;margin:4mm}body{font-family:'Courier New',monospace;font-size:12px;width:72mm;margin:0 auto;color:#000}.c{text-align:center}.line{border-top:1px dashed #000;margin:4px 0}table{width:100%;border-collapse:collapse}td{font-size:11px;padding:1px 2px}</style>
+    </head><body onload="setTimeout(()=>window.print(),300)">
+      <div class="c"><strong style="font-size:14px">${user?.name ? "GroceryPOS" : "GroceryPOS"}</strong><br/><span style="font-size:10px">SHIFT CASH REPORT</span></div>
+      <div class="line"></div>
+      <div style="font-size:10px">Cashier: ${user?.name || ""}<br/>Opened: ${new Date(s.opened_at).toLocaleString("en-PH")}<br/>Closed: ${new Date(s.closed_at).toLocaleString("en-PH")}</div>
+      <div class="line"></div>
+      <table>
+        <tr><td>Opening Cash</td><td></td><td style="text-align:right">₱${Number(s.opening_cash).toFixed(2)}</td></tr>
+        <tr><td>Cash Sales</td><td></td><td style="text-align:right">₱${Number(s.cash_sales).toFixed(2)}</td></tr>
+        <tr><td>Cash Collections</td><td></td><td style="text-align:right">₱${Number(s.cash_collections).toFixed(2)}</td></tr>
+        <tr><td colspan="2"><strong>Expected Cash</strong></td><td style="text-align:right"><strong>₱${Number(s.expected_cash).toFixed(2)}</strong></td></tr>
+        <tr><td colspan="2"><strong>Counted Cash</strong></td><td style="text-align:right"><strong>₱${Number(s.closing_cash).toFixed(2)}</strong></td></tr>
+        <tr><td colspan="2"><strong>VARIANCE</strong></td><td style="text-align:right"><strong>${s.variance >= 0 ? "+" : ""}₱${Number(s.variance).toFixed(2)}</strong></td></tr>
+      </table>
+      <div class="line"></div>
+      <div class="c" style="font-size:10px"><strong>CLOSING DENOMINATIONS</strong></div>
+      <table>${denomRows(s.closing_denoms)}</table>
+      <div class="line"></div>
+      ${s.note ? `<div style="font-size:10px">Note: ${s.note}</div>` : ""}
+      <div class="c" style="font-size:10px;margin-top:8px">— End of Shift —</div>
+    </body></html>`)
+    w.document.close()
+  }
 
   // Barcode scanner
   useEffect(() => {
@@ -136,6 +225,7 @@ export default function PosPage() {
 
   // Payment
   function openPay() {
+    if (!shift) { toast.error("Open a shift first before selling"); setShiftOpenModal(true); return }
     setPayCash(String(cart.total.toFixed(2)))
     setPayGcash("0")
     setPayModal(true)
@@ -249,6 +339,15 @@ export default function PosPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {shift ? (
+            <button onClick={openCloseShiftModal} className="flex items-center gap-1.5 rounded-full border border-green-500/40 bg-green-500/15 px-3 py-1 text-xs font-medium text-green-300 hover:bg-red-500/20 hover:text-red-300 hover:border-red-500/40 transition-all" title="Close Shift">
+              <DoorClosedIcon className="h-3.5 w-3.5" /> Shift Open · Close
+            </button>
+          ) : (
+            <button onClick={() => { setShiftOpenDenoms({}); setShiftOpenTotal(0); setShiftOpenModal(true) }} className="flex items-center gap-1.5 rounded-full border border-amber-500/40 bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-300 hover:bg-amber-500/25 transition-all">
+              <DoorOpenIcon className="h-3.5 w-3.5" /> Open Shift
+            </button>
+          )}
           <div className="flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/15 px-2 sm:px-3 py-1">
             <div className="flex h-6 w-6 sm:h-7 sm:w-7 shrink-0 items-center justify-center rounded-full bg-amber-500 text-xs font-extrabold text-stone-900">
               {user.name.charAt(0).toUpperCase()}
@@ -425,6 +524,55 @@ export default function PosPage() {
               <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={processPayment} disabled={paySaving}>{paySaving?<Loader2Icon className="h-4 w-4 animate-spin"/>:"Confirm Payment"}</Button>
             </div>
           </div></DialogContent>
+      </Dialog>
+
+      {/* ══ OPEN SHIFT MODAL ══ */}
+      <Dialog open={shiftOpenModal} onOpenChange={setShiftOpenModal}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorOpenIcon className="h-5 w-5 text-amber-400" /> Open Shift — Count Starting Cash</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-xs text-stone-400">Count the cash in the drawer before you start selling. Enter how many pieces of each denomination.</p>
+            <DenominationCounter value={shiftOpenDenoms} onChange={(d, t) => { setShiftOpenDenoms(d); setShiftOpenTotal(t) }} />
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShiftOpenModal(false)}>Cancel</Button>
+              <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={openShift} disabled={shiftSaving}>
+                {shiftSaving ? <Loader2Icon className="h-4 w-4 animate-spin" /> : `Open Shift (₱${shiftOpenTotal.toFixed(2)})`}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ══ CLOSE SHIFT MODAL ══ */}
+      <Dialog open={shiftCloseModal} onOpenChange={setShiftCloseModal}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorClosedIcon className="h-5 w-5 text-amber-400" /> Close Shift — Count Cash</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            {shift && (
+              <div className="rounded-lg bg-stone-800/60 border border-amber-600/30 p-3 space-y-1 text-sm">
+                <div className="flex justify-between text-stone-400"><span>Opening Cash</span><span>₱{Number(shift.opening_cash).toFixed(2)}</span></div>
+                <div className="flex justify-between text-stone-400"><span>Cash Sales</span><span>₱{Number(shift.cash_sales).toFixed(2)}</span></div>
+                <div className="flex justify-between text-stone-400"><span>Cash Collections</span><span>₱{Number(shift.cash_collections).toFixed(2)}</span></div>
+                <div className="flex justify-between font-bold text-amber-300 border-t border-amber-600/30 pt-1"><span>Expected in Drawer</span><span>₱{Number(shift.expected_cash).toFixed(2)}</span></div>
+              </div>
+            )}
+            <p className="text-xs text-stone-400">Now count the actual cash in the drawer:</p>
+            <DenominationCounter value={shiftCloseDenoms} onChange={(d, t) => { setShiftCloseDenoms(d); setShiftCloseTotal(t) }} />
+            {shift && (
+              <div className={`rounded-lg p-2 text-center text-sm font-semibold ${(shiftCloseTotal - Number(shift.expected_cash)) === 0 ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}>
+                Variance: {(shiftCloseTotal - Number(shift.expected_cash)) >= 0 ? "+" : ""}₱{(shiftCloseTotal - Number(shift.expected_cash)).toFixed(2)}
+                {(shiftCloseTotal - Number(shift.expected_cash)) > 0 ? " (over)" : (shiftCloseTotal - Number(shift.expected_cash)) < 0 ? " (short)" : " (balanced)"}
+              </div>
+            )}
+            <Input placeholder="Note (optional)" value={shiftCloseNote} onChange={e => setShiftCloseNote(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setShiftCloseModal(false)}>Cancel</Button>
+              <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={closeShift} disabled={shiftSaving}>
+                {shiftSaving ? <Loader2Icon className="h-4 w-4 animate-spin" /> : "Close Shift & Print"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
       </Dialog>
 
       {/* ══ COLLECTIONS MODAL ══ */}
