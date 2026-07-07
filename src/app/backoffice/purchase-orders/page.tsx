@@ -194,22 +194,22 @@ export default function PurchaseOrdersPage() {
 
       {/* ── CREATE PO DIALOG ── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>New Purchase Order</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Supplier *</label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Supplier *</label>
                 <Select value={cSupplier} onValueChange={v => setCSupplier(v ?? "")}>
-                  <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue placeholder="Select supplier" /></SelectTrigger>
+                  <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue placeholder="Select supplier" /></SelectTrigger>
                   <SelectContent>
                     {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Expected Date</label>
-                <Input type="date" value={cExpected} onChange={e => setCExpected(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Expected Date</label>
+                <Input type="date" value={cExpected} onChange={e => setCExpected(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
             </div>
 
@@ -220,21 +220,21 @@ export default function PurchaseOrdersPage() {
               </div>
               <div className="space-y-2 overflow-x-auto">
                 {cLines.map((l, i) => (
-                  <div key={i} className="grid grid-cols-12 gap-2 items-end bg-stone-800/50 rounded-lg p-2 border border-amber-600/30">
-                    <div className="col-span-6 space-y-1">
-                      <label className="text-[10px] text-stone-500">Product</label>
+                  <div key={i} className="grid grid-cols-12 gap-3 items-end bg-stone-800/50 rounded-lg p-4 border border-amber-600/30">
+                    <div className="col-span-6 space-y-1.5 mb-1">
+                      <label className="text-xs font-medium text-stone-400 mb-1">Product</label>
                       <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
-                        <SelectTrigger className="bg-stone-700 border-stone-600 h-8 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger className="bg-stone-700 border-stone-600 h-10 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
                         <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
-                    <div className="col-span-1 space-y-1">
-                      <label className="text-[10px] text-stone-500">Qty</label>
-                      <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-stone-700 border-stone-600 h-8 text-xs" />
+                    <div className="col-span-1 space-y-1.5 mb-1">
+                      <label className="text-xs font-medium text-stone-400 mb-1">Qty</label>
+                      <Input type="number" step="0.001" value={l.qty_ordered} onChange={e => updateLine(i, "qty_ordered", e.target.value)} className="bg-stone-700 border-stone-600 h-10 text-xs" />
                     </div>
-                    <div className="col-span-2 space-y-1">
-                      <label className="text-[10px] text-stone-500">Buy Cost</label>
-                      <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-stone-700 border-stone-600 h-8 text-xs" />
+                    <div className="col-span-2 space-y-1.5 mb-1">
+                      <label className="text-xs font-medium text-stone-400 mb-1">Buy Cost</label>
+                      <Input type="number" step="0.01" value={l.unit_cost} onChange={e => updateLine(i, "unit_cost", e.target.value)} className="bg-stone-700 border-stone-600 h-10 text-xs" />
                     </div>
                     <div className="col-span-2 text-right text-xs text-stone-300 self-center pt-4">
                       ₱{(Number(l.qty_ordered || 0) * Number(l.unit_cost || 0)).toFixed(2)}
@@ -247,7 +247,7 @@ export default function PurchaseOrdersPage() {
               </div>
             </div>
 
-            <Input placeholder="Note (optional)" value={cNote} onChange={e => setCNote(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+            <Input placeholder="Note (optional)" value={cNote} onChange={e => setCNote(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
 
             <div className="flex justify-between items-center border-t border-amber-600/30 pt-3">
               <span className="text-sm text-stone-400">Total Purchase Cost</span>
@@ -264,7 +264,7 @@ export default function PurchaseOrdersPage() {
 
       {/* ── DETAIL / RECEIVE DIALOG ── */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
           {detail && (
             <>
               <DialogHeader>
@@ -301,7 +301,7 @@ export default function PurchaseOrdersPage() {
                                 <Input type="number" step="0.001" min="0" max={it.remaining}
                                   value={recvLines[it.id]?.qty ?? ""}
                                   onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], qty: e.target.value } })}
-                                  className="w-20 h-7 bg-stone-800 border-amber-600/30 text-center text-xs mx-auto" />
+                                  className="w-20 h-10 bg-stone-800 border-amber-600/30 text-center text-xs mx-auto" />
                               ) : <span className="text-green-400 text-[10px]">✓ done</span>}
                             </td>
                           )}

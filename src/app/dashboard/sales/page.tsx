@@ -480,13 +480,13 @@ export default function SalesPage() {
 
         {/* Action Dialog */}
         <Dialog open={actionOpen} onOpenChange={setActionOpen}>
-          <DialogContent className="sm:max-w-sm rounded-2xl">
+          <DialogContent className="sm:max-w-sm rounded-2xl p-5">
             <DialogHeader>
               <DialogTitle className="text-amber-300">
                 {actionType === "refund" ? "Refund Sale" : actionType === "void" ? "Void Sale" : "Reprint"}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-sm text-amber-400">
                 {actionType === "reprint"
                   ? "Open receipt for printing?"
@@ -494,7 +494,7 @@ export default function SalesPage() {
               </p>
               {actionType !== "reprint" && (
                 <div>
-                  <label className="text-xs font-medium text-stone-400">Reason</label>
+                  <label className="text-xs font-medium text-stone-400 mb-1">Reason</label>
                   <Input value={actionReason} onChange={e => setActionReason(e.target.value)} placeholder="Required"
                     className="h-10 rounded-xl border-amber-600/40 mt-1" />
                 </div>

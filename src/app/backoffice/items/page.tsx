@@ -282,7 +282,7 @@ export default function ItemsPage() {
 
       {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
@@ -291,16 +291,16 @@ export default function ItemsPage() {
             <div className="space-y-6">
               {/* Basic Info */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1 col-span-2">
-                  <Label>Name *</Label>
+                <div className="space-y-1.5 mb-1 col-span-2">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Name *</Label>
                   <Input value={editing.name ?? ""} onChange={e => updateField("name", e.target.value)}
-                    className="bg-stone-800 border-amber-600/30" />
+                    className="bg-stone-800 border-amber-600/30 h-10" />
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Category</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Category</Label>
                   <Select value={editing.category_id ?? "none"} onValueChange={v => updateField("category_id", v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-stone-800 border-amber-600/30">
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10">
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
@@ -310,10 +310,10 @@ export default function ItemsPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Sell By</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Sell By</Label>
                   <Select value={editing.sell_by ?? "unit"} onValueChange={v => updateField("sell_by", v)}>
-                    <SelectTrigger className="bg-stone-800 border-amber-600/30">
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -323,28 +323,28 @@ export default function ItemsPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Cost (per base unit)</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Cost (per base unit)</Label>
                   <Input type="number" step="0.01" value={editing.cost ?? 0} onChange={e => updateField("cost", e.target.value)}
-                    className="bg-stone-800 border-amber-600/30" />
+                    className="bg-stone-800 border-amber-600/30 h-10" />
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Min Stock</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Min Stock</Label>
                   <Input type="number" step="0.001" value={editing.min_stock ?? 0} onChange={e => updateField("min_stock", e.target.value)}
-                    className="bg-stone-800 border-amber-600/30" />
+                    className="bg-stone-800 border-amber-600/30 h-10" />
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Barcode</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Barcode</Label>
                   <Input value={editing.barcode ?? ""} onChange={e => updateField("barcode", e.target.value || null)}
-                    placeholder="Scan or type..." className="bg-stone-800 border-amber-600/30" />
+                    placeholder="Scan or type..." className="bg-stone-800 border-amber-600/30 h-10" />
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Tax Rate</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Tax Rate</Label>
                   <Select value={editing.tax_rate_id ?? "none"} onValueChange={v => updateField("tax_rate_id", v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-stone-800 border-amber-600/30">
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10">
                       <SelectValue placeholder="None" />
                     </SelectTrigger>
                     <SelectContent>
@@ -354,10 +354,10 @@ export default function ItemsPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-1">
-                  <Label>Status</Label>
+                <div className="space-y-1.5 mb-1">
+                  <Label className="text-xs font-medium text-stone-400 mb-1">Status</Label>
                   <Select value={editing.status ?? "active"} onValueChange={v => updateField("status", v)}>
-                    <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
@@ -368,14 +368,14 @@ export default function ItemsPage() {
                 <div className="flex items-center gap-2 pt-6">
                   <input type="checkbox" id="discEl" checked={editing.discount_eligible ?? true}
                     onChange={e => updateField("discount_eligible", e.target.checked)} />
-                  <Label htmlFor="discEl">Eligible for Senior/PWD discount</Label>
+                  <Label htmlFor="discEl" className="text-xs font-medium text-stone-400 mb-1">Eligible for Senior/PWD discount</Label>
                 </div>
               </div>
 
               {/* Selling Units */}
-              <div>
+              <div className="mt-6 pt-4 border-t border-amber-600/20">
                 <div className="flex items-center justify-between mb-3">
-                  <Label className="text-base">Selling Units</Label>
+                  <Label className="text-base text-xs font-medium text-stone-400 mb-1">Selling Units</Label>
                   <Button variant="outline" size="sm" onClick={addUnit} className="gap-1 text-xs">
                     <Plus className="h-3 w-3" /> Add Unit
                   </Button>
@@ -383,31 +383,31 @@ export default function ItemsPage() {
 
                 <div className="space-y-2 overflow-x-auto">
                   {(editing.selling_units ?? []).map((unit, idx) => (
-                    <div key={idx} className="grid grid-cols-12 gap-2 items-end bg-stone-800/50 rounded-lg p-3 border border-amber-600/30">
-                      <div className="col-span-3 space-y-1">
-                        <Label className="text-xs">Name</Label>
+                    <div key={idx} className="grid grid-cols-12 gap-3 items-end bg-stone-800/50 rounded-lg p-4 border border-amber-600/30">
+                      <div className="col-span-3 space-y-1.5 mb-1">
+                        <Label className="text-xs font-medium text-stone-400 mb-1">Name</Label>
                         <Input value={unit.name} onChange={e => updateUnit(idx, "name", e.target.value)}
-                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-10 text-sm" />
                       </div>
-                      <div className="col-span-2 space-y-1">
-                        <Label className="text-xs">Base Qty</Label>
+                      <div className="col-span-2 space-y-1.5 mb-1">
+                        <Label className="text-xs font-medium text-stone-400 mb-1">Base Qty</Label>
                         <Input type="number" step="0.001" value={unit.base_qty} onChange={e => updateUnit(idx, "base_qty", e.target.value)}
-                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-10 text-sm" />
                       </div>
-                      <div className="col-span-2 space-y-1">
-                        <Label className="text-xs">Price (₱)</Label>
+                      <div className="col-span-2 space-y-1.5 mb-1">
+                        <Label className="text-xs font-medium text-stone-400 mb-1">Price (₱)</Label>
                         <Input type="number" step="0.01" value={unit.price} onChange={e => updateUnit(idx, "price", e.target.value)}
-                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-10 text-sm" />
                       </div>
-                      <div className="col-span-1 space-y-1">
-                        <Label className="text-xs">Min Qty</Label>
+                      <div className="col-span-1 space-y-1.5 mb-1">
+                        <Label className="text-xs font-medium text-stone-400 mb-1">Min Qty</Label>
                         <Input type="number" step="0.001" value={unit.min_qty} onChange={e => updateUnit(idx, "min_qty", e.target.value)}
-                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-10 text-sm" />
                       </div>
-                      <div className="col-span-1 space-y-1">
-                        <Label className="text-xs">Sort</Label>
+                      <div className="col-span-1 space-y-1.5 mb-1">
+                        <Label className="text-xs font-medium text-stone-400 mb-1">Sort</Label>
                         <Input type="number" value={unit.sort_order} onChange={e => updateUnit(idx, "sort_order", e.target.value)}
-                          className="bg-stone-700 border-stone-600 h-8 text-sm" />
+                          className="bg-stone-700 border-stone-600 h-10 text-sm" />
                       </div>
                       <div className="col-span-1 flex flex-col items-center gap-1 pt-1">
                         <Button

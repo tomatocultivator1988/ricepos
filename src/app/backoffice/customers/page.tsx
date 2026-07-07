@@ -162,28 +162,28 @@ export default function CustomersPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Customer" : "Add Customer"}</DialogTitle></DialogHeader>
           {editing && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Name *</label>
-                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+            <div className="space-y-4">
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Name *</label>
+                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Contact</label>
-                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Contact</label>
+                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Address</label>
-                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Address</label>
+                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 {editing.id && (
-                  <div className="space-y-1">
-                    <label className="text-xs text-stone-400">Status</label>
+                  <div className="space-y-1.5 mb-1">
+                    <label className="text-xs font-medium text-stone-400 mb-1">Status</label>
                     <Select value={editing.status ?? "active"} onValueChange={v => setEditing({ ...editing, status: v ?? "active" })}>
-                      <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="active">Active</SelectItem>
                         <SelectItem value="inactive">Inactive</SelectItem>
@@ -203,7 +203,7 @@ export default function CustomersPage() {
 
       {/* Customer Detail + Collections */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-stone-900/60 border-amber-600/30 text-white p-5">
           {detail && (
             <>
               <DialogHeader>
@@ -236,9 +236,9 @@ export default function CustomersPage() {
                     <p className="text-sm font-semibold flex items-center gap-1"><CreditCard className="h-4 w-4" /> Record Payment (Collection)</p>
                     <div className="flex gap-2">
                       <Input type="number" step="0.01" placeholder="Amount" value={collectAmount}
-                        onChange={e => setCollectAmount(e.target.value)} className="bg-stone-800 border-amber-600/30 flex-1" />
+                        onChange={e => setCollectAmount(e.target.value)} className="bg-stone-800 border-amber-600/30 flex-1 h-10" />
                       <Select value={collectMethod} onValueChange={v => setCollectMethod(v ?? "cash")}>
-                        <SelectTrigger className="w-28 bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-28 bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="cash">Cash</SelectItem>
                           <SelectItem value="gcash">GCash</SelectItem>

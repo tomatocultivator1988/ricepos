@@ -81,27 +81,27 @@ export default function ExpensesPage() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-md bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Add Expense</DialogTitle></DialogHeader>
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Date</label>
-              <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+          <div className="space-y-4">
+            <div className="space-y-1.5 mb-1">
+              <label className="text-xs font-medium text-stone-400 mb-1">Date</label>
+              <Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Category</label>
+            <div className="space-y-1.5 mb-1">
+              <label className="text-xs font-medium text-stone-400 mb-1">Category</label>
               <Select value={form.category} onValueChange={v => setForm({ ...form, category: v ?? "utilities" })}>
-                <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                 <SelectContent>{CATEGORIES.map(c => <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Description</label>
-              <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+            <div className="space-y-1.5 mb-1">
+              <label className="text-xs font-medium text-stone-400 mb-1">Description</label>
+              <Input value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-stone-400">Amount</label>
-              <Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+            <div className="space-y-1.5 mb-1">
+              <label className="text-xs font-medium text-stone-400 mb-1">Amount</label>
+              <Input type="number" step="0.01" value={form.amount} onChange={e => setForm({ ...form, amount: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

@@ -135,18 +135,18 @@ export default function InventoryPage() {
 
       {/* Delivery Modal */}
       <Dialog open={!!deliverItem} onOpenChange={() => setDeliverItem(null)}>
-        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Receive Delivery — {deliverItem?.name}</DialogTitle></DialogHeader>
           {deliverItem && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-xs text-stone-400">Current: {Number(deliverItem.stock_qty).toFixed(deliverItem.sell_by === "weight" ? 3 : 0)} {deliverItem.sell_by === "weight" ? "kg" : "pc"}</p>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Supplier (optional)</label>
-                <Input value={delivSupplier} onChange={e => setDelivSupplier(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Supplier (optional)</label>
+                <Input value={delivSupplier} onChange={e => setDelivSupplier(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Quantity received ({deliverItem.sell_by === "weight" ? "kg" : "pcs"})</label>
-                <Input type="number" step={deliverItem.sell_by === "weight" ? "0.1" : "1"} value={delivQty} onChange={e => setDelivQty(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Quantity received ({deliverItem.sell_by === "weight" ? "kg" : "pcs"})</label>
+                <Input type="number" step={deliverItem.sell_by === "weight" ? "0.1" : "1"} value={delivQty} onChange={e => setDelivQty(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
                 <p className="text-xs text-stone-500">Delivery increases stock only (cost is set in Products).</p>
               </div>
               <div className="flex justify-end gap-2">
@@ -160,15 +160,15 @@ export default function InventoryPage() {
 
       {/* Adjustment Modal */}
       <Dialog open={!!adjustItem} onOpenChange={() => setAdjustItem(null)}>
-        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white">
+        <DialogContent className="max-w-sm bg-stone-900/60 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Adjust Stock — {adjustItem?.name}</DialogTitle></DialogHeader>
           {adjustItem && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <p className="text-xs text-stone-400">Current: {Number(adjustItem.stock_qty).toFixed(adjustItem.sell_by === "weight" ? 3 : 0)}</p>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Type</label>
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Type</label>
                 <Select value={adjType} onValueChange={v => setAdjType(v ?? "spoilage")}>
-                  <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="spoilage">Spoilage</SelectItem>
                     <SelectItem value="damage">Damage</SelectItem>
@@ -177,13 +177,13 @@ export default function InventoryPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">{adjType === "physical_count" ? "Actual counted quantity" : "Quantity to remove"}</label>
-                <Input type="number" step="0.001" value={adjQty} onChange={e => setAdjQty(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">{adjType === "physical_count" ? "Actual counted quantity" : "Quantity to remove"}</label>
+                <Input type="number" step="0.001" value={adjQty} onChange={e => setAdjQty(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Reason</label>
-                <Input value={adjReason} onChange={e => setAdjReason(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Reason</label>
+                <Input value={adjReason} onChange={e => setAdjReason(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setAdjustItem(null)}>Cancel</Button>

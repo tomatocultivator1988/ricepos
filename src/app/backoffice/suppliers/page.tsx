@@ -96,31 +96,31 @@ export default function SuppliersPage() {
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-md bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>{editing?.id ? "Edit Supplier" : "Add Supplier"}</DialogTitle></DialogHeader>
           {editing && (
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Name *</label>
-                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+            <div className="space-y-4">
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Name *</label>
+                <Input value={editing.name ?? ""} onChange={e => setEditing({ ...editing, name: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Contact</label>
-                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Contact</label>
+                <Input value={editing.contact ?? ""} onChange={e => setEditing({ ...editing, contact: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Address</label>
-                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Address</label>
+                <Input value={editing.address ?? ""} onChange={e => setEditing({ ...editing, address: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Note</label>
-                <Input value={editing.note ?? ""} onChange={e => setEditing({ ...editing, note: e.target.value })} className="bg-stone-800 border-amber-600/30" />
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Note</label>
+                <Input value={editing.note ?? ""} onChange={e => setEditing({ ...editing, note: e.target.value })} className="bg-stone-800 border-amber-600/30 h-10" />
               </div>
               {editing.id && (
-                <div className="space-y-1">
-                  <label className="text-xs text-stone-400">Status</label>
+                <div className="space-y-1.5 mb-1">
+                  <label className="text-xs font-medium text-stone-400 mb-1">Status</label>
                   <Select value={editing.status ?? "active"} onValueChange={v => setEditing({ ...editing, status: v ?? "active" })}>
-                    <SelectTrigger className="bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
                   </Select>
                 </div>

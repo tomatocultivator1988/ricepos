@@ -483,9 +483,9 @@ export default function PosPage() {
 
       {/* ══ UNIT PICKER ══ */}
       <Dialog open={!!upItem} onOpenChange={()=>setUpItem(null)}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>{upItem?.name}</DialogTitle></DialogHeader>
-          {upItem&&(<div className="space-y-4">
+          {upItem&&(<div className="space-y-5">
             <p className="text-xs text-stone-400">Available: {Number(upItem.stock_qty).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"}</p>
             <div className="space-y-1.5">
               {upItem.units.map(u=>(<label key={u.id} className={`flex items-center gap-3 p-2 rounded cursor-pointer border ${upUnit===u.id?"border-amber-500 bg-amber-500/10":"border-amber-600/30 bg-stone-800"}`}>
@@ -494,11 +494,11 @@ export default function PosPage() {
                 <span className="text-sm font-bold text-amber-400">₱{Number(u.price).toFixed(2)}</span>
               </label>))}
             </div>
-            <div className="space-y-1">
-              <span className="text-xs text-stone-400">Quantity:</span>
+            <div className="space-y-1.5 mb-1">
+              <span className="text-xs font-medium text-stone-400 mb-1">Quantity:</span>
               <Input type="number" value={upQty} onChange={e=>setUpQty(e.target.value)}
                 step={upItem.sell_by==="weight"?"0.1":"1"} min={upItem.units.find(u=>u.id===upUnit)?.min_qty??(upItem.sell_by==="weight"?0.001:1)}
-                className="bg-stone-800 border-amber-600/30 h-9 text-sm"/>
+                className="bg-stone-800 border-amber-600/30 h-10 text-sm"/>
             </div>
             {upUnit&&(<p className="text-xs text-stone-500">Total: {(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.base_qty??1)).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"} = ₱{(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.price??0)).toFixed(2)}</p>)}
             <Button onClick={addToCart} className="w-full bg-amber-600 hover:bg-amber-500">Add to Cart</Button>
@@ -508,8 +508,8 @@ export default function PosPage() {
 
       {/* ══ CUSTOMER SEARCH ══ */}
       <Dialog open={custModal} onOpenChange={setCustModal}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white"><DialogHeader><DialogTitle>Select Customer</DialogTitle></DialogHeader>
-          <div className="space-y-3">
+        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5"><DialogHeader><DialogTitle>Select Customer</DialogTitle></DialogHeader>
+          <div className="space-y-4">
             <Input placeholder="Search customer..." value={custSearch} onChange={e=>searchCustomers(e.target.value)} className="bg-stone-800 border-amber-600/30"/>
             <button onClick={()=>{cart.setCustomer(null,"",0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-stone-800 text-sm text-stone-400 hover:bg-stone-700">Walk-in (no customer)</button>
             {custResults.map(c=>(<button key={c.id} onClick={()=>{cart.setCustomer(c.id,c.name,c.balance??0);setCustModal(false)}} className="w-full text-left p-2 rounded bg-stone-800 text-sm hover:bg-stone-700">
@@ -521,18 +521,18 @@ export default function PosPage() {
 
       {/* ══ PAYMENT OVERLAY ══ */}
       <Dialog open={payModal} onOpenChange={setPayModal}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Payment</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <p className="text-center"><span className="text-3xl font-bold text-white">₱{cart.total.toFixed(2)}</span></p>
             <div className="space-y-3">
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">Cash</label>
-                <Input type="number" step="0.01" value={payCash} onChange={e=>setPayCash(e.target.value)} className="bg-stone-800 border-amber-600/30"/>
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">Cash</label>
+                <Input type="number" step="0.01" value={payCash} onChange={e=>setPayCash(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10"/>
               </div>
-              <div className="space-y-1">
-                <label className="text-xs text-stone-400">GCash</label>
-                <Input type="number" step="0.01" value={payGcash} onChange={e=>setPayGcash(e.target.value)} className="bg-stone-800 border-amber-600/30"/>
+              <div className="space-y-1.5 mb-1">
+                <label className="text-xs font-medium text-stone-400 mb-1">GCash</label>
+                <Input type="number" step="0.01" value={payGcash} onChange={e=>setPayGcash(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10"/>
               </div>
               <div className="border-t border-amber-600/30 pt-2 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-stone-400">Paid</span><span className="text-white font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)).toFixed(2)}</span></div>
@@ -551,9 +551,9 @@ export default function PosPage() {
 
       {/* ══ RECEIPT PREVIEW MODAL ══ */}
       <Dialog open={receiptModal} onOpenChange={setReceiptModal}>
-        <DialogContent className="max-w-sm bg-white text-black font-mono text-sm">
+        <DialogContent className="max-w-sm bg-white text-black font-mono text-sm p-6">
           {receiptData && (
-            <div className="space-y-2 text-[13px]">
+            <div className="space-y-4 text-[13px]">
               {/* Store header */}
               <div className="text-center border-b border-dashed border-gray-300 pb-2">
                 <p className="font-bold text-base">{receiptData.header}</p>
@@ -638,9 +638,9 @@ export default function PosPage() {
 
       {/* ══ OPEN SHIFT MODAL ══ */}
       <Dialog open={shiftOpenModal} onOpenChange={setShiftOpenModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorOpenIcon className="h-5 w-5 text-amber-400" /> Open Shift — Count Starting Cash</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
             <p className="text-xs text-stone-400">Count the cash in the drawer before you start selling. Enter how many pieces of each denomination.</p>
             <DenominationCounter value={shiftOpenDenoms} onChange={(d, t) => { setShiftOpenDenoms(d); setShiftOpenTotal(t) }} />
             <div className="flex gap-2">
@@ -655,9 +655,9 @@ export default function PosPage() {
 
       {/* ══ CLOSE SHIFT MODAL ══ */}
       <Dialog open={shiftCloseModal} onOpenChange={setShiftCloseModal}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorClosedIcon className="h-5 w-5 text-amber-400" /> Close Shift — Count Cash</DialogTitle></DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-5">
             {shift && (
               <div className="rounded-lg bg-stone-800/60 border border-amber-600/30 p-3 space-y-1 text-sm">
                 <div className="flex justify-between text-stone-400"><span>Opening Cash</span><span>₱{Number(shift.opening_cash).toFixed(2)}</span></div>
@@ -674,7 +674,7 @@ export default function PosPage() {
                 {(shiftCloseTotal - Number(shift.expected_cash)) > 0 ? " (over)" : (shiftCloseTotal - Number(shift.expected_cash)) < 0 ? " (short)" : " (balanced)"}
               </div>
             )}
-            <Input placeholder="Note (optional)" value={shiftCloseNote} onChange={e => setShiftCloseNote(e.target.value)} className="bg-stone-800 border-amber-600/30" />
+            <Input placeholder="Note (optional)" value={shiftCloseNote} onChange={e => setShiftCloseNote(e.target.value)} className="bg-stone-800 border-amber-600/30 h-10" />
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShiftCloseModal(false)}>Cancel</Button>
               <Button className="flex-1 bg-amber-600 hover:bg-amber-500" onClick={closeShift} disabled={shiftSaving}>
@@ -687,16 +687,16 @@ export default function PosPage() {
 
       {/* ══ COLLECTIONS MODAL ══ */}
       <Dialog open={collModal} onOpenChange={setCollModal}>
-        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white">
+        <DialogContent className="max-w-sm bg-stone-900 border-amber-600/30 text-white p-5">
           <DialogHeader><DialogTitle>Collections (Utang Payment)</DialogTitle></DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {!collSelected ? (
               <>
                 <Input placeholder="Search customer..." value={collSearch} onChange={e => {
                   setCollSearch(e.target.value)
                   if (e.target.value.length < 1) { setCollResults([]); return }
                   fetch(`/api/backoffice/customers?q=${encodeURIComponent(e.target.value)}`).then(r => r.json()).then(d => setCollResults(d.customers ?? []))
-                }} className="bg-stone-800 border-amber-600/30" />
+                }} className="bg-stone-800 border-amber-600/30 h-10" />
                 {collResults.map((c: any) => (
                   <button key={c.id} onClick={() => setCollSelected({ id: c.id, name: c.name, balance: c.balance ?? 0 })}
                     className="w-full text-left p-2 rounded bg-stone-800 text-sm hover:bg-stone-700">
@@ -712,9 +712,9 @@ export default function PosPage() {
                   <p className="text-xl font-bold text-yellow-400">Balance: ₱{collSelected.balance.toFixed(2)}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Input type="number" step="0.01" placeholder="Amount" value={collAmount} onChange={e => setCollAmount(e.target.value)} className="bg-stone-800 border-amber-600/30 flex-1" />
+                  <Input type="number" step="0.01" placeholder="Amount" value={collAmount} onChange={e => setCollAmount(e.target.value)} className="bg-stone-800 border-amber-600/30 flex-1 h-10" />
                   <Select value={collMethod} onValueChange={v => setCollMethod(v ?? "cash")}>
-                    <SelectTrigger className="w-28 bg-stone-800 border-amber-600/30"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="w-28 bg-stone-800 border-amber-600/30 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="gcash">GCash</SelectItem></SelectContent>
                   </Select>
                 </div>

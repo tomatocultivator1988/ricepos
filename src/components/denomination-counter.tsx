@@ -32,7 +32,7 @@ export function DenominationCounter({
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 gap-y-1.5 text-sm">
+      <div className="grid grid-cols-[1fr_auto_auto] gap-x-3 gap-y-2 text-sm">
         <div className="text-xs font-semibold text-stone-400">Denomination</div>
         <div className="text-xs font-semibold text-stone-400 text-center w-16">Count</div>
         <div className="text-xs font-semibold text-stone-400 text-right w-24">Subtotal</div>
@@ -41,7 +41,7 @@ export function DenominationCounter({
           const sub = d * count
           return (
             <div key={d} className="contents">
-              <div className="flex items-center text-stone-200">
+              <div className="flex items-center text-stone-200 py-1">
                 <span className="font-medium">{d >= 1 ? `₱${d.toLocaleString()}` : `₱0.25`}</span>
                 <span className="ml-1 text-[10px] text-stone-500">{d >= 20 ? "bill/coin" : "coin"}</span>
               </div>
@@ -50,9 +50,9 @@ export function DenominationCounter({
                 value={count || ""}
                 onChange={e => update(d, e.target.value)}
                 placeholder="0"
-                className="w-16 h-8 rounded bg-stone-800 border border-amber-600/30 text-center text-white text-sm focus:outline-none focus:border-amber-500"
+                className="w-16 h-9 rounded bg-stone-800 border border-amber-600/30 text-center text-white text-sm focus:outline-none focus:border-amber-500 py-1"
               />
-              <div className="text-right w-24 tabular-nums text-stone-300 self-center">
+              <div className="text-right w-24 tabular-nums text-stone-300 self-center py-1">
                 {sub > 0 ? `₱${sub.toLocaleString(undefined, { minimumFractionDigits: 2 })}` : "—"}
               </div>
             </div>
