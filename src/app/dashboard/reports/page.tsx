@@ -5,9 +5,20 @@ import { Loader2Icon, DownloadIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { toast } from "sonner"
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts"
 
 interface ReportRow { [key: string]: any }
+
+function SummaryCard({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <Card className="border-amber-300/60 bg-gold-200/90 min-w-[110px] flex-1">
+      <CardContent className="p-3">
+        <p className="text-[10px] text-stone-500 uppercase tracking-wider">{label}</p>
+        <p className={`text-base font-bold ${color ?? "text-stone-800"}`}>{value}</p>
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function ReportsPage() {
   const [period, setPeriod] = useState("daily")
@@ -85,116 +96,370 @@ export default function ReportsPage() {
     { key: "salesdetail", label: "Sales Detail" },
   ]
 
+  function renderSummaryCards(cards: { label: string; value: string; color?: string }[]) {
+    return (
+      <div className="flex flex-wrap gap-2 mb-4">
+        {cards.map(c => <SummaryCard key={c.label} {...c} />)}
+      </div>
+    )
+  }
+
+  const GOLD = "#D4AF37"
+  const BLUE = "#2563eb"
+  const PURPLE = "#9333ea"
+  const GREEN = "#0D3B1E"
+  const RED = "#dc2626"
+  const ORANGE = "#ea580c"
+
+  function SalesContent() {
+    const rows = data?.rows ?? []
+    const totalCount = rows.reduce((s: number, r: any) => s + Number(r.count), 0)
+    const totalRevenue = rows.reduce((s: number, r: any) => s + Number(r.total), 0)
+    const totalCash = rows.reduce((s: number, r: any) => s + Number(r.cash), 0)
+    const totalGcash = rows.reduce((s: number, r: any) => s + Number(r.gcash), 0)
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Total Sales", value: fmoney(totalRevenue), color: "text-amber-600" },
+          { label: "Transactions", value: fnum(totalCount) },
+          { label: "Cash", value: fmoney(totalCash), color: "text-blue-700" },
+          { label: "GCash", value: fmoney(totalGcash), color: "text-purple-700" },
+        ])}
+        {rows.length > 1 && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Sales Trend</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={rows}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => fdate(v)} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: any) => [fmoney(v), undefined]} labelFormatter={l => fdate(l)} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Line type="monotone" dataKey="total" stroke={GOLD} strokeWidth={2} name="Total" dot={{ fill: GOLD, r: 2 }} />
+                  <Line type="monotone" dataKey="cash" stroke={BLUE} strokeWidth={1.5} name="Cash" dot={false} />
+                  <Line type="monotone" dataKey="gcash" stroke={PURPLE} strokeWidth={1.5} name="GCash" dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {renderTable(rows, [
+          { key: "date", label: "Date", format: "date" },
+          { key: "count", label: "# Sales", format: "number" },
+          { key: "cash", label: "Cash", format: "money" },
+          { key: "gcash", label: "GCash", format: "money" },
+          { key: "total", label: "Total", format: "money" },
+        ])}
+      </>
+    )
+  }
+
+  function ProfitContent() {
+    const rows = data?.rows ?? []
+    const totalRevenue = rows.reduce((s: number, r: any) => s + Number(r.revenue), 0)
+    const totalCogs = rows.reduce((s: number, r: any) => s + Number(r.cogs), 0)
+    const totalExpenses = rows.reduce((s: number, r: any) => s + Number(r.expenses), 0)
+    const totalProfit = rows.reduce((s: number, r: any) => s + Number(r.profit), 0)
+    const avgMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Revenue", value: fmoney(totalRevenue), color: "text-amber-600" },
+          { label: "COGS", value: fmoney(totalCogs), color: "text-red-600" },
+          { label: "Expenses", value: fmoney(totalExpenses), color: "text-orange-600" },
+          { label: "Net Profit", value: fmoney(totalProfit), color: totalProfit >= 0 ? "text-green-700" : "text-red-600" },
+          { label: "Margin", value: fnum(avgMargin, 1) + "%", color: avgMargin >= 0 ? "text-green-700" : "text-red-600" },
+        ])}
+        {rows.length > 1 && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Revenue vs Profit</h3>
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={rows}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => fdate(v)} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: any) => [fmoney(v), undefined]} labelFormatter={l => fdate(l)} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Bar dataKey="revenue" fill={GOLD} name="Revenue" radius={[2,2,0,0]} />
+                  <Bar dataKey="profit" fill={GREEN} name="Profit" radius={[2,2,0,0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {renderTable(rows, [
+          { key: "date", label: "Date", format: "date" },
+          { key: "revenue", label: "Revenue", format: "money" },
+          { key: "cogs", label: "Cost", format: "money" },
+          { key: "expenses", label: "Expenses", format: "money" },
+          { key: "profit", label: "Profit", format: "money" },
+          { key: "margin", label: "Margin", format: "percent" },
+        ])}
+      </>
+    )
+  }
+
+  function ProductsContent() {
+    const rows = data?.rows ?? []
+    const top10 = [...rows].sort((a: any, b: any) => Number(b.revenue) - Number(a.revenue)).slice(0, 10)
+    const totalProducts = rows.length
+    const topProduct = rows.length ? rows.reduce((a: any, b: any) => Number(a.revenue) > Number(b.revenue) ? a : b) : null
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Products Sold", value: fnum(totalProducts) },
+          { label: "Top Product", value: topProduct?.name ?? "—", color: "text-amber-600" },
+          { label: "Top Revenue", value: topProduct ? fmoney(topProduct.revenue) : "—" },
+        ])}
+        {top10.length > 0 && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Top Products by Revenue</h3>
+              <ResponsiveContainer width="100%" height={Math.max(120, top10.length * 32)}>
+                <BarChart data={top10} layout="vertical" margin={{ left: 100, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: "#6b7280" }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                  <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <Tooltip formatter={(v: any) => [fmoney(v), "Revenue"]} />
+                  <Bar dataKey="revenue" fill={GOLD} barSize={16} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {renderTable(rows, [
+          { key: "name", label: "Product", format: "text" },
+          { key: "qty", label: "Qty Sold", format: "number" },
+          { key: "revenue", label: "Revenue", format: "money" },
+          { key: "profit", label: "Profit", format: "money" },
+        ])}
+      </>
+    )
+  }
+
+  function ReceivablesContent() {
+    const rows = data?.rows ?? []
+    const totalAR = rows.reduce((s: number, r: any) => s + Number(r.total), 0)
+    const customerCount = rows.length
+    const agingTotals = { d7: 0, d30: 0, d60: 0, d60plus: 0 }
+    for (const r of rows) {
+      agingTotals.d7 += Number(r.d7)
+      agingTotals.d30 += Number(r.d30)
+      agingTotals.d60 += Number(r.d60)
+      agingTotals.d60plus += Number(r.d60plus)
+    }
+    const agingChartData = [
+      { name: "0-7 days", value: agingTotals.d7, fill: "#22c55e" },
+      { name: "8-30 days", value: agingTotals.d30, fill: GOLD },
+      { name: "31-60 days", value: agingTotals.d60, fill: "#ea580c" },
+      { name: "60+ days", value: agingTotals.d60plus, fill: "#dc2626" },
+    ]
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Total AR", value: fmoney(totalAR), color: "text-amber-600" },
+          { label: "Customers", value: fnum(customerCount) },
+          { label: "0-7 days", value: fmoney(agingTotals.d7), color: "text-green-600" },
+          { label: "60+ days", value: fmoney(agingTotals.d60plus), color: "text-red-600" },
+        ])}
+        {agingChartData.some(d => d.value > 0) && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Aging Summary</h3>
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={agingChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: any) => [fmoney(v), undefined]} />
+                  <Bar dataKey="value" radius={[2,2,0,0]}>
+                    {agingChartData.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {renderTable(rows, [
+          { key: "name", label: "Customer", format: "text" },
+          { key: "total", label: "Total", format: "money" },
+          { key: "d7", label: "0-7 days", format: "money" },
+          { key: "d30", label: "8-30 days", format: "money" },
+          { key: "d60", label: "31-60 days", format: "money" },
+          { key: "d60plus", label: "60+ days", format: "money" },
+        ])}
+      </>
+    )
+  }
+
+  function InventoryContent() {
+    const rows = data?.rows ?? []
+    const totalItems = rows.length
+    const totalValue = rows.reduce((s: number, r: any) => s + Number(r.value), 0)
+    const lowCount = rows.filter((r: any) => r.status === "low" || r.status === "out").length
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Total Items", value: fnum(totalItems) },
+          { label: "Total Value", value: fmoney(totalValue), color: "text-amber-600" },
+          { label: "Low/Out Stock", value: fnum(lowCount), color: lowCount > 0 ? "text-red-600" : "text-green-700" },
+        ])}
+        {rows.length > 0 && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Stock Levels</h3>
+              <ResponsiveContainer width="100%" height={Math.max(120, rows.length * 28)}>
+                <BarChart data={rows} layout="vertical" margin={{ left: 100, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <Tooltip formatter={(v: any, name: any) => [fnum(v), "On Hand"]} />
+                  <Bar dataKey="onHand" barSize={14} radius={[0, 4, 4, 0]}>
+                    {rows.map((r: any, i: number) => (
+                      <Cell key={i} fill={r.status === "out" ? RED : r.status === "low" ? ORANGE : GOLD} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {renderTable(rows, [
+          { key: "name", label: "Product", format: "text" },
+          { key: "onHand", label: "On Hand", format: "number" },
+          { key: "value", label: "Value", format: "money" },
+          { key: "status", label: "Status", format: "text" },
+        ])}
+      </>
+    )
+  }
+
+  function VoidsContent() {
+    const rows = data?.rows ?? []
+    const voidCount = rows.filter((r: any) => r.type === "voided").length
+    const refundCount = rows.filter((r: any) => r.type === "refunded").length
+    const totalVoided = rows.reduce((s: number, r: any) => s + Number(r.total), 0)
+    const reasonMap = new Map<string, number>()
+    for (const r of rows) {
+      const reason = r.reason || "No reason"
+      reasonMap.set(reason, (reasonMap.get(reason) || 0) + 1)
+    }
+    const reasonData = [...reasonMap.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([reason, count]) => ({ reason: reason.length > 20 ? reason.slice(0, 20) + "..." : reason, count }))
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Voids", value: fnum(voidCount), color: "text-red-600" },
+          { label: "Refunds", value: fnum(refundCount), color: "text-amber-600" },
+          { label: "Total Amount", value: fmoney(totalVoided), color: "text-red-600" },
+        ])}
+        {reasonData.length > 0 && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Void Reasons</h3>
+              <ResponsiveContainer width="100%" height={Math.max(100, reasonData.length * 40)}>
+                <BarChart data={reasonData} layout="vertical" margin={{ left: 120, right: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" horizontal={false} />
+                  <XAxis type="number" tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <YAxis type="category" dataKey="reason" width={120} tick={{ fontSize: 10, fill: "#6b7280" }} />
+                  <Tooltip formatter={(v: any) => [fnum(v), "Count"]} />
+                  <Bar dataKey="count" fill={RED} barSize={16} radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {renderTable(rows, [
+          { key: "date", label: "Date", format: "date" },
+          { key: "saleNumber", label: "Receipt #", format: "number" },
+          { key: "total", label: "Amount", format: "money" },
+          { key: "type", label: "Type", format: "text" },
+          { key: "reason", label: "Reason", format: "text" },
+        ])}
+      </>
+    )
+  }
+
+  function ZReadingContent() {
+    if (!data) return null
+    return (
+      <Card className="bg-gold-200/90 border-amber-300/60 max-w-lg mx-auto text-stone-800 text-sm">
+        <CardContent className="p-6 space-y-3">
+          <div className="text-center">
+            <h2 className="font-bold text-lg">Z-READING</h2>
+            <p className="text-xs text-stone-500">{from} to {to}</p>
+          </div>
+          <div className="space-y-1 border-y border-amber-300/60 py-2">
+            <div className="flex justify-between"><span>Gross Sales</span><span>{fmoney(data.gross)}</span></div>
+            <div className="flex justify-between"><span className="text-red-600">Discounts</span><span className="text-red-600">-{fmoney(data.discounts)}</span></div>
+            <div className="flex justify-between"><span>Tax</span><span>{fmoney(data.tax)}</span></div>
+            <div className="flex justify-between font-bold text-amber-600"><span>NET SALES</span><span>{fmoney(data.net)}</span></div>
+          </div>
+          <div className="flex justify-between"><span>Cash</span><span>{fmoney(data.cash)}</span></div>
+          <div className="flex justify-between"><span>GCash</span><span>{fmoney(data.gcash)}</span></div>
+          <div className="flex justify-between"><span>Sales Count</span><span>{data.saleCount}</span></div>
+          <div className="flex justify-between"><span className="text-red-600">Voids</span><span>{data.voids}</span></div>
+          <div className="flex justify-between"><span className="text-amber-600">Refunds</span><span>{data.refunds}</span></div>
+          {data.hourly?.length > 0 && (
+            <div className="border-t border-amber-300/60 pt-2">
+              <p className="font-semibold mb-1">Hourly</p>
+              <ResponsiveContainer width="100%" height={120}>
+                <BarChart data={data.hourly}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="hour" tick={{ fontSize: 10, fill: "#6b7280" }} tickFormatter={v => `${String(v).padStart(2, "0")}:00`} />
+                  <YAxis tick={{ fontSize: 10, fill: "#6b7280" }} tickFormatter={v => `₱${(v/1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: any) => [fmoney(v), undefined]} />
+                  <Bar dataKey="total" fill={GOLD} radius={[2,2,0,0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          {data.topItems?.length > 0 && (
+            <div className="border-t border-amber-300/60 pt-2">
+              <p className="font-semibold mb-1">Top 5 Items</p>
+              {data.topItems.map((t: any, i: number) => <div key={i} className="flex justify-between text-xs"><span>{i + 1}. {t.name}</span><span>{fmoney(t.revenue)}</span></div>)}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    )
+  }
+
+  function SalesDetailContent() {
+    const rows = data?.rows ?? []
+    return renderTable(rows, [
+      { key: "time", label: "Time", format: "date" },
+      { key: "sale_number", label: "Sale #", format: "text" },
+      { key: "cashier", label: "Cashier", format: "text" },
+      { key: "item_name", label: "Item", format: "text" },
+      { key: "qty", label: "Qty", format: "number" },
+      { key: "unit", label: "Unit", format: "text" },
+      { key: "unit_price", label: "Unit Price", format: "money" },
+      { key: "discount_amount", label: "Discount", format: "money" },
+      { key: "tax_amount", label: "Tax", format: "money" },
+      { key: "line_total", label: "Line Total", format: "money" },
+      { key: "payment_amount", label: "Payment", format: "money" },
+    ])
+  }
+
   function renderContent() {
     if (loading) return <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-amber-600" /></div>
-    if (!data) return null
+    if (!data) return <p className="text-stone-500 text-center py-16">Select a report type above</p>
 
-    if (activeTab === "sales" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "date", label: "Date", format: "date" },
-        { key: "count", label: "# Sales", format: "number" },
-        { key: "cash", label: "Cash", format: "money" },
-        { key: "gcash", label: "GCash", format: "money" },
-        { key: "total", label: "Total", format: "money" },
-      ])
+    switch (activeTab) {
+      case "sales": return <SalesContent />
+      case "profit": return <ProfitContent />
+      case "products": return <ProductsContent />
+      case "receivables": return <ReceivablesContent />
+      case "inventory": return <InventoryContent />
+      case "voids": return <VoidsContent />
+      case "zreading": return <ZReadingContent />
+      case "salesdetail": return <SalesDetailContent />
+      default: return <p className="text-stone-500 text-center py-16">Select a report type above</p>
     }
-    if (activeTab === "profit" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "date", label: "Date", format: "date" },
-        { key: "revenue", label: "Revenue", format: "money" },
-        { key: "cogs", label: "Cost", format: "money" },
-        { key: "expenses", label: "Expenses", format: "money" },
-        { key: "profit", label: "Profit", format: "money" },
-        { key: "margin", label: "Margin", format: "percent" },
-      ])
-    }
-    if (activeTab === "products" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "name", label: "Product", format: "text" },
-        { key: "qty", label: "Qty Sold", format: "number" },
-        { key: "revenue", label: "Revenue", format: "money" },
-        { key: "profit", label: "Profit", format: "money" },
-      ])
-    }
-    if (activeTab === "receivables" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "name", label: "Customer", format: "text" },
-        { key: "total", label: "Total", format: "money" },
-        { key: "d7", label: "0-7 days", format: "money" },
-        { key: "d30", label: "8-30 days", format: "money" },
-        { key: "d60", label: "31-60 days", format: "money" },
-        { key: "d60plus", label: "60+ days", format: "money" },
-      ])
-    }
-    if (activeTab === "inventory" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "name", label: "Product", format: "text" },
-        { key: "onHand", label: "On Hand", format: "number" },
-        { key: "value", label: "Value", format: "money" },
-        { key: "status", label: "Status", format: "text" },
-      ])
-    }
-    if (activeTab === "voids" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "date", label: "Date", format: "date" },
-        { key: "saleNumber", label: "Receipt #", format: "number" },
-        { key: "total", label: "Amount", format: "money" },
-        { key: "type", label: "Type", format: "text" },
-        { key: "reason", label: "Reason", format: "text" },
-      ])
-    }
-    if (activeTab === "salesdetail" && data.rows) {
-      return renderTable(data.rows, [
-        { key: "time", label: "Time", format: "date" },
-        { key: "sale_number", label: "Sale #", format: "text" },
-        { key: "cashier", label: "Cashier", format: "text" },
-        { key: "item_name", label: "Item", format: "text" },
-        { key: "qty", label: "Qty", format: "number" },
-        { key: "unit", label: "Unit", format: "text" },
-        { key: "unit_price", label: "Unit Price", format: "money" },
-        { key: "discount_amount", label: "Discount", format: "money" },
-        { key: "tax_amount", label: "Tax", format: "money" },
-        { key: "line_total", label: "Line Total", format: "money" },
-        { key: "payment_amount", label: "Payment", format: "money" },
-      ])
-    }
-    if (activeTab === "zreading" && data) {
-      return (
-        <Card className="bg-gold-200/90 border-amber-300/60 max-w-lg mx-auto text-stone-800 text-sm">
-          <CardContent className="p-6 space-y-3">
-            <div className="text-center">
-              <h2 className="font-bold text-lg">Z-READING</h2>
-              <p className="text-xs text-stone-500">{from} to {to}</p>
-            </div>
-            <div className="space-y-1 border-y border-amber-300/60 py-2">
-              <div className="flex justify-between"><span>Gross Sales</span><span>{fmoney(data.gross)}</span></div>
-              <div className="flex justify-between"><span className="text-red-600">Discounts</span><span className="text-red-600">-{fmoney(data.discounts)}</span></div>
-              <div className="flex justify-between"><span>Tax</span><span>{fmoney(data.tax)}</span></div>
-              <div className="flex justify-between font-bold text-amber-600"><span>NET SALES</span><span>{fmoney(data.net)}</span></div>
-            </div>
-            <div className="flex justify-between"><span>Cash</span><span>{fmoney(data.cash)}</span></div>
-            <div className="flex justify-between"><span>GCash</span><span>{fmoney(data.gcash)}</span></div>
-            <div className="flex justify-between"><span>Sales Count</span><span>{data.saleCount}</span></div>
-            <div className="flex justify-between"><span className="text-red-600">Voids</span><span>{data.voids}</span></div>
-            <div className="flex justify-between"><span className="text-amber-600">Refunds</span><span>{data.refunds}</span></div>
-            {data.hourly?.length > 0 && (
-              <div className="border-t border-amber-300/60 pt-2">
-                <p className="font-semibold mb-1">Hourly</p>
-                {data.hourly.map((h: any) => <div key={h.hour} className="flex justify-between text-xs"><span>{String(h.hour).padStart(2, "0")}:00</span><span>{h.count} sales · {fmoney(h.total)}</span></div>)}
-              </div>
-            )}
-            {data.topItems?.length > 0 && (
-              <div className="border-t border-amber-300/60 pt-2">
-                <p className="font-semibold mb-1">Top 5 Items</p>
-                {data.topItems.map((t: any, i: number) => <div key={i} className="flex justify-between text-xs"><span>{i + 1}. {t.name}</span><span>{fmoney(t.revenue)}</span></div>)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )
-    }
-
-    return <p className="text-stone-500 text-center py-16">Select a report type above</p>
   }
 
   return (
