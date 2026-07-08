@@ -21,8 +21,7 @@ export const adminNavLinks: NavLink[] = [
   { label: "Expenses", href: "/backoffice/expenses", icon: ReceiptIcon },
   { label: "Items", href: "/backoffice/items", icon: PackageIcon },
   { label: "Categories", href: "/backoffice/categories", icon: PackageIcon },
-  { label: "Discounts", href: "/backoffice/discounts", icon: ReceiptIcon },
-  { label: "Tax Rates", href: "/backoffice/tax-rates", icon: ReceiptIcon },
+
   { label: "Inventory", href: "/backoffice/inventory", icon: BoxesIcon },
   { label: "Purchase Orders", href: "/backoffice/purchase-orders", icon: ClipboardListIcon },
   { label: "Suppliers", href: "/backoffice/suppliers", icon: TruckIcon },

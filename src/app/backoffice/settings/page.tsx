@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import {
   PrinterIcon, CheckCircleIcon, XCircleIcon,
-  Loader2Icon, PlugIcon, ReceiptIcon, LinkIcon, StoreIcon
+  Loader2Icon, PlugIcon, ReceiptIcon, LinkIcon, StoreIcon, Settings2Icon, PercentIcon
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
@@ -15,6 +15,14 @@ import {
   getDrawerMethod, setDrawerMethod,
   getAutoPrint, setAutoPrint,
 } from "@/lib/utils/printer"
+import { DiscountsManager } from "@/components/discounts-manager"
+import { TaxRatesManager } from "@/components/tax-rates-manager"
+
+const SETTINGS_TABS = [
+  { key: "general", label: "General", icon: Settings2Icon },
+  { key: "discounts", label: "Discounts", icon: PercentIcon },
+  { key: "taxrates", label: "Tax Rates", icon: PercentIcon },
+] as const
 
 function ConnectionStatus({ connected }: { connected: boolean }) {
   return connected ? (
@@ -29,6 +37,7 @@ function ConnectionStatus({ connected }: { connected: boolean }) {
 }
 
 export default function SettingsPage() {
+  const [activeTab, setActiveTab] = useState("general")
   const [printerName, setPrinterName] = useState("Not paired")
   const [connected, setConnected] = useState(false)
   const [pairing, setPairing] = useState(false)
@@ -132,7 +141,20 @@ export default function SettingsPage() {
 
   return (
     <div className="p-5 space-y-6">
-      <h1 className="text-2xl font-bold text-amber-500">Settings</h1>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+        <h1 className="text-2xl font-bold text-amber-500">Settings</h1>
+        <div className="flex gap-1">
+          {SETTINGS_TABS.map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeTab === tab.key ? "bg-primary text-white" : "bg-gold-100 text-stone-500 hover:text-white"}`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeTab === "general" && (
+        <div className="space-y-6">
 
       {/* Store Profile */}
       <Card className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
@@ -302,6 +324,20 @@ export default function SettingsPage() {
       <p className="text-center text-xs text-stone-500 pb-4">
         Settings are saved to this browser automatically.
       </p>
+        </div>
+      )}
+
+      {activeTab === "discounts" && (
+        <div className="space-y-6">
+          <DiscountsManager />
+        </div>
+      )}
+
+      {activeTab === "taxrates" && (
+        <div className="space-y-6">
+          <TaxRatesManager />
+        </div>
+      )}
     </div>
   )
 }
