@@ -17,7 +17,6 @@ export const adminNavLinks: NavLink[] = [
   { label: "Reports", href: "/dashboard/reports", icon: FileTextIcon },
   { label: "Sales", href: "/dashboard/sales", icon: TrendingUpIcon },
   { label: "Audit", href: "/dashboard/audit", icon: FileTextIcon },
-  { label: "Journal", href: "/dashboard/journal", icon: FileTextIcon },
   { label: "Expenses", href: "/backoffice/expenses", icon: ReceiptIcon },
   { label: "Items", href: "/backoffice/items", icon: PackageIcon },
   { label: "Categories", href: "/backoffice/categories", icon: PackageIcon },
