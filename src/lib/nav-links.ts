@@ -26,7 +26,6 @@ export const adminNavLinks: NavLink[] = [
   { label: "Purchase Orders", href: "/backoffice/purchase-orders", icon: ClipboardListIcon },
   { label: "Suppliers", href: "/backoffice/suppliers", icon: TruckIcon },
   { label: "Customers", href: "/backoffice/customers", icon: UserRoundIcon },
-  { label: "Employees", href: "/backoffice/employees", icon: UsersIcon },
-  { label: "Shifts", href: "/dashboard/shifts", icon: ClockIcon },
+  { label: "Staff", href: "/dashboard/staff", icon: UsersIcon },
   { label: "Settings", href: "/backoffice/settings", icon: SettingsIcon, hideLabel: true },
 ]
