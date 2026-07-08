@@ -37,12 +37,13 @@ export function AdminShell({ name, children }: AdminShellProps) {
             <button
               key={link.href}
               onClick={() => router.push(link.href)}
+              title={link.hideLabel ? link.label : undefined}
               className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
                 pathname.startsWith(link.href) && link.href !== "/pos" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "text-stone-300 hover:bg-primary/15 hover:text-stone-100"
-              }`}
+              }${link.hideLabel ? " px-2" : ""}`}
             >
               <link.icon className="h-3.5 w-3.5" />
-              {link.label}
+              {link.hideLabel ? null : link.label}
             </button>
           ))}
         </nav>

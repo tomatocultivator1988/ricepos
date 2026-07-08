@@ -9,6 +9,7 @@ export interface NavLink {
   label: string
   href: string
   icon: typeof StoreIcon
+  hideLabel?: boolean
 }
 
 export const adminNavLinks: NavLink[] = [
@@ -27,5 +28,5 @@ export const adminNavLinks: NavLink[] = [
   { label: "Customers", href: "/backoffice/customers", icon: UserRoundIcon },
   { label: "Employees", href: "/backoffice/employees", icon: UsersIcon },
   { label: "Shifts", href: "/dashboard/shifts", icon: ClockIcon },
-  { label: "Settings", href: "/backoffice/settings", icon: SettingsIcon },
+  { label: "Settings", href: "/backoffice/settings", icon: SettingsIcon, hideLabel: true },
 ]
