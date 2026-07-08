@@ -237,8 +237,8 @@ export default function PurchaseOrdersPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-medium text-stone-500">Supplier *</label>
                 <Select value={cSupplier} onValueChange={v => setCSupplier(v ?? "")}>
-                  <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue placeholder="Select supplier" /></SelectTrigger>
-                  <SelectContent>{suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                  <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><span className="text-stone-800">{suppliers.find(s => s.id === cSupplier)?.name || "Select supplier"}</span></SelectTrigger>
+                  <SelectContent><SelectItem value="">None</SelectItem>{suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="flex flex-col gap-1">

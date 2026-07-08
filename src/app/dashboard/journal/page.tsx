@@ -62,7 +62,7 @@ export default function JournalPage() {
                   <TableRow key={e.id} className="border-amber-300/60">
                     <TableCell className="text-xs text-stone-500">{new Date(e.created_at).toLocaleString("en-PH")}</TableCell>
                     <TableCell className="text-stone-700">{e.event_type}</TableCell>
-                    <TableCell className="text-stone-500">{e.sale_id?.slice(0, 8) ?? "—"}</TableCell>
+                    <TableCell className="text-stone-500">{e.sale_id ? <span className="text-green-700 font-medium">Sale</span> : "—"}</TableCell>
                     <TableCell className="text-xs text-stone-500 max-w-xs truncate">{JSON.stringify(e.details)}</TableCell>
                   </TableRow>
                 ))}

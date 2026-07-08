@@ -356,14 +356,14 @@ export default function ItemsPage() {
 
       {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto bg-gold-200/80 backdrop-blur-md border-amber-300/60 text-stone-800 p-6">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-gold-200/80 backdrop-blur-md border-amber-300/60 text-stone-800 p-6">
           <DialogHeader>
             <DialogTitle>{editing?.id ? "Edit Product" : "Add Product"}</DialogTitle>
           </DialogHeader>
 
           {editing && (
             <div className="space-y-6">
-              <div className="grid grid-cols-[1fr_1fr] gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Left: Basic Info */}
                 <div className="space-y-4 min-w-0">
                   <div className="flex flex-col gap-1.5">
@@ -374,9 +374,9 @@ export default function ItemsPage() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1.5">
                       <Label className="text-xs font-medium text-stone-500">Category</Label>
-                      <Select value={editing.category_id ?? "none"} onValueChange={v => updateField("category_id", v === "none" ? null : v)}>
-                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue placeholder="None" /></SelectTrigger>
-                        <SelectContent>{categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                      <Select key={editing.id ?? "new"} value={editing.category_id && categories.some(c => c.id === editing.category_id) ? editing.category_id : "none"} onValueChange={v => updateField("category_id", v === "none" ? null : v)}>
+                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><span className="text-stone-800">{categories.find(c => c.id === editing.category_id)?.name || "None"}</span></SelectTrigger>
+                        <SelectContent><SelectItem value="none">None</SelectItem>{categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -398,8 +398,8 @@ export default function ItemsPage() {
                     </div>
                     <div className="flex flex-col gap-1.5">
                       <Label className="text-xs font-medium text-stone-500">Tax Rate</Label>
-                      <Select value={editing.tax_rate_id ?? "none"} onValueChange={v => updateField("tax_rate_id", v === "none" ? null : v)}>
-                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><SelectValue placeholder="None" /></SelectTrigger>
+                      <Select key={editing.id ?? "new"} value={editing.tax_rate_id && taxRates.some(t => t.id === editing.tax_rate_id) ? editing.tax_rate_id : "none"} onValueChange={v => updateField("tax_rate_id", v === "none" ? null : v)}>
+                        <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10"><span className="text-stone-800">{editing.tax_rate_id ? taxRates.find(t => t.id === editing.tax_rate_id) ? `${taxRates.find(t => t.id === editing.tax_rate_id)!.name} (${(taxRates.find(t => t.id === editing.tax_rate_id)!.rate * 100).toFixed(0)}%)` : "None" : "None"}</span></SelectTrigger>
                         <SelectContent><SelectItem value="none">None</SelectItem>{taxRates.map(t => <SelectItem key={t.id} value={t.id}>{t.name} ({(t.rate * 100).toFixed(0)}%)</SelectItem>)}</SelectContent>
                       </Select>
                     </div>
@@ -432,7 +432,7 @@ export default function ItemsPage() {
                   {(editing.selling_units ?? []).length === 0 ? (
                     <p className="text-xs text-stone-500 text-center py-6 border border-dashed border-stone-700 rounded-lg">No units yet</p>
                   ) : (
-                    <div className="space-y-4 max-h-[420px] overflow-y-auto pr-1">
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-1">
                       {(editing.selling_units ?? []).map((unit, idx) => (
                         <div key={idx} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-3">
                           <Input value={unit.name} onChange={e => updateUnit(idx, "name", e.target.value)}
