@@ -1,19 +1,47 @@
 import { NextResponse, type NextRequest } from "next/server"
 
-function parseJwt(token: string): Record<string, any> | null {
+async function verifyJwt(token: string): Promise<Record<string, any> | null> {
   try {
+    const secretStr = process.env.AUTH_SECRET
+    if (!secretStr) return null
+
     const parts = token.split(".")
     if (parts.length !== 3) return null
-    return JSON.parse(Buffer.from(parts[1], "base64url").toString())
+    const [header, body, sig] = parts
+
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secretStr),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["verify"]
+    )
+    
+    const valid = await crypto.subtle.verify(
+      "HMAC",
+      key,
+      Buffer.from(sig, "base64url"),
+      encoder.encode(`${header}.${body}`)
+    )
+
+    if (!valid) return null
+    return JSON.parse(Buffer.from(body, "base64url").toString())
   } catch {
     return null
   }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const token = request.cookies.get("session")?.value
-  const session = token ? parseJwt(token) : null
+
+  const secret = process.env.AUTH_SECRET
+  if (!secret) {
+    return NextResponse.next()
+  }
+
+  const session = token ? await verifyJwt(token) : null
 
   if (!session) {
     if (pathname.startsWith("/pos") || pathname.startsWith("/dashboard") || pathname.startsWith("/backoffice")) {

@@ -14,7 +14,6 @@ export function AdminShell({ name, children }: AdminShellProps) {
   const pathname = usePathname()
 
   const handleLogout = async () => {
-    document.cookie = "session=; max-age=0; path=/"
     await fetch("/api/auth/logout", { method: "POST" })
     router.push("/auth/login")
   }

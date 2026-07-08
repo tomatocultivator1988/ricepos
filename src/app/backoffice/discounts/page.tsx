@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useRouter, usePathname } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Plus, Search, Pencil, Trash2, StoreIcon, LayoutDashboardIcon, PackageIcon, BoxesIcon, UsersIcon, LogOutIcon, Loader2Icon , TrendingUpIcon } from "lucide-react"
+import { Plus, Search, Pencil, Trash2, Loader2Icon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -37,20 +37,13 @@ export default function DiscountsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<Discount | null>(null)
 
   const router = useRouter()
-  const pathname = usePathname()
 
   useEffect(() => {
     fetch("/api/pos/me").then(r => r.json()).then(d => {
       if (d.employee) setUser({ name: d.employee.name, role: d.employee.role })
-      else { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") }
-    }).catch(() => { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") })
+      else { router.push("/auth/login") }
+    }).catch(() => { router.push("/auth/login") })
   }, [router])
-
-  const handleLogout = async () => {
-    document.cookie = "session=; max-age=0; path=/"
-    await fetch("/api/auth/logout", { method: "POST" })
-    router.push("/auth/login")
-  }
 
   const fetchDiscounts = useCallback(async () => {
     try {
@@ -148,15 +141,6 @@ export default function DiscountsPage() {
     return `P${Number(discount.value).toFixed(2)}`
   }
 
-  const navLinks = [
-    { label: "POS", href: "/pos", icon: StoreIcon },
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
-    { label: "Sales", href: "/dashboard/sales", icon: TrendingUpIcon },
-    { label: "Items", href: "/backoffice/items", icon: PackageIcon },
-    { label: "Inventory", href: "/backoffice/inventory", icon: BoxesIcon },
-    { label: "Employees", href: "/backoffice/employees", icon: UsersIcon },
-  ]
-
   if (!user) return (
     <div className="flex items-center justify-center min-h-screen bg-transparent"><Loader2Icon className="h-8 w-8 animate-spin text-primary" /></div>
   )
@@ -169,14 +153,14 @@ export default function DiscountsPage() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-primary">Discounts</h1>
-            <Button onClick={openCreateDialog} className="rounded-xl bg-brewhas-700 hover:bg-brewhas-800 text-stone-800">
+            <Button onClick={openCreateDialog} className="rounded-xl bg-primary hover:bg-amber-400 text-primary-foreground">
               <Plus className="size-4" />
               Add Discount
             </Button>
           </div>
 
           <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -transtone-y-1/2 text-stone-500" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-500" />
             <Input
               placeholder="Search discounts..."
               value={search}

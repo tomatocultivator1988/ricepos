@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { cart_data } = body
 
-    // Use store_id as the cart key (no shifts)
-    const cartKey = storeId
+  // Use store_id as the cart key (no shifts). The column is named shift_id for historical reasons but stores storeId.
+  const cartKey = storeId
 
     const { data: existing } = await db
       .from("pos_carts")

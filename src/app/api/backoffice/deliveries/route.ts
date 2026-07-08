@@ -39,6 +39,12 @@ export async function POST(request: NextRequest) {
         employee_id: session.employeeId,
       })
 
+      await db.from("audit_log").insert({
+        id: uuid(), store_id: storeId, employee_id: session.employeeId,
+        action: "stock_received", entity_type: "item", entity_id: itemId,
+        new_value: { stock_qty: newQty },
+      })
+
       results.push({ itemId, name: item.name, oldQty, newQty, added: addQty })
     }
 

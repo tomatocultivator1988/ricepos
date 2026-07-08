@@ -46,6 +46,22 @@ export default function ItemsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editing, setEditing] = useState<Partial<Item> | null>(null)
   const [saving, setSaving] = useState(false)
+  const [deleteItem, setDeleteItem] = useState<Item | null>(null)
+  const [deleteSaving, setDeleteSaving] = useState(false)
+
+  async function confirmDelete() {
+    if (!deleteItem) return
+    setDeleteSaving(true)
+    const delRes = await fetch(`/api/backoffice/items/${deleteItem.id}`, { method: "DELETE" })
+    if (!delRes.ok) { toast.error("Delete failed"); setDeleteSaving(false); return }
+    toast.success(`"${deleteItem.name}" deleted`)
+    setDeleteItem(null); setDeleteSaving(false)
+    fetchData()
+  }
+
+  function openDeleteDialog(item: Item, e: React.MouseEvent) {
+    e.stopPropagation(); setDeleteItem(item)
+  }
 
   const fetchData = useCallback(async () => {
     const res = await fetch(`/api/backoffice/items?includeInactive=true&q=${search}&category_id=${filterCat === "all" ? "" : filterCat}`)
@@ -204,7 +220,7 @@ export default function ItemsPage() {
       {/* Filters */}
       <div className="flex gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
           <Input
             placeholder="Search by name or barcode..."
             value={search}
@@ -238,12 +254,13 @@ export default function ItemsPage() {
                 <TableHead className="text-stone-700">Stock</TableHead>
                 <TableHead className="text-stone-700">Selling Units</TableHead>
                 <TableHead className="text-stone-700">Status</TableHead>
+                <TableHead className="text-stone-700 w-16"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-stone-500 py-8">
+                  <TableCell colSpan={8} className="text-center text-stone-500 py-8">
                     No products found
                   </TableCell>
                 </TableRow>
@@ -252,7 +269,7 @@ export default function ItemsPage() {
                   {riceItems.length > 0 && (
                     <>
                       <TableRow className="border-amber-300/60 hover:bg-transparent">
-                        <TableCell colSpan={7} className="px-3 py-2 bg-primary/10">
+                        <TableCell colSpan={8} className="px-3 py-2 bg-primary/10">
                           <span className="text-xs font-bold text-amber-600 tracking-wider uppercase">Rice</span>
                         </TableCell>
                       </TableRow>
@@ -265,6 +282,11 @@ export default function ItemsPage() {
                           <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
                           <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
                           <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => openDeleteDialog(item, e)} title="Delete item">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
                         </TableRow>
                       ))}
                     </>
@@ -272,7 +294,7 @@ export default function ItemsPage() {
                   {otherItems.length > 0 && (
                     <>
                       <TableRow className="border-amber-300/60 hover:bg-transparent">
-                        <TableCell colSpan={7} className="px-3 py-2 bg-white/20">
+                        <TableCell colSpan={8} className="px-3 py-2 bg-white/20">
                           <span className="text-xs font-bold text-stone-500 tracking-wider uppercase">Other Items</span>
                         </TableCell>
                       </TableRow>
@@ -285,6 +307,11 @@ export default function ItemsPage() {
                           <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
                           <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
                           <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => openDeleteDialog(item, e)} title="Delete item">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
                         </TableRow>
                       ))}
                     </>
@@ -300,6 +327,11 @@ export default function ItemsPage() {
                     <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
                     <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
                     <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => openDeleteDialog(item, e)} title="Delete item">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
                   </TableRow>
                 ))
               )}
@@ -442,6 +474,22 @@ export default function ItemsPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={!!deleteItem} onOpenChange={() => setDeleteItem(null)}>
+        <DialogContent className="sm:max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
+          <DialogHeader><DialogTitle>Delete Item</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-stone-600">Deactivate <strong>{deleteItem?.name}</strong>? It will no longer appear in POS or catalog. Stock will remain in inventory. This cannot be undone.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setDeleteItem(null)}>Cancel</Button>
+            <Button variant="destructive" className="flex-1" onClick={confirmDelete} disabled={deleteSaving}>
+              {deleteSaving ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -82,6 +82,7 @@ export default function ReportsPage() {
     { key: "inventory", label: "Inventory" },
     { key: "voids", label: "Voids" },
     { key: "zreading", label: "Z-Reading" },
+    { key: "salesdetail", label: "Sales Detail" },
   ]
 
   function renderContent() {
@@ -140,6 +141,21 @@ export default function ReportsPage() {
         { key: "total", label: "Amount", format: "money" },
         { key: "type", label: "Type", format: "text" },
         { key: "reason", label: "Reason", format: "text" },
+      ])
+    }
+    if (activeTab === "salesdetail" && data.rows) {
+      return renderTable(data.rows, [
+        { key: "time", label: "Time", format: "date" },
+        { key: "sale_number", label: "Sale #", format: "text" },
+        { key: "cashier", label: "Cashier", format: "text" },
+        { key: "item_name", label: "Item", format: "text" },
+        { key: "qty", label: "Qty", format: "number" },
+        { key: "unit", label: "Unit", format: "text" },
+        { key: "unit_price", label: "Unit Price", format: "money" },
+        { key: "discount_amount", label: "Discount", format: "money" },
+        { key: "tax_amount", label: "Tax", format: "money" },
+        { key: "line_total", label: "Line Total", format: "money" },
+        { key: "payment_amount", label: "Payment", format: "money" },
       ])
     }
     if (activeTab === "zreading" && data) {

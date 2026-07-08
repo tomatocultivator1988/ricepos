@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Trash2, PackageCheck, ClipboardList, X } from "lucide-react"
+import { Plus, Trash2, PackageCheck, ClipboardList, X, Undo2 } from "lucide-react"
 import { toast } from "sonner"
 
 interface POListItem {
@@ -43,6 +43,12 @@ export default function PurchaseOrdersPage() {
   const [detailOpen, setDetailOpen] = useState(false)
   const [recvLines, setRecvLines] = useState<Record<string, { qty: string; updateCost: boolean }>>({})
   const [receiving, setReceiving] = useState(false)
+
+  // Return to supplier
+  const [returnOpen, setReturnOpen] = useState(false)
+  const [returnLines, setReturnLines] = useState<Record<string, string>>({})
+  const [returnReason, setReturnReason] = useState("")
+  const [returnSaving, setReturnSaving] = useState(false)
 
   const fetchPOs = useCallback(async () => {
     const res = await fetch(`/api/backoffice/purchase-orders?status=${filterStatus}`)
@@ -134,6 +140,36 @@ export default function PurchaseOrdersPage() {
   }
 
   const canReceive = detail && (detail.status === "ordered" || detail.status === "partial")
+  const canReturn = detail && (detail.status === "received" || detail.status === "partial")
+
+  function openReturn() {
+    if (!detail) return
+    const init: Record<string, string> = {}
+    for (const it of detail.items) {
+      if (Number(it.qty_received) > 0) init[it.id] = ""
+    }
+    setReturnLines(init)
+    setReturnReason("")
+    setReturnOpen(true)
+  }
+
+  async function submitReturn() {
+    if (!detail) return
+    const lines = Object.entries(returnLines)
+      .filter(([_, v]) => Number(v) > 0)
+      .map(([poi_id, v]) => ({ poi_id, qty_returned: Number(v) }))
+    if (lines.length === 0) { toast.error("Enter quantities to return"); return }
+    setReturnSaving(true)
+    const res = await fetch(`/api/backoffice/purchase-orders/${detail.id}/return`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: returnReason || null, lines }),
+    })
+    const json = await res.json()
+    if (!res.ok) { toast.error(json.error || "Return failed"); setReturnSaving(false); return }
+    toast.success(`Returned to supplier (${json.return?.return_number ?? ""}).`)
+    setReturnSaving(false); setReturnOpen(false); setDetailOpen(false); fetchPOs()
+  }
+
 
   return (
     <div className="p-6 space-y-6">
@@ -220,7 +256,9 @@ export default function PurchaseOrdersPage() {
                 {cLines.map((l, i) => (
                   <div key={i} className="bg-gold-200 rounded-lg p-4 border border-amber-300/60 space-y-3">
                     <Select value={l.item_id} onValueChange={v => updateLine(i, "item_id", v ?? "")}>
-                      <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10 text-sm"><SelectValue placeholder="Select product" /></SelectTrigger>
+                      <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10 text-sm">
+                        {products.find(p => p.id === l.item_id)?.name || <SelectValue placeholder="Select product" />}
+                      </SelectTrigger>
                       <SelectContent>{products.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
                     </Select>
                     <div className="grid grid-cols-3 gap-3">
@@ -325,9 +363,14 @@ export default function PurchaseOrdersPage() {
                 </div>
 
                 <div className="flex justify-between gap-2">
-                  {canReceive && (
-                    <Button variant="outline" onClick={cancelPO} className="text-red-600 border-red-500/40 hover:bg-red-500/10">Cancel PO</Button>
-                  )}
+                  <div className="flex gap-2">
+                    {canReceive && (
+                      <Button variant="outline" onClick={cancelPO} className="text-red-600 border-red-500/40 hover:bg-red-500/10">Cancel PO</Button>
+                    )}
+                    {canReturn && (
+                      <Button variant="outline" onClick={openReturn} className="text-amber-700 border-amber-500/40 hover:bg-amber-500/10 gap-1"><Undo2 className="h-4 w-4" /> Return to Supplier</Button>
+                    )}
+                  </div>
                   <div className="flex gap-2 ml-auto">
                     <Button variant="outline" onClick={() => setDetailOpen(false)}>Close</Button>
                     {canReceive && (
@@ -336,6 +379,65 @@ export default function PurchaseOrdersPage() {
                       </Button>
                     )}
                   </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ── RETURN TO SUPPLIER DIALOG ── */}
+      <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto bg-gold-200/80 backdrop-blur-md border-amber-300/60 text-stone-800 p-6">
+          {detail && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2"><Undo2 className="h-5 w-5 text-amber-600" /> Return to Supplier — {detail.po_number}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <p className="text-[11px] text-stone-500">
+                  Returning removes items from stock and reduces the received quantity. You can only return
+                  what is still in stock (items already sold cannot be returned).
+                </p>
+                <div className="space-y-2">
+                  {detail.items.filter((it: any) => Number(it.qty_received) > 0).length === 0 ? (
+                    <div className="text-center text-stone-500 py-4 text-sm">No received items to return.</div>
+                  ) : detail.items.filter((it: any) => Number(it.qty_received) > 0).map((it: any) => (
+                    <div key={it.id} className="bg-gold-200 rounded-lg p-3 border border-amber-300/60">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-stone-800">{it.item_name}</span>
+                        <span className="text-xs text-stone-500">Received: {Number(it.qty_received)}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 flex-1">
+                          <span className="text-[10px] text-stone-500">Return qty:</span>
+                          <Input type="number" step="0.001" min="0" max={Number(it.qty_received)}
+                            value={returnLines[it.id] ?? ""}
+                            onChange={e => setReturnLines({ ...returnLines, [it.id]: e.target.value })}
+                            className="w-24 h-9 bg-gold-100 border-amber-300/60 text-center text-xs" />
+                        </div>
+                        <span className="text-xs text-stone-500">
+                          ₱{((Number(returnLines[it.id] || 0)) * Number(it.unit_cost)).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <Input placeholder="Reason (optional)" value={returnReason} onChange={e => setReturnReason(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10" />
+
+                <div className="flex justify-between items-center border-t border-amber-300/60 pt-3">
+                  <span className="text-sm text-stone-500">Total Return Cost</span>
+                  <span className="text-lg font-bold text-white">
+                    ₱{detail.items.reduce((s: number, it: any) => s + (Number(returnLines[it.id] || 0) * Number(it.unit_cost)), 0).toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setReturnOpen(false)}>Cancel</Button>
+                  <Button onClick={submitReturn} disabled={returnSaving} className="bg-amber-600 hover:bg-amber-500 gap-1">
+                    <Undo2 className="h-4 w-4" /> {returnSaving ? "Returning..." : "Confirm Return"}
+                  </Button>
                 </div>
               </div>
             </>

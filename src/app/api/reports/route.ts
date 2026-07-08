@@ -128,7 +128,7 @@ export async function GET(request: NextRequest) {
       const { data: sales } = await db.from("sales")
         .select("sale_number, total, status, void_reason, voided_at, created_at")
         .eq("store_id", storeId).in("status", ["voided", "refunded"])
-        .gte("created_at", fromTs).lte("created_at", toTs)
+        .gte("voided_at", fromTs).lte("voided_at", toTs)
       const rows = (sales ?? []).map((s: any) => ({
         saleNumber: s.sale_number, total: Number(s.total), type: s.status,
         reason: s.void_reason, date: s.voided_at || s.created_at,
@@ -177,6 +177,32 @@ export async function GET(request: NextRequest) {
         hourly: [...hourly.entries()].sort((a, b) => a[0] - b[0]).map(([hour, r]) => ({ hour, ...r })),
         topItems,
       })
+    }
+
+    if (type === "salesdetail") {
+      const { data: items } = await db.from("sale_items")
+        .select("item_name, qty, selling_unit_name, unit_price, discount_amount, tax_amount, line_total, created_at, sales!inner(created_at, sale_number, store_id, status, employee_id, employees(name), payments(amount))")
+        .eq("status", "completed")
+        .eq("sales.store_id", storeId).neq("sales.status", "voided")
+        .gte("created_at", fromTs).lte("created_at", toTs)
+        .order("created_at", { ascending: false }).limit(500)
+      const rows = (items ?? []).map((it: any) => {
+        const payments = (it.sales?.payments ?? []) as any[]
+        return {
+          time: it.sales?.created_at,
+          sale_number: it.sales?.sale_number,
+          cashier: it.sales?.employees?.name ?? null,
+          item_name: it.item_name,
+          qty: Number(it.qty),
+          unit: it.selling_unit_name,
+          unit_price: Number(it.unit_price),
+          discount_amount: Number(it.discount_amount),
+          tax_amount: Number(it.tax_amount),
+          line_total: Number(it.line_total),
+          payment_amount: payments.reduce((s, p) => s + Number(p.amount), 0),
+        }
+      })
+      return NextResponse.json({ rows })
     }
 
     return NextResponse.json({ error: "Unknown report type" }, { status: 400 })

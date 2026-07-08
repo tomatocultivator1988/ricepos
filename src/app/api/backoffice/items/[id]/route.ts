@@ -53,6 +53,16 @@ export async function PUT(
       return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Valid price is required" } }, { status: 400 })
     }
 
+    if (cost !== undefined && (isNaN(Number(cost)) || Number(cost) < 0)) {
+      return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Cost must be 0 or positive" } }, { status: 400 })
+    }
+    if (stockQty != null && (isNaN(Number(stockQty)) || Number(stockQty) < 0)) {
+      return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Stock quantity must be 0 or positive" } }, { status: 400 })
+    }
+    if (minStock != null && (isNaN(Number(minStock)) || Number(minStock) < 0)) {
+      return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Min stock must be 0 or positive" } }, { status: 400 })
+    }
+
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (name !== undefined) updateData.name = name.trim()
     if (price !== undefined) updateData.price = String(Number(price).toFixed(2))
@@ -62,10 +72,10 @@ export async function PUT(
     if (categoryId !== undefined) updateData.category_id = categoryId || null
     if (taxRateId !== undefined) updateData.tax_rate_id = taxRateId || null
     if (trackStock !== undefined) updateData.track_stock = trackStock
-    if (stockQty !== undefined) updateData.stock_qty = String(stockQty)
-    if (minStock !== undefined) updateData.min_stock = String(minStock)
+    if (stockQty != null) updateData.stock_qty = String(Number(stockQty))
+    if (minStock != null) updateData.min_stock = String(Number(minStock))
     if (imageUrl !== undefined) updateData.image_url = imageUrl || null
-    if (isActive !== undefined) updateData.is_active = isActive
+    if (isActive !== undefined) updateData.status = isActive
 
     const { data: updated } = await db.from("items")
       .update(updateData)
@@ -99,7 +109,7 @@ export async function DELETE(
     if (!existing) return notfind("Item not found")
 
     await db.from("items")
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({ status: false, updated_at: new Date().toISOString() })
       .eq("id", id)
       .eq("store_id", storeId)
 

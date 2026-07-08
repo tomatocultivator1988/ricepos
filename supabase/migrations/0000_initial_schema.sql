@@ -365,6 +365,7 @@ CREATE INDEX idx_sales_date ON sales(created_at);
 CREATE INDEX idx_sales_status ON sales(status);
 CREATE INDEX idx_sale_items_sale ON sale_items(sale_id);
 CREATE INDEX idx_payments_sale ON payments(sale_id);
+CREATE INDEX idx_payments_created_at ON payments(created_at);
 CREATE INDEX idx_expenses_store ON expenses(store_id);
 CREATE INDEX idx_expenses_date ON expenses(date);
 CREATE INDEX idx_inventory_log_item ON inventory_log(item_id);

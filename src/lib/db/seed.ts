@@ -276,6 +276,12 @@ async function seed() {
     { id: uuid(), store_id: store.id, name: "Nena's Canteen", contact: "09178889990", address: "Brgy. Mandurriao, Iloilo City", status: "active" },
   ])
 
+  // ── SUPPLIERS ──
+  await db.from("suppliers").insert([
+    { id: uuid(), store_id: store.id, name: "Bigas Supply Co.", contact: "09171112233", status: "active" },
+    { id: uuid(), store_id: store.id, name: "Grocery Wholesale Inc.", contact: "09182223344", status: "active" },
+  ])
+
   console.log("Seed complete!")
   console.log("  Store: GroceryPOS Store")
   console.log("  Admin login:   Admin / 1234")

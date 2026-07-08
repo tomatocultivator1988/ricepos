@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       discountName,    // string
       subtotal,        // number
       taxTotal,        // number
+      deliveryFee,     // number
       total,           // number
     } = body
 
@@ -46,17 +47,23 @@ export async function POST(request: NextRequest) {
     }
 
     const paymentsTotal = payments.reduce((sum: number, p: PaymentInput) => sum + p.amount, 0)
-    const isShortPay = paymentsTotal < total
-    const hasBalance = total - paymentsTotal
+
+    // Cap total recorded amount to sale total (over-tender becomes change)
+    const recordedPayments = payments.map(p => ({ ...p, recorded_amount: Math.min(p.amount, total) }))
+    let remaining = total
+    for (const p of recordedPayments) {
+      p.recorded_amount = Math.min(p.recorded_amount, remaining)
+      remaining -= p.recorded_amount
+    }
+    const recordedTotal = recordedPayments.reduce((sum, p) => sum + p.recorded_amount, 0)
+    const change = paymentsTotal - recordedTotal
+
+    const isShortPay = recordedTotal < total
+    const hasBalance = total - recordedTotal
 
     // Short-pay requires a customer
     if (isShortPay && !customerId) {
       return NextResponse.json({ error: "Customer required for short payment" }, { status: 400 })
-    }
-
-    // Validate payment amounts don't exceed total
-    if (paymentsTotal > total) {
-      return NextResponse.json({ error: "Payment exceeds total" }, { status: 400 })
     }
 
     // ── ATOMIC TRANSACTION ──
@@ -115,7 +122,7 @@ export async function POST(request: NextRequest) {
     // Step 3: Insert sale
     const saleId = uuid()
     let saleStatus: string
-    const totalPaid = paymentsTotal
+    const totalPaid = recordedTotal
 
     if (isShortPay) {
       saleStatus = totalPaid === 0 ? "unpaid" : "partial"
@@ -134,6 +141,7 @@ export async function POST(request: NextRequest) {
       discount_value: discountValue || 0,
       discount_amount: discountAmount || 0,
       tax_total: taxTotal,
+      delivery_fee: deliveryFee || 0,
       total,
       amount_paid: totalPaid,
       balance: hasBalance,
@@ -208,14 +216,14 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Step 5: Insert payments (skip if short-pay with 0 paid)
-    for (const p of payments) {
-      if (p.amount <= 0) continue
+    // Step 5: Insert payments (recorded amounts — over-tender = change)
+    for (const p of recordedPayments) {
+      if (p.recorded_amount <= 0) continue
       await db.from("payments").insert({
         id: uuid(),
         sale_id: saleId,
         method: p.method,
-        amount: p.amount,
+        amount: p.recorded_amount,
         is_collection: false,
         receipt_no: `REC-${String(saleNumber).padStart(6, "0")}`,
         created_by: employeeId,
@@ -234,6 +242,7 @@ export async function POST(request: NextRequest) {
         items: items.map(i => ({ name: i.itemName, qty: i.qty, unit: i.unitName })),
         payments: payments,
         total, balance: hasBalance, status: saleStatus,
+        change: change > 0 ? change : 0,
       },
     })
 
@@ -245,9 +254,10 @@ export async function POST(request: NextRequest) {
       sale: {
         id: saleId,
         sale_number: saleNumber,
-        total, amount_paid: totalPaid, balance: hasBalance,
+        deliveryFee: deliveryFee || 0,
+        total, amount_paid: totalPaid, balance: hasBalance, change,
         status: saleStatus,
-        payments: payments,
+        payments: recordedPayments.filter(p => p.recorded_amount > 0).map(p => ({ method: p.method, amount: p.recorded_amount })),
         items: items,
       }
     }, { status: 201 })

@@ -2,6 +2,11 @@ import { NextResponse } from "next/server"
 import { db } from "@/lib/db/client"
 import { getSession, unauth } from "@/lib/auth/session"
 
+function esc(s: string | null | undefined): string {
+  if (!s) return ""
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+}
+
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -109,14 +114,14 @@ export async function GET(
   @media print { body { padding: 0; } }
 </style></head><body>
   <div class="header">
-    <h1>${storeName}</h1>
-    <p>${store?.address || ""} | ${store?.tin ? `TIN: ${store.tin}` : ""}</p>
+    <h1>${esc(storeName)}</h1>
+    <p>${esc(store?.address)} | ${store?.tin ? `TIN: ${store.tin}` : ""}</p>
     <h2 style="margin-top:16px;font-size:16px;">STATEMENT OF ACCOUNT</h2>
   </div>
   <div class="cust">
-    <strong>Customer:</strong> ${customer.name}<br/>
-    ${customer.contact ? `<strong>Contact:</strong> ${customer.contact}<br/>` : ""}
-    ${customer.address ? `<strong>Address:</strong> ${customer.address}` : ""}
+    <strong>Customer:</strong> ${esc(customer.name)}<br/>
+    ${customer.contact ? `<strong>Contact:</strong> ${esc(customer.contact)}<br/>` : ""}
+    ${customer.address ? `<strong>Address:</strong> ${esc(customer.address)}` : ""}
   </div>
   <table>
     <thead><tr>

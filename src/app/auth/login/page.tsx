@@ -138,7 +138,7 @@ export default function LoginPage() {
                     Username
                   </label>
                   <div className="group relative">
-                    <User className="pointer-events-none absolute left-3.5 top-1/2 size-4 -transtone-y-1/2 text-primary transition-colors duration-200 group-focus-within:text-primary" />
+                    <User className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-primary transition-colors duration-200 group-focus-within:text-primary" />
                     <Input
                       id="username" value={username} onChange={(e) => setUsername(e.target.value)}
                       placeholder="Admin or Cashier" autoComplete="username" required
@@ -152,7 +152,7 @@ export default function LoginPage() {
                     Password
                   </label>
                   <div className="group relative">
-                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -transtone-y-1/2 text-primary transition-colors duration-200 group-focus-within:text-primary" />
+                    <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-primary transition-colors duration-200 group-focus-within:text-primary" />
                     <Input
                       id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                       placeholder="Password" autoComplete="current-password" required

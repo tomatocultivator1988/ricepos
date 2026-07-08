@@ -18,7 +18,7 @@ export interface CartItem {
 }
 
 export interface CartDiscount {
-  type: "senior" | "pwd" | "custom_pct" | "custom_fixed" | null
+  type: "senior" | "pwd" | null
   value: number
   name: string
 }
@@ -126,12 +126,12 @@ export function useCart() {
   // Calculations
   const subtotal = items.reduce((sum, i) => sum + (i.unitPrice * i.qty), 0)
 
+  const eligibleTotal = items.filter(i => i.discountEligible).reduce((s, i) => s + (i.unitPrice * i.qty), 0)
+
   const discountAmount = (() => {
     if (!discount.type || discount.value <= 0) return 0
     const eligibleItems = items.filter(i => i.discountEligible)
     if (eligibleItems.length === 0) return 0
-    const eligibleTotal = eligibleItems.reduce((s, i) => s + (i.unitPrice * i.qty), 0)
-    if (discount.type === "custom_fixed") return Math.min(discount.value, eligibleTotal)
     return eligibleTotal * (discount.value / 100)
   })()
 
@@ -140,7 +140,7 @@ export function useCart() {
   const taxTotal = items.reduce((sum, i) => {
     const lineTotal = i.unitPrice * i.qty
     if (i.discountEligible && discount.type && discount.value > 0) {
-      const discountShare = discountAmount * (lineTotal / (subtotal || 1))
+      const discountShare = discountAmount * (lineTotal / (eligibleTotal || 1))
       return sum + ((lineTotal - discountShare) * i.taxRate)
     }
     return sum + (lineTotal * i.taxRate)

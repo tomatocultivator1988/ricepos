@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const to = url.searchParams.get("to")
 
     let query = db.from("sales")
-      .select("id, total, subtotal, tax_total, discount_amt, status, void_reason, employee_id, sale_number, created_at, employees!inner(name)")
+      .select("id, total, subtotal, tax_total, discount_amount, status, void_reason, employee_id, sale_number, created_at, employees!inner(name)")
       .eq("store_id", storeId)
       .order("created_at", { ascending: false })
 
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const grossSales = completed.reduce((sum: number, s: any) => sum + Number(s.subtotal), 0)
     const totalVAT = completed.reduce((sum: number, s: any) => sum + Number(s.tax_total), 0)
-    const totalDiscount = completed.reduce((sum: number, s: any) => sum + Number(s.discount_amt), 0)
+    const totalDiscount = completed.reduce((sum: number, s: any) => sum + Number(s.discount_amount), 0)
     const netSales = grossSales - totalDiscount
     const voidTotal = voided.reduce((sum: number, s: any) => sum + Number(s.total), 0)
     const refundTotal = refunded.reduce((sum: number, s: any) => sum + Number(s.total), 0)
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         total: Number(s.total),
         subtotal: Number(s.subtotal),
         taxTotal: Number(s.tax_total),
-        discountAmt: Number(s.discount_amt),
+        discountAmt: Number(s.discount_amount),
         status: s.status,
         cashier: (s as any).employees?.name || "Unknown",
         createdAt: s.created_at,

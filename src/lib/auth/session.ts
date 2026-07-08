@@ -2,7 +2,9 @@ import { createHmac } from "crypto"
 import { cookies } from "next/headers"
 import { NextResponse } from "next/server"
 
-const SECRET = process.env.AUTH_SECRET || "ricepos-dev-secret-replace-in-production"
+const SECRET = process.env.AUTH_SECRET
+if (!SECRET) throw new Error("AUTH_SECRET environment variable is required")
+const AUTH_SECRET: string = SECRET
 export const SESSION_COOKIE_NAME = "session"
 
 export interface SessionPayload {
@@ -15,7 +17,7 @@ export interface SessionPayload {
 export function signSession(payload: SessionPayload): string {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url")
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url")
-  const sig = createHmac("sha256", SECRET).update(`${header}.${body}`).digest("base64url")
+  const sig = createHmac("sha256", AUTH_SECRET).update(`${header}.${body}`).digest("base64url")
   return `${header}.${body}.${sig}`
 }
 
@@ -24,7 +26,7 @@ export function verifySession(token: string): SessionPayload | null {
     const parts = token.split(".")
     if (parts.length !== 3) return null
     const [header, body, sig] = parts
-    const expected = createHmac("sha256", SECRET).update(`${header}.${body}`).digest("base64url")
+    const expected = createHmac("sha256", AUTH_SECRET).update(`${header}.${body}`).digest("base64url")
     if (sig !== expected) return null
     return JSON.parse(Buffer.from(body, "base64url").toString())
   } catch {

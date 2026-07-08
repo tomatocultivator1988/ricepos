@@ -107,12 +107,11 @@ export default function SalesPage() {
   useEffect(() => {
     fetch("/api/pos/me").then(r => r.json()).then(d => {
       if (d.employee) setUser({ name: d.employee.name, role: d.employee.role })
-      else { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") }
-    }).catch(() => { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") })
+      else { router.push("/auth/login") }
+    }).catch(() => { router.push("/auth/login") })
   }, [router])
 
   const handleLogout = async () => {
-    document.cookie = "session=; max-age=0; path=/"
     await fetch("/api/auth/logout", { method: "POST" })
     router.push("/auth/login")
   }
@@ -399,13 +398,13 @@ export default function SalesPage() {
                   <TableBody>
                     {loading ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-16 text-center text-stone-500">
+                        <TableCell colSpan={7} className="py-16 text-center text-stone-500">
                           Loading...
                         </TableCell>
                       </TableRow>
                     ) : !data || data.sales.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-16 text-center text-stone-500">
+                        <TableCell colSpan={7} className="py-16 text-center text-stone-500">
                           No sales found
                         </TableCell>
                       </TableRow>

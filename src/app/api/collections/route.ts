@@ -66,7 +66,9 @@ export async function POST(request: NextRequest) {
       let colNum = 1
       if (seq) {
         colNum = seq.last_number + 1
-        // Note: we reuse the sale sequence for simplicity; ideally a separate collection counter
+        await db.from("sale_sequences").update({ last_number: colNum }).eq("store_id", storeId).eq("year", year)
+      } else {
+        await db.from("sale_sequences").insert({ store_id: storeId, year, last_number: 1 })
       }
 
       const receiptNo = `COL-${String(colNum).padStart(6, "0")}`

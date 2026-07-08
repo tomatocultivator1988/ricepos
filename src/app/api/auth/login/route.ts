@@ -3,12 +3,30 @@ import { db } from "@/lib/db/client"
 import { compare } from "bcryptjs"
 import { signSession, setSessionCookie } from "@/lib/auth/session"
 
+const loginAttempts = new Map<string, { count: number; resetAt: number }>()
+function checkRateLimit(key: string): boolean {
+  const now = Date.now()
+  const entry = loginAttempts.get(key)
+  if (!entry || now > entry.resetAt) {
+    loginAttempts.set(key, { count: 1, resetAt: now + 60000 })
+    return true
+  }
+  if (entry.count >= 5) return false
+  entry.count++
+  return true
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { username, password } = await request.json()
 
     if (!username || !password) {
       return NextResponse.json({ error: "Username and password required" }, { status: 400 })
+    }
+
+    const clientIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+    if (!checkRateLimit(`${clientIp}:${username}`)) {
+      return NextResponse.json({ error: "Too many attempts. Try again in 1 minute." }, { status: 429 })
     }
 
     const { data: allEmployees } = await db

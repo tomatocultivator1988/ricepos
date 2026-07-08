@@ -5,19 +5,61 @@ import { v4 as uuid } from "uuid"
 
 // Compute cash collected during a shift window (cash only)
 async function computeCashDuringShift(storeId: string, openedAt: string) {
-  // All cash payments (sales + collections) since shift opened
+  // Get all store sale IDs to scope payments (payments table has no store_id)
+  const { data: storeSales } = await db.from("sales")
+    .select("id").eq("store_id", storeId)
+  const storeSaleIds = new Set((storeSales ?? []).map((s: any) => s.id))
+
+  // All cash payments since shift opened
   const { data: payments } = await db.from("payments")
     .select("amount, is_collection, sale_id")
     .eq("method", "cash")
     .gte("created_at", openedAt)
 
+  // Exclude payments tied to voided/refunded sales
+  const { data: voidedSales } = await db.from("sales")
+    .select("id")
+    .eq("store_id", storeId)
+    .in("status", ["voided", "refunded"])
+  const voidedIds = new Set((voidedSales ?? []).map((s: any) => s.id))
+
   let cashSales = 0
   let cashCollections = 0
   for (const p of (payments ?? [])) {
+    if (p.sale_id && !storeSaleIds.has(p.sale_id)) continue  // not this store's sale
+    if (p.sale_id && voidedIds.has(p.sale_id)) continue
     if (p.is_collection) cashCollections += Number(p.amount)
     else cashSales += Number(p.amount)
   }
   return { cashSales, cashCollections }
+}
+
+// Compute gcash collected during a shift window (gcash only)
+async function computeGcashDuringShift(storeId: string, openedAt: string) {
+  const { data: storeSales } = await db.from("sales")
+    .select("id").eq("store_id", storeId)
+  const storeSaleIds = new Set((storeSales ?? []).map((s: any) => s.id))
+
+  const { data: payments } = await db.from("payments")
+    .select("amount, is_collection, sale_id")
+    .eq("method", "gcash")
+    .gte("created_at", openedAt)
+
+  const { data: voidedSales } = await db.from("sales")
+    .select("id")
+    .eq("store_id", storeId)
+    .in("status", ["voided", "refunded"])
+  const voidedIds = new Set((voidedSales ?? []).map((s: any) => s.id))
+
+  let gcashSales = 0
+  let gcashCollections = 0
+  for (const p of (payments ?? [])) {
+    if (p.sale_id && !storeSaleIds.has(p.sale_id)) continue
+    if (p.sale_id && voidedIds.has(p.sale_id)) continue
+    if (p.is_collection) gcashCollections += Number(p.amount)
+    else gcashSales += Number(p.amount)
+  }
+  return { gcashSales, gcashCollections }
 }
 
 // GET — current open shift (with live expected cash) or null
@@ -39,12 +81,18 @@ export async function GET() {
     const { cashSales, cashCollections } = await computeCashDuringShift(storeId, shift.opened_at)
     const expectedCash = Number(shift.opening_cash) + cashSales + cashCollections
 
+    const { gcashSales, gcashCollections } = await computeGcashDuringShift(storeId, shift.opened_at)
+    const expectedGcash = Number(shift.opening_gcash) + gcashSales + gcashCollections
+
     return NextResponse.json({
       shift: {
         ...shift,
         cash_sales: cashSales,
         cash_collections: cashCollections,
         expected_cash: expectedCash,
+        gcash_sales: gcashSales,
+        gcash_collections: gcashCollections,
+        expected_gcash: expectedGcash,
       },
     })
   } catch (error: any) {
@@ -59,7 +107,7 @@ export async function POST(request: NextRequest) {
     const session = await getSession()
     const storeId = session.storeId
     const body = await request.json()
-    const { opening_cash, opening_denoms } = body
+    const { opening_cash, opening_denoms, opening_gcash } = body
 
     // Edge case: only one open shift at a time
     const { data: existing } = await db.from("shifts")
@@ -80,6 +128,7 @@ export async function POST(request: NextRequest) {
       opened_at: new Date().toISOString(),
       opening_cash: Number(opening_cash),
       opening_denoms: opening_denoms || {},
+      opening_gcash: Number(opening_gcash) || 0,
     }).select().single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -104,7 +153,7 @@ export async function PUT(request: NextRequest) {
     const session = await getSession()
     const storeId = session.storeId
     const body = await request.json()
-    const { closing_cash, closing_denoms, note } = body
+    const { closing_cash, closing_denoms, note, closing_gcash } = body
 
     const { data: shift } = await db.from("shifts")
       .select("*").eq("store_id", storeId).eq("status", "open")
@@ -119,6 +168,10 @@ export async function PUT(request: NextRequest) {
     const expectedCash = Number(shift.opening_cash) + cashSales + cashCollections
     const variance = Number(closing_cash) - expectedCash
 
+    const { gcashSales, gcashCollections } = await computeGcashDuringShift(storeId, shift.opened_at)
+    const expectedGcash = Number(shift.opening_gcash || 0) + gcashSales + gcashCollections
+    const gcashVariance = Number(closing_gcash) - expectedGcash
+
     const { data: updated, error } = await db.from("shifts").update({
       status: "closed",
       closed_at: new Date().toISOString(),
@@ -128,6 +181,11 @@ export async function PUT(request: NextRequest) {
       cash_collections: cashCollections,
       expected_cash: expectedCash,
       variance,
+      closing_gcash: Number(closing_gcash) || 0,
+      gcash_sales: gcashSales,
+      gcash_collections: gcashCollections,
+      expected_gcash: expectedGcash,
+      gcash_variance: gcashVariance,
       note: note || null,
     }).eq("id", shift.id).select().single()
 

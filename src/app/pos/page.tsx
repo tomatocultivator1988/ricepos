@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useCart, type CartItem } from "@/hooks/use-cart"
 import { toast } from "sonner"
-import { DenominationCounter, calcDenomTotal, type DenomState } from "@/components/denomination-counter"
+import { DenominationCounter, type DenomState } from "@/components/denomination-counter"
+import { Numpad } from "@/components/numpad"
 
 interface CatalogItem {
   id: string; name: string; category_id: string | null; sell_by: "weight" | "unit";
@@ -24,7 +25,7 @@ interface CustomerResult { id: string; name: string; contact?: string; balance?:
 
 export default function PosPage() {
   const [{ user, catalog, categories }, setData] = useState<{
-    user: { name: string; role: string; employeeId: string } | null;
+    user: { name: string; role: string } | null;
     catalog: CatalogItem[]; categories: Category[];
   }>({ user: null, catalog: [], categories: [] })
   const [search, setSearch] = useState("")
@@ -34,6 +35,7 @@ export default function PosPage() {
   const [payModal, setPayModal] = useState(false)
   const [payCash, setPayCash] = useState("")
   const [payGcash, setPayGcash] = useState("")
+  const [deliveryFee, setDeliveryFee] = useState("")
   const [paySaving, setPaySaving] = useState(false)
 
   // Receipt preview state
@@ -61,8 +63,10 @@ export default function PosPage() {
   const [shiftCloseModal, setShiftCloseModal] = useState(false)
   const [shiftOpenDenoms, setShiftOpenDenoms] = useState<DenomState>({})
   const [shiftOpenTotal, setShiftOpenTotal] = useState(0)
+  const [shiftOpenGcash, setShiftOpenGcash] = useState("0")
   const [shiftCloseDenoms, setShiftCloseDenoms] = useState<DenomState>({})
   const [shiftCloseTotal, setShiftCloseTotal] = useState(0)
+  const [shiftCloseGcash, setShiftCloseGcash] = useState("0")
   const [shiftCloseNote, setShiftCloseNote] = useState("")
   const [shiftSaving, setShiftSaving] = useState(false)
 
@@ -74,11 +78,14 @@ export default function PosPage() {
   const [collMethod, setCollMethod] = useState("cash")
   const [collSaving, setCollSaving] = useState(false)
 
+  // Numpad state
+  const [focusedInput, setFocusedInput] = useState<"cash" | "gcash" | "qty" | "collAmount" | null>(null)
+
   // Auth
   useEffect(() => { fetch("/api/pos/me").then(r => r.json()).then(d => {
     if (d.employee) setData(prev => ({ ...prev, user: d.employee }))
-    else { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") }
-  }).catch(() => { document.cookie = "session=; max-age=0; path=/"; router.push("/auth/login") }) }, [router])
+    else { router.push("/auth/login") }
+  }).catch(() => { router.push("/auth/login") }) }, [router])
 
   // Catalog
   useEffect(() => {
@@ -105,19 +112,19 @@ export default function PosPage() {
     setShiftSaving(true)
     const res = await fetch("/api/shifts", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ opening_cash: shiftOpenTotal, opening_denoms: shiftOpenDenoms }),
+      body: JSON.stringify({ opening_cash: shiftOpenTotal, opening_denoms: shiftOpenDenoms, opening_gcash: Number(shiftOpenGcash) || 0 }),
     })
     const json = await res.json()
     if (!res.ok) { toast.error(json.error || "Failed to open shift"); setShiftSaving(false); return }
     toast.success(`Shift opened — starting cash ₱${shiftOpenTotal.toFixed(2)}`)
-    setShiftSaving(false); setShiftOpenModal(false); setShiftOpenDenoms({}); setShiftOpenTotal(0)
+    setShiftSaving(false); setShiftOpenModal(false); setShiftOpenDenoms({}); setShiftOpenTotal(0); setShiftOpenGcash("0")
     await loadShift()
   }
 
   async function openCloseShiftModal() {
     // Refresh shift to get latest expected cash
     await loadShift()
-    setShiftCloseDenoms({}); setShiftCloseTotal(0); setShiftCloseNote("")
+    setShiftCloseDenoms({}); setShiftCloseTotal(0); setShiftCloseNote(""); setShiftCloseGcash("0")
     setShiftCloseModal(true)
   }
 
@@ -125,7 +132,7 @@ export default function PosPage() {
     setShiftSaving(true)
     const res = await fetch("/api/shifts", {
       method: "PUT", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ closing_cash: shiftCloseTotal, closing_denoms: shiftCloseDenoms, note: shiftCloseNote }),
+      body: JSON.stringify({ closing_cash: shiftCloseTotal, closing_denoms: shiftCloseDenoms, note: shiftCloseNote, closing_gcash: Number(shiftCloseGcash) || 0 }),
     })
     const json = await res.json()
     if (!res.ok) { toast.error(json.error || "Failed to close shift"); setShiftSaving(false); return }
@@ -157,6 +164,13 @@ export default function PosPage() {
         <tr><td colspan="2"><strong>Expected Cash</strong></td><td style="text-align:right"><strong>₱${Number(s.expected_cash).toFixed(2)}</strong></td></tr>
         <tr><td colspan="2"><strong>Counted Cash</strong></td><td style="text-align:right"><strong>₱${Number(s.closing_cash).toFixed(2)}</strong></td></tr>
         <tr><td colspan="2"><strong>VARIANCE</strong></td><td style="text-align:right"><strong>${s.variance >= 0 ? "+" : ""}₱${Number(s.variance).toFixed(2)}</strong></td></tr>
+      </table>
+      <div class="line"></div>
+      <table>
+        <tr><td>GCash Opening</td><td></td><td style="text-align:right">₱${Number(s.opening_gcash).toFixed(2)}</td></tr>
+        <tr><td>GCash Sales</td><td></td><td style="text-align:right">₱${Number(s.gcash_sales).toFixed(2)}</td></tr>
+        <tr><td>GCash Closing</td><td></td><td style="text-align:right">₱${Number(s.closing_gcash).toFixed(2)}</td></tr>
+        <tr><td colspan="2"><strong>Expected GCash</strong></td><td style="text-align:right"><strong>₱${(Number(s.opening_gcash) + Number(s.gcash_sales)).toFixed(2)}</strong></td></tr>
       </table>
       <div class="line"></div>
       <div class="c" style="font-size:10px"><strong>CLOSING DENOMINATIONS</strong></div>
@@ -231,38 +245,37 @@ export default function PosPage() {
   // Payment
   function openPay() {
     if (!shift) { toast.error("Open a shift first before selling"); setShiftOpenModal(true); return }
-    setPayCash(String(cart.total.toFixed(2)))
+    setPayCash(String((cart.total + (Number(deliveryFee) || 0)).toFixed(2)))
     setPayGcash("0")
     setPayModal(true)
   }
 
   async function processPayment() {
-    const cash = Math.round((Number(payCash) || 0) * 100) / 100
-    const gcash = Math.round((Number(payGcash) || 0) * 100) / 100
-    const total = Math.round(cart.total * 100) / 100
+    const round2 = (v: number) => Math.round((v + 1e-12) * 100) / 100
+    const cash = round2(Number(payCash) || 0)
+    const gcash = round2(Number(payGcash) || 0)
+    const fee = round2(Number(deliveryFee) || 0)
+    const total = round2(cart.total + fee)
     if (cash + gcash <= 0 && !cart.customerId) {
       toast.error("Enter a payment amount or select a customer for utang"); return
     }
-    // Overpayment = change back to customer. Only record what covers the total.
     const paidTotal = cash + gcash
     const isShort = paidTotal < total
     if (isShort && !cart.customerId) {
       toast.error("Select a customer to have a balance"); return
     }
-    // Allocate payments: excess from overpayment is change (not recorded)
     let remaining = total
-    let cashPayment = Math.min(cash, remaining); remaining -= cashPayment
-    let gcashPayment = Math.min(gcash, remaining)
-    // If still short and customer exists, that's the balance
-    const balance = isShort ? Math.round((total - cash - gcash) * 100) / 100 : 0
-    const change = paidTotal > total ? Math.round((paidTotal - total) * 100) / 100 : 0
-    // Total payments recorded = exactly what covers the sale (or less for short-pay)
+    const cashPayment = Math.min(cash, remaining)
+    remaining = Math.max(0, remaining - cashPayment)
+    const gcashPayment = Math.min(gcash, remaining)
+    const balance = isShort ? round2(total - paidTotal) : 0
+    const change = paidTotal > total ? round2(paidTotal - total) : 0
     const totalPaid = cashPayment + gcashPayment
     
     setPaySaving(true)
     const payments: { method: string; amount: number }[] = []
-    if (cashPayment > 0) payments.push({ method: "cash", amount: cashPayment })
-    if (gcashPayment > 0) payments.push({ method: "gcash", amount: gcashPayment })
+    if (cash > 0) payments.push({ method: "cash", amount: cash })
+    if (gcash > 0) payments.push({ method: "gcash", amount: gcash })
 
     try {
       const res = await fetch("/api/sales", {
@@ -275,6 +288,7 @@ export default function PosPage() {
           discountAmount: cart.discountAmount, discountName: cart.discount.name,
           subtotal: Math.round(cart.subtotal * 100) / 100,
           taxTotal: Math.round(cart.taxTotal * 100) / 100,
+          deliveryFee: fee,
           total,
         }),
       })
@@ -290,9 +304,10 @@ export default function PosPage() {
         subtotal: Math.round(cart.subtotal * 100) / 100,
         discount: cart.discountAmount,
         tax: cart.taxTotal,
+        deliveryFee: fee,
         total,
-        paymentMethod: payments.map(p => `${p.method} ₱${p.amount}`).join(" + "),
-        amountTendered: cash + gcash,
+        paymentMethod: payments.length > 0 ? payments.map(p => `${p.method} ₱${p.amount}`).join(" + ") : "Utang / Balance",
+        amountTendered: paidTotal,
         change,
         orderNumber: sn,
         date: new Date().toLocaleString("en-PH"),
@@ -313,7 +328,7 @@ export default function PosPage() {
       toast.success(`Sale #${sn} — ₱${json.sale.total.toFixed(2)}`)
       cart.clearCart()
       setPayModal(false)
-      setPayCash(""); setPayGcash("")
+      setPayCash(""); setPayGcash(""); setDeliveryFee("")
 
       // Refresh catalog to update stock
       fetch("/api/catalog").then(r => r.json()).then(d =>
@@ -355,7 +370,6 @@ export default function PosPage() {
   )
 
   const handleLogout = async () => {
-    document.cookie = "session=; max-age=0; path=/"
     await fetch("/api/auth/logout", { method: "POST" })
     router.push("/auth/login")
   }
@@ -415,7 +429,7 @@ export default function PosPage() {
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="px-3 py-2 space-y-2 shrink-0">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -transtone-y-1/2 h-4 w-4 text-stone-500" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
               <Input ref={searchRef} placeholder="Search or scan barcode..." value={search} onChange={e => setSearch(e.target.value)}
                 className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800 h-9" />
             </div>
@@ -501,7 +515,13 @@ export default function PosPage() {
               <div className="flex justify-between text-stone-500"><span>Subtotal</span><span>₱{cart.subtotal.toFixed(2)}</span></div>
               {cart.discountAmount>0&&<div className="flex justify-between text-red-600"><span>{cart.discount.name}</span><span>-₱{cart.discountAmount.toFixed(2)}</span></div>}
               <div className="flex justify-between text-stone-500"><span>Tax</span><span>₱{cart.taxTotal.toFixed(2)}</span></div>
-              <div className="flex justify-between text-base font-bold text-stone-800 pt-1"><span>TOTAL</span><span>₱{cart.total.toFixed(2)}</span></div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-stone-500">Delivery Fee</span>
+                <Input type="number" step="0.01" min="0" placeholder="0.00"
+                  value={deliveryFee} onChange={e => setDeliveryFee(e.target.value)}
+                  className="w-24 h-7 text-right bg-gold-100 border-amber-300/60 text-xs" />
+              </div>
+              <div className="flex justify-between text-base font-bold text-stone-800 pt-1"><span>TOTAL</span><span>₱{(cart.total + (Number(deliveryFee) || 0)).toFixed(2)}</span></div>
             </div>
             <div className="flex gap-2"><Button variant="outline" size="sm" className="flex-1" onClick={cart.clearCart} disabled={cart.items.length===0}>Clear</Button>
               <Button size="sm" className="flex-1 bg-primary hover:bg-amber-400" disabled={cart.items.length===0} onClick={openPay}><CreditCard className="h-3 w-3 mr-1"/>Pay</Button></div>
@@ -529,9 +549,12 @@ export default function PosPage() {
             </div>
             <div className="space-y-1.5 mb-1">
               <span className="text-xs font-medium text-stone-500 mb-1">Quantity:</span>
-              <Input type="number" value={upQty} onChange={e=>setUpQty(e.target.value)}
-                step={upItem.sell_by==="weight"?"0.1":"1"} min={upItem.units.find(u=>u.id===upUnit)?.min_qty??(upItem.sell_by==="weight"?0.001:1)}
-                className="bg-gold-100 border-amber-300/60 h-10 text-sm"/>
+              <div
+                className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer"
+                onClick={() => setFocusedInput("qty")}
+              >
+                {upQty || "0"}
+              </div>
             </div>
             {upUnit&&(<p className="text-xs text-stone-500">Total: {(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.base_qty??1)).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"} = ₱{(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.price??0)).toFixed(2)}</p>)}
             <Button onClick={addToCart} className="w-full bg-primary hover:bg-amber-400">Add to Cart</Button>
@@ -561,16 +584,26 @@ export default function PosPage() {
             <div className="space-y-3">
               <div className="space-y-1.5 mb-1">
                 <label className="text-xs font-medium text-stone-500 mb-1">Cash</label>
-                <Input type="number" step="0.01" value={payCash} onChange={e=>setPayCash(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10"/>
+                <div
+                  className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer"
+                  onClick={() => setFocusedInput("cash")}
+                >
+                  ₱{payCash || "0.00"}
+                </div>
               </div>
               <div className="space-y-1.5 mb-1">
                 <label className="text-xs font-medium text-stone-500 mb-1">GCash</label>
-                <Input type="number" step="0.01" value={payGcash} onChange={e=>setPayGcash(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10"/>
+                <div
+                  className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer"
+                  onClick={() => setFocusedInput("gcash")}
+                >
+                  ₱{payGcash || "0.00"}
+                </div>
               </div>
               <div className="border-t border-amber-300/60 pt-2 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-stone-500">Paid</span><span className="text-white font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)).toFixed(2)}</span></div>
                 {((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&(<div className="flex justify-between"><span className="text-amber-600">To Balance</span><span className="text-amber-600 font-semibold">₱{(cart.total-(Number(payCash)||0)-(Number(payGcash)||0)).toFixed(2)}</span></div>)}
-                {(Number(payCash)||0)>cart.total&&(<div className="flex justify-between"><span className="text-amber-600">Change</span><span className="text-amber-600 font-semibold">₱{((Number(payCash)||0)-cart.total).toFixed(2)}</span></div>)}
+                {(Number(payCash)||0)+(Number(payGcash)||0)>cart.total&&(<div className="flex justify-between"><span className="text-amber-600">Change</span><span className="text-amber-600 font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)-cart.total).toFixed(2)}</span></div>)}
               </div>
               {cart.customerId&&<div className="text-xs text-stone-500">Customer: {cart.customerName} {cart.customerBalance>0?`(existing utang: ₱${cart.customerBalance.toFixed(2)})`:""}</div>}
               {!cart.customerId&&((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&<p className="text-xs text-red-600 text-center">Select a customer to have a balance</p>}
@@ -626,6 +659,9 @@ export default function PosPage() {
                 {receiptData.tax > 0 && (
                   <div className="flex justify-between"><span>Tax</span><span>₱{receiptData.tax.toFixed(2)}</span></div>
                 )}
+                {receiptData.deliveryFee > 0 && (
+                  <div className="flex justify-between"><span>Delivery Fee</span><span>₱{receiptData.deliveryFee.toFixed(2)}</span></div>
+                )}
                 <div className="flex justify-between font-bold text-base pt-1">
                   <span>TOTAL</span><span>₱{receiptData.total.toFixed(2)}</span>
                 </div>
@@ -675,6 +711,10 @@ export default function PosPage() {
           <DialogHeader><DialogTitle className="flex items-center gap-2"><DoorOpenIcon className="h-5 w-5 text-amber-600" /> Open Shift — Count Starting Cash</DialogTitle></DialogHeader>
           <div className="space-y-5">
             <p className="text-xs text-stone-500">Count the cash in the drawer before you start selling. Enter how many pieces of each denomination.</p>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-stone-600">GCash Balance</label>
+              <Input type="number" inputMode="decimal" value={shiftOpenGcash} onChange={e => setShiftOpenGcash(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10" />
+            </div>
             <DenominationCounter value={shiftOpenDenoms} onChange={(d, t) => { setShiftOpenDenoms(d); setShiftOpenTotal(t) }} />
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setShiftOpenModal(false)}>Cancel</Button>
@@ -695,11 +735,16 @@ export default function PosPage() {
               <div className="rounded-lg bg-gold-200/60 border border-amber-300/60 p-3 space-y-1 text-sm">
                 <div className="flex justify-between text-stone-500"><span>Opening Cash</span><span>₱{Number(shift.opening_cash).toFixed(2)}</span></div>
                 <div className="flex justify-between text-stone-500"><span>Cash Sales</span><span>₱{Number(shift.cash_sales).toFixed(2)}</span></div>
+                <div className="flex justify-between text-stone-500"><span>GCash Sales</span><span>₱{Number(shift.gcash_sales).toFixed(2)}</span></div>
                 <div className="flex justify-between text-stone-500"><span>Cash Collections</span><span>₱{Number(shift.cash_collections).toFixed(2)}</span></div>
                 <div className="flex justify-between font-bold text-amber-600 border-t border-amber-300/60 pt-1"><span>Expected in Drawer</span><span>₱{Number(shift.expected_cash).toFixed(2)}</span></div>
               </div>
             )}
             <p className="text-xs text-stone-500">Now count the actual cash in the drawer:</p>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-stone-600">GCash Balance</label>
+              <Input type="number" inputMode="decimal" value={shiftCloseGcash} onChange={e => setShiftCloseGcash(e.target.value)} className="bg-gold-100 border-amber-300/60 h-10" />
+            </div>
             <DenominationCounter value={shiftCloseDenoms} onChange={(d, t) => { setShiftCloseDenoms(d); setShiftCloseTotal(t) }} />
             {shift && (
               <div className={`rounded-lg p-2 text-center text-sm font-semibold ${(shiftCloseTotal - Number(shift.expected_cash)) === 0 ? "bg-green-500/20 text-green-300" : "bg-red-500/20 text-red-300"}`}>
@@ -745,7 +790,12 @@ export default function PosPage() {
                   <p className="text-xl font-bold text-amber-600">Balance: ₱{collSelected.balance.toFixed(2)}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Input type="number" step="0.01" placeholder="Amount" value={collAmount} onChange={e => setCollAmount(e.target.value)} className="bg-gold-100 border-amber-300/60 flex-1 h-10" />
+                  <div
+                    className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer flex-1"
+                    onClick={() => setFocusedInput("collAmount")}
+                  >
+                    ₱{collAmount || "0.00"}
+                  </div>
                   <Select value={collMethod} onValueChange={v => setCollMethod(v ?? "cash")}>
                     <SelectTrigger className="w-28 bg-gold-100 border-amber-300/60 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="gcash">GCash</SelectItem></SelectContent>
@@ -771,6 +821,26 @@ export default function PosPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ══ ON-SCREEN NUMPAD ══ */}
+      {focusedInput && (() => {
+        const config: Record<string, { value: string; onChange: (v: string) => void; label: string; decimal: boolean }> = {
+          cash: { value: payCash, onChange: setPayCash, label: "Cash Amount", decimal: true },
+          gcash: { value: payGcash, onChange: setPayGcash, label: "GCash Amount", decimal: true },
+          qty: { value: upQty, onChange: setUpQty, label: "Quantity", decimal: true },
+          collAmount: { value: collAmount, onChange: setCollAmount, label: "Collection Amount", decimal: true },
+        }
+        const cfg = config[focusedInput]
+        return (
+          <Numpad
+            value={cfg.value}
+            onChange={cfg.onChange}
+            onDismiss={() => setFocusedInput(null)}
+            label={cfg.label}
+            allowDecimal={cfg.decimal}
+          />
+        )
+      })()}
     </div>
   )
 }

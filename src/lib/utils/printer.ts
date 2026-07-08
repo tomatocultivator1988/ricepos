@@ -36,9 +36,24 @@ function bytes(...codes: number[]): Uint8Array {
   return new Uint8Array(codes)
 }
 
+const ASCII_REPLACE: Record<string, string> = {
+  "\u2500": "-",  // ─ → -
+  "\u20B1": "P",  // ₱ → P
+  "\u00A0": " ",  // non-breaking space
+  "\u2018": "'", "\u2019": "'", // smart quotes
+  "\u201C": '"', "\u201D": '"',
+  "\u2013": "-", "\u2014": "--", // en/em dash
+  "\u2026": "...",
+  "\u00D7": "x", // ×
+}
+
+function toAscii(str: string): string {
+  return str.replace(/[^\x00-\x7F]/g, (c) => ASCII_REPLACE[c] || "?")
+}
+
 function text(str: string): Uint8Array {
   const encoder = new TextEncoder()
-  return encoder.encode(str)
+  return encoder.encode(toAscii(str))
 }
 
 function concat(...arrays: Uint8Array[]): Uint8Array {
@@ -170,7 +185,7 @@ function buildReceipt(data: ReceiptData): Uint8Array {
   parts.push(normal)
   parts.push(text(data.subtitle))
   parts.push(feed)
-  parts.push(text('─'.repeat(32)))
+  parts.push(text('-'.repeat(32)))
   parts.push(feed)
   parts.push(left)
 
@@ -181,7 +196,7 @@ function buildReceipt(data: ReceiptData): Uint8Array {
   parts.push(feed)
   parts.push(text(`Cashier: ${data.cashier}`))
   parts.push(feed)
-  parts.push(text('─'.repeat(32)))
+  parts.push(text('-'.repeat(32)))
   parts.push(feed)
 
   // Items
@@ -193,7 +208,7 @@ function buildReceipt(data: ReceiptData): Uint8Array {
     parts.push(feed)
   }
 
-  parts.push(text('─'.repeat(32)))
+  parts.push(text('-'.repeat(32)))
   parts.push(feed)
 
   // Totals
