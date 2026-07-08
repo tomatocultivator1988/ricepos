@@ -20,7 +20,6 @@ export const adminNavLinks: NavLink[] = [
   { label: "Audit", href: "/dashboard/audit", icon: FileTextIcon },
   { label: "Expenses", href: "/backoffice/expenses", icon: ReceiptIcon },
   { label: "Items", href: "/backoffice/items", icon: PackageIcon },
-  { label: "Categories", href: "/backoffice/categories", icon: PackageIcon },
 
   { label: "Inventory", href: "/backoffice/inventory", icon: BoxesIcon },
   { label: "Purchase Orders", href: "/backoffice/purchase-orders", icon: ClipboardListIcon },
