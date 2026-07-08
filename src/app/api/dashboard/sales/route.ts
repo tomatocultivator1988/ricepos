@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     let salesQuery = db
       .from("sales")
-      .select("id, total, status, created_at, employee_id", { count: "exact" })
+      .select("id, sale_number, total, status, created_at, employee_id", { count: "exact" })
       .eq("store_id", storeId)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1)

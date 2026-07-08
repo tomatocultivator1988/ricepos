@@ -40,7 +40,8 @@ export default function ReportsPage() {
     setLoading(true)
     fetch(`/api/reports?type=${activeTab}&from=${from}&to=${to}`).then(r => r.json()).then(d => {
       setData(d); setLoading(false)
-    })
+      if (d.error) console.error("Report error:", d.error)
+    }).catch(e => { console.error("Fetch error:", e); setLoading(false) })
   }, [from, to, activeTab])
 
   function fmoney(v: any) { return `₱${Number(v ?? 0).toFixed(2)}` }

@@ -56,6 +56,7 @@ function paymentMethodBadge(method: string) {
     cash: { label: "Cash", className: "bg-amber-500/20 text-amber-700 border-amber-500/40" },
     card: { label: "Card", className: "bg-blue-500/20 text-blue-700 border-blue-500/40" },
     gcash: { label: "GCash", className: "bg-purple-500/20 text-purple-700 border-purple-500/40" },
+    split: { label: "Split", className: "bg-blue-500/20 text-blue-700 border-blue-500/40" },
   }
   const cfg = map[method.toLowerCase()] ?? { label: method, className: "bg-white/50 text-stone-700 border-stone-600/40" }
   return (
