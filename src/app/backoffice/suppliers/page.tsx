@@ -66,7 +66,26 @@ export default function SuppliersPage() {
           className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
       </div>
 
-      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : (
+      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : suppliers.length === 0 ? (
+        <Card className="bg-gold-200/90 border-amber-300/60"><CardContent className="p-6 text-center text-stone-500">No suppliers yet</CardContent></Card>
+      ) : (
+        <>
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {suppliers.map(s => (
+            <div key={s.id} onClick={() => openEdit(s)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
+              <div className="flex justify-between items-start">
+                <span className="font-bold text-stone-800 text-sm">{s.name}</span>
+                <Badge variant={s.status === "active" ? "default" : "secondary"}>{s.status}</Badge>
+              </div>
+              <div className="text-xs text-stone-500">
+                <span>{s.contact ?? "—"}{s.address ? ` · ${s.address}` : ""}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop Table */}
+        <div className="hidden lg:block">
         <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
@@ -93,6 +112,8 @@ export default function SuppliersPage() {
             </Table>
           </CardContent>
         </Card>
+        </div>
+        </>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>

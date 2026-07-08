@@ -99,7 +99,89 @@ export default function InventoryPage() {
           className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
       </div>
 
-      {loading ? <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-green-700" /></div> : (
+      {loading ? <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-green-700" /></div> : filtered.length === 0 ? (
+        <Card className="bg-gold-200/90 border-amber-300/60"><CardContent className="p-6 text-center text-stone-500">No items found</CardContent></Card>
+      ) : (
+        <>
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {showSplit ? (
+            <>
+              {riceItems.length > 0 && (
+                <><div className="text-xs font-bold text-amber-600 tracking-wider uppercase px-1">Rice</div>
+                {riceItems.map(i => (
+                  <div key={i.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-stone-800 text-sm">{i.name}</span>
+                      <Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-amber-100 text-amber-700" : "bg-red-500"}>{i.stock_status.toUpperCase()}</Badge>
+                    </div>
+                    <div className="text-xs text-stone-500 space-y-0.5">
+                      <div className="flex justify-between">
+                        <span><span className="font-medium text-stone-700">On Hand:</span> {Number(i.stock_qty).toFixed(i.sell_by === "weight" ? 3 : 0)} {i.sell_by === "weight" ? "kg" : "pc"}</span>
+                        <span><span className="font-medium text-stone-700">Min:</span> {Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1">
+                        <span className="text-stone-700">₱{i.value.toFixed(2)}</span>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}</>
+              )}
+              {otherItems.length > 0 && (
+                <><div className="text-xs font-bold text-stone-500 tracking-wider uppercase px-1">Other Items</div>
+                {otherItems.map(i => (
+                  <div key={i.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-stone-800 text-sm">{i.name}</span>
+                      <Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-amber-100 text-amber-700" : "bg-red-500"}>{i.stock_status.toUpperCase()}</Badge>
+                    </div>
+                    <div className="text-xs text-stone-500 space-y-0.5">
+                      <div className="flex justify-between">
+                        <span><span className="font-medium text-stone-700">On Hand:</span> {Number(i.stock_qty).toFixed(i.sell_by === "weight" ? 3 : 0)} {i.sell_by === "weight" ? "kg" : "pc"}</span>
+                        <span><span className="font-medium text-stone-700">Min:</span> {Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-1">
+                        <span className="text-stone-700">₱{i.value.toFixed(2)}</span>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}</>
+              )}
+            </>
+          ) : (
+            filtered.map(i => (
+              <div key={i.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
+                <div className="flex justify-between items-start">
+                  <span className="font-bold text-stone-800 text-sm">{i.name}</span>
+                  <Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-amber-100 text-amber-700" : "bg-red-500"}>{i.stock_status.toUpperCase()}</Badge>
+                </div>
+                <div className="text-xs text-stone-500 space-y-0.5">
+                  <div className="flex justify-between">
+                    <span><span className="font-medium text-stone-700">On Hand:</span> {Number(i.stock_qty).toFixed(i.sell_by === "weight" ? 3 : 0)} {i.sell_by === "weight" ? "kg" : "pc"}</span>
+                    <span><span className="font-medium text-stone-700">Min:</span> {Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</span>
+                  </div>
+                  <div className="flex justify-between items-center pt-1">
+                    <span className="text-stone-700">₱{i.value.toFixed(2)}</span>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        {/* Desktop Table */}
+        <div className="hidden lg:block">
         <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
@@ -114,11 +196,7 @@ export default function InventoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-stone-500 py-8">No items found</TableCell>
-                  </TableRow>
-                ) : showSplit ? (
+                {showSplit ? (
                   <>
                     {riceItems.length > 0 && (
                       <>
@@ -175,6 +253,8 @@ export default function InventoryPage() {
             </Table>
           </CardContent>
         </Card>
+        </div>
+        </>
       )}
 
       {/* Delivery Modal */}

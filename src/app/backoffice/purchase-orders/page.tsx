@@ -193,7 +193,31 @@ export default function PurchaseOrdersPage() {
         </div>
       </div>
 
-      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : (
+      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : pos.length === 0 ? (
+        <Card className="bg-gold-200/90 border-amber-300/60"><CardContent className="p-6 text-center text-stone-500">No purchase orders</CardContent></Card>
+      ) : (
+        <>
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {pos.map(p => (
+            <div key={p.id} onClick={() => openDetail(p.id)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
+              <div className="flex justify-between items-start">
+                <span className="font-bold text-stone-800 text-sm">{p.po_number}</span>
+                <Badge className={STATUS_COLORS[p.status]}>{p.status.toUpperCase()}</Badge>
+              </div>
+              <div className="text-xs text-stone-500 space-y-0.5">
+                <p><span className="font-medium text-stone-700">Supplier:</span> {p.supplier_name}</p>
+                <p><span className="font-medium text-stone-700">Order:</span> {p.order_date}{p.expected_date ? ` · Expected: ${p.expected_date}` : ""}</p>
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-stone-700 font-medium">₱{Number(p.total_cost).toFixed(2)}</span>
+                  <span className="text-stone-500">{p.pct_received}% received</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop Table */}
+        <div className="hidden lg:block">
         <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0 overflow-x-auto">
             <Table>
@@ -209,9 +233,7 @@ export default function PurchaseOrdersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pos.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center text-stone-500 py-8">No purchase orders</TableCell></TableRow>
-                ) : pos.map(p => (
+                {pos.map(p => (
                   <TableRow key={p.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openDetail(p.id)}>
                     <TableCell className="text-stone-800 font-medium">{p.po_number}</TableCell>
                     <TableCell className="text-stone-700">{p.supplier_name}</TableCell>
@@ -226,6 +248,8 @@ export default function PurchaseOrdersPage() {
             </Table>
           </CardContent>
         </Card>
+        </div>
+        </>
       )}
 
       {/* ── CREATE PO DIALOG ── */}

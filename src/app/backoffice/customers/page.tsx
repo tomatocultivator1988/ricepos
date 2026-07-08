@@ -129,8 +129,29 @@ export default function CustomersPage() {
 
       {loading ? (
         <div className="text-center text-stone-500 py-12">Loading...</div>
+      ) : customers.length === 0 ? (
+        <div className="rounded-lg border border-amber-300/60 bg-gold-200/90 p-6 text-center text-stone-500">No customers</div>
       ) : (
-        <div className="rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
+        <>
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {customers.map(c => (
+            <div key={c.id} onClick={() => openDetail(c.id)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
+              <div className="flex justify-between items-start">
+                <span className="font-bold text-stone-800 text-sm">{c.name}</span>
+                <span className={(c.balance ?? 0) > 0 ? "text-amber-600 font-semibold" : "text-stone-500"}>
+                  ₱{(c.balance ?? 0).toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-stone-500">{c.contact ?? "—"}</span>
+                <Badge variant={c.status === "active" ? "default" : "secondary"}>{c.status}</Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop Table */}
+        <div className="hidden lg:block rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="border-amber-300/60 hover:bg-transparent">
@@ -141,9 +162,7 @@ export default function CustomersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {customers.length === 0 ? (
-                <TableRow><TableCell colSpan={4} className="text-center text-stone-500 py-8">No customers</TableCell></TableRow>
-              ) : customers.map(c => (
+              {customers.map(c => (
                 <TableRow key={c.id} className="border-amber-300/60 cursor-pointer hover:bg-white" onClick={() => openDetail(c.id)}>
                   <TableCell className="text-stone-800 font-medium">{c.name}</TableCell>
                   <TableCell className="text-stone-500">{c.contact ?? "—"}</TableCell>
@@ -158,6 +177,7 @@ export default function CustomersPage() {
             </TableBody>
           </Table>
         </div>
+        </>
       )}
 
       {/* Create/Edit Dialog */}

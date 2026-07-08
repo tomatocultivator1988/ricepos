@@ -52,7 +52,26 @@ export default function ExpensesPage() {
         <Button onClick={() => setOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> Add Expense</Button>
       </div>
 
-      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : (
+      {loading ? <div className="text-center text-stone-500 py-12">Loading...</div> : expenses.length === 0 ? (
+        <Card className="bg-gold-200/90 border-amber-300/60"><CardContent className="p-6 text-center text-stone-500">No expenses</CardContent></Card>
+      ) : (
+        <>
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {expenses.map(e => (
+            <div key={e.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
+              <div className="flex justify-between items-start">
+                <span className="font-bold text-stone-800 text-sm capitalize">{e.category}</span>
+                <span className="text-orange-400 font-bold">₱{Number(e.amount).toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs text-stone-500">
+                <span>{e.date}{e.description ? ` · ${e.description}` : ""}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop Table */}
+        <div className="hidden lg:block">
         <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0">
             <Table>
@@ -78,6 +97,8 @@ export default function ExpensesPage() {
             </Table>
           </CardContent>
         </Card>
+        </div>
+        </>
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>

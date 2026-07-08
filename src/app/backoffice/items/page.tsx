@@ -253,11 +253,83 @@ export default function ItemsPage() {
         </Select>
       </div>
 
-      {/* Table */}
+      {/* Table / Mobile Cards */}
       {loading ? (
         <div className="text-center text-stone-500 py-12">Loading...</div>
+      ) : filtered.length === 0 ? (
+        <div className="rounded-lg border border-amber-300/60 bg-gold-200/90 p-6 text-center text-stone-500">No products found</div>
       ) : (
-        <div className="rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
+        <>
+        {/* Mobile Cards */}
+        <div className="grid grid-cols-1 gap-3 lg:hidden">
+          {showSplit ? (
+            <>
+              {riceItems.length > 0 && (
+                <><div className="text-xs font-bold text-amber-600 tracking-wider uppercase px-1">Rice</div>
+                {riceItems.map(item => (
+                  <div key={item.id} onClick={() => openEdit(item)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-stone-800 text-sm">{item.name}</span>
+                      <div className="flex items-center gap-1">
+                        <Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); openDeleteDialog(item, e) }} title="Delete item"><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                    </div>
+                    <div className="text-xs text-stone-500 space-y-0.5">
+                      <p><span className="font-medium text-stone-700">Category:</span> {categories.find(c => c.id === item.category_id)?.name ?? "—"} · <Badge variant={item.sell_by === "weight" ? "secondary" : "outline"} className="text-[10px] px-1.5 py-0">{item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}</Badge></p>
+                      <div className="flex justify-between items-center pt-1">
+                        <span>₱{Number(item.cost).toFixed(2)} · <span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span> in stock</span>
+                        <span className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length} units</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}</>
+              )}
+              {otherItems.length > 0 && (
+                <><div className="text-xs font-bold text-stone-500 tracking-wider uppercase px-1">Other Items</div>
+                {otherItems.map(item => (
+                  <div key={item.id} onClick={() => openEdit(item)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
+                    <div className="flex justify-between items-start">
+                      <span className="font-bold text-stone-800 text-sm">{item.name}</span>
+                      <div className="flex items-center gap-1">
+                        <Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); openDeleteDialog(item, e) }} title="Delete item"><Trash2 className="h-3.5 w-3.5" /></Button>
+                      </div>
+                    </div>
+                    <div className="text-xs text-stone-500 space-y-0.5">
+                      <p><span className="font-medium text-stone-700">Category:</span> {categories.find(c => c.id === item.category_id)?.name ?? "—"} · <Badge variant={item.sell_by === "weight" ? "secondary" : "outline"} className="text-[10px] px-1.5 py-0">{item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}</Badge></p>
+                      <div className="flex justify-between items-center pt-1">
+                        <span>₱{Number(item.cost).toFixed(2)} · <span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span> in stock</span>
+                        <span className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length} units</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}</>
+              )}
+            </>
+          ) : (
+            filtered.map(item => (
+              <div key={item.id} onClick={() => openEdit(item)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
+                <div className="flex justify-between items-start">
+                  <span className="font-bold text-stone-800 text-sm">{item.name}</span>
+                  <div className="flex items-center gap-1">
+                    <Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => { e.stopPropagation(); openDeleteDialog(item, e) }} title="Delete item"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </div>
+                <div className="text-xs text-stone-500 space-y-0.5">
+                  <p><span className="font-medium text-stone-700">Category:</span> {categories.find(c => c.id === item.category_id)?.name ?? "—"} · <Badge variant={item.sell_by === "weight" ? "secondary" : "outline"} className="text-[10px] px-1.5 py-0">{item.sell_by === "weight" ? "Per Kilo" : "Per Piece"}</Badge></p>
+                  <div className="flex justify-between items-center pt-1">
+                    <span>₱{Number(item.cost).toFixed(2)} · <span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span> in stock</span>
+                    <span className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length} units</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        {/* Desktop Table */}
+        <div className="hidden lg:block rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="border-amber-300/60 hover:bg-transparent">
@@ -272,13 +344,7 @@ export default function ItemsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center text-stone-500 py-8">
-                    No products found
-                  </TableCell>
-                </TableRow>
-              ) : showSplit ? (
+              {showSplit ? (
                 <>
                   {riceItems.length > 0 && (
                     <>
@@ -341,17 +407,18 @@ export default function ItemsPage() {
                     <TableCell><span className={item.stock_qty <= 0 ? "text-red-600" : item.stock_qty <= item.min_stock ? "text-amber-600" : "text-green-700"}>{Number(item.stock_qty).toFixed(item.sell_by === "weight" ? 3 : 0)}</span></TableCell>
                     <TableCell className="text-stone-500">{(item.selling_units ?? []).filter(u => u.is_active !== false).length}</TableCell>
                     <TableCell><Badge variant={item.status === "active" ? "default" : "secondary"}>{item.status}</Badge></TableCell>
-                        <TableCell>
-                          <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => openDeleteDialog(item, e)} title="Delete item">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-red-600 hover:bg-red-50" onClick={(e) => openDeleteDialog(item, e)} title="Delete item">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
         </div>
+        </>
       )}
 
       {/* Edit / Create Dialog */}
