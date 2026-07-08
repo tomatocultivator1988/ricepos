@@ -32,18 +32,18 @@ export function AdminShell({ name, children }: AdminShellProps) {
           </div>
         </div>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1 flex-wrap justify-center">
           {adminNavLinks.map(link => (
             <button
               key={link.href}
               onClick={() => router.push(link.href)}
               title={link.hideLabel ? link.label : undefined}
-              className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold transition-all shrink-0 ${
                 pathname.startsWith(link.href) && link.href !== "/pos" ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25" : "text-stone-300 hover:bg-primary/15 hover:text-stone-100"
-              }${link.hideLabel ? " px-2" : ""}`}
+              }`}
             >
               <link.icon className="h-3.5 w-3.5" />
-              {link.hideLabel ? null : link.label}
+              <span className="hidden xl:inline whitespace-nowrap">{link.label}</span>
             </button>
           ))}
         </nav>

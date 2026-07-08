@@ -93,7 +93,7 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      <div className="relative max-w-sm">
+      <div className="relative max-w-sm md:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
         <Input placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)}
           className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
@@ -104,7 +104,7 @@ export default function InventoryPage() {
       ) : (
         <>
         {/* Mobile Cards */}
-        <div className="grid grid-cols-1 gap-3 lg:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
           {showSplit ? (
             <>
               {riceItems.length > 0 && (
@@ -181,7 +181,7 @@ export default function InventoryPage() {
           )}
         </div>
         {/* Desktop Table */}
-        <div className="hidden lg:block">
+        <div className="hidden md:block">
         <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0 overflow-x-auto">
             <Table>

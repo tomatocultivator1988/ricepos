@@ -121,7 +121,7 @@ export default function CustomersPage() {
         <Button onClick={openNew} className="gap-2"><Plus className="h-4 w-4" /> Add Customer</Button>
       </div>
 
-      <div className="relative max-w-sm">
+      <div className="relative max-w-sm md:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
         <Input placeholder="Search customers..." value={search} onChange={e => setSearch(e.target.value)}
           className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
@@ -134,7 +134,7 @@ export default function CustomersPage() {
       ) : (
         <>
         {/* Mobile Cards */}
-        <div className="grid grid-cols-1 gap-3 lg:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
           {customers.map(c => (
             <div key={c.id} onClick={() => openDetail(c.id)} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2 cursor-pointer hover:border-amber-400/50">
               <div className="flex justify-between items-start">
@@ -151,7 +151,7 @@ export default function CustomersPage() {
           ))}
         </div>
         {/* Desktop Table */}
-        <div className="hidden lg:block rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
+        <div className="hidden md:block rounded-lg border border-amber-300/60 bg-gold-200/90 overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow className="border-amber-300/60 hover:bg-transparent">

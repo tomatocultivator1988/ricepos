@@ -57,7 +57,7 @@ export default function ExpensesPage() {
       ) : (
         <>
         {/* Mobile Cards */}
-        <div className="grid grid-cols-1 gap-3 lg:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
           {expenses.map(e => (
             <div key={e.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
               <div className="flex justify-between items-start">
@@ -71,7 +71,7 @@ export default function ExpensesPage() {
           ))}
         </div>
         {/* Desktop Table */}
-        <div className="hidden lg:block">
+        <div className="hidden md:block">
         <Card className="bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0">
             <Table>

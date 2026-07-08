@@ -356,7 +356,7 @@ export default function SalesPage() {
           {!error && (
             <>
               {/* Mobile Cards */}
-              <div className="grid grid-cols-1 gap-3 lg:hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
                 {loading ? (
                   <div className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl p-8 text-center text-stone-500 shadow-md">Loading...</div>
                 ) : !data || data.sales.length === 0 ? (
@@ -381,7 +381,7 @@ export default function SalesPage() {
               </div>
 
               {/* Desktop Table */}
-              <Card className="hidden lg:block overflow-hidden rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
+              <Card className="hidden md:block overflow-hidden rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 backdrop-blur-xl shadow-md">
                 <CardContent className="p-0">
                   <Table>
                   <TableHeader>

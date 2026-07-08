@@ -132,7 +132,7 @@ export function DiscountsManager() {
       </div>
 
       {/* Mobile Cards */}
-      <div className="grid grid-cols-1 gap-3 lg:hidden">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
         {loading ? (
           <div className="rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 p-8 text-center text-stone-500 shadow-md">Loading...</div>
         ) : filtered.length === 0 ? (
@@ -157,7 +157,7 @@ export function DiscountsManager() {
       </div>
 
       {/* Desktop Table */}
-      <div className="hidden lg:block rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 shadow-md">
+      <div className="hidden md:block rounded-2xl border-2 border-amber-300/60 bg-gold-200/90 shadow-md">
         <Table>
           <TableHeader>
             <TableRow className="bg-transparent hover:bg-transparent">

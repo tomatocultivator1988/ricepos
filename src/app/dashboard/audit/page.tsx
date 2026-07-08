@@ -26,7 +26,7 @@ export default function AuditPage() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold text-white">Audit Log</h1>
-      <div className="relative max-w-sm">
+      <div className="relative max-w-sm md:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
         <Input placeholder="Search by action or entity..." value={search} onChange={e => setSearch(e.target.value)}
           className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
@@ -39,7 +39,7 @@ export default function AuditPage() {
       ) : (
         <>
         {/* Mobile Cards */}
-        <div className="grid grid-cols-1 gap-3 lg:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
           {filtered.map((l: any) => (
             <div key={l.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
               <div className="flex justify-between items-start">
@@ -55,7 +55,7 @@ export default function AuditPage() {
           ))}
         </div>
         {/* Desktop Table */}
-        <Card className="hidden lg:block bg-gold-200/90 border-amber-300/60">
+        <Card className="hidden md:block bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0">
             <Table>
               <TableHeader>

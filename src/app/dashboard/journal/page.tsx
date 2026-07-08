@@ -32,7 +32,7 @@ export default function JournalPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Electronic Journal</h1>
       </div>
-      <div className="relative max-w-sm">
+      <div className="relative max-w-sm md:max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
         <Input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)}
           className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
@@ -45,7 +45,7 @@ export default function JournalPage() {
       ) : (
         <>
         {/* Mobile Cards */}
-        <div className="grid grid-cols-1 gap-3 lg:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
           {filtered.map(e => (
             <div key={e.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
               <div className="flex justify-between items-start">
@@ -59,7 +59,7 @@ export default function JournalPage() {
           ))}
         </div>
         {/* Desktop Table */}
-        <Card className="hidden lg:block bg-gold-200/90 border-amber-300/60">
+        <Card className="hidden md:block bg-gold-200/90 border-amber-300/60">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
