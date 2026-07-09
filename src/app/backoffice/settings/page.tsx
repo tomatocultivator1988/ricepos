@@ -17,11 +17,13 @@ import {
 } from "@/lib/utils/printer"
 import { DiscountsManager } from "@/components/discounts-manager"
 import { TaxRatesManager } from "@/components/tax-rates-manager"
+import { ExpenseCategoriesManager } from "@/components/expense-categories-manager"
 
 const SETTINGS_TABS = [
   { key: "general", label: "General", icon: Settings2Icon },
   { key: "discounts", label: "Discounts", icon: PercentIcon },
   { key: "taxrates", label: "Tax Rates", icon: PercentIcon },
+  { key: "expensecategories", label: "Expense Categories", icon: PercentIcon },
 ] as const
 
 function ConnectionStatus({ connected }: { connected: boolean }) {
@@ -336,6 +338,12 @@ export default function SettingsPage() {
       {activeTab === "taxrates" && (
         <div className="space-y-6">
           <TaxRatesManager />
+        </div>
+      )}
+
+      {activeTab === "expensecategories" && (
+        <div className="space-y-6">
+          <ExpenseCategoriesManager />
         </div>
       )}
     </div>

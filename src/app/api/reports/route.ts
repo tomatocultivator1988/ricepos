@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
       if (saleIds.length === 0) return NextResponse.json({ rows: [] })
 
       const [itemsResult, paymentsResult, empResult] = await Promise.all([
-        db.from("sale_items").select("item_name, qty, selling_unit_name, unit_price, discount_amount, tax_amount, line_total, sale_id").in("sale_id", saleIds).eq("status", "completed"),
+        db.from("sale_items").select("item_name, qty, selling_unit_name, unit_price, discount_amount, tax_amount, line_total, cost_at_sale, base_qty_snapshot, sale_id").in("sale_id", saleIds).eq("status", "completed"),
         db.from("payments").select("sale_id, amount").in("sale_id", saleIds).eq("is_collection", false),
         db.from("employees").select("id, name"),
       ])
@@ -224,6 +224,8 @@ export async function GET(request: NextRequest) {
             qty: Number(it.qty),
             unit: it.selling_unit_name,
             unit_price: Number(it.unit_price),
+            cost: it.cost_at_sale != null ? Number(it.cost_at_sale) : null,
+            profit: it.cost_at_sale != null ? Number(it.line_total) - (Number(it.cost_at_sale) * Number(it.qty) * Number(it.base_qty_snapshot)) : null,
             discount_amount: Number(it.discount_amount),
             tax_amount: Number(it.tax_amount),
             line_total: Number(it.line_total),

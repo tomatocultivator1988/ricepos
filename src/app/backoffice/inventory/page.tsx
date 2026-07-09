@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, TruckIcon, SlidersHorizontal, Loader2Icon } from "lucide-react"
+import { Search, TruckIcon, SlidersHorizontal, Loader2Icon, HistoryIcon } from "lucide-react"
 import { toast } from "sonner"
 
 interface InvItem {
@@ -32,6 +32,12 @@ export default function InventoryPage() {
   const [delivQty, setDelivQty] = useState("")
   const [delivSupplier, setDelivSupplier] = useState("")
   const [delivSaving, setDelivSaving] = useState(false)
+
+  const [movementsItem, setMovementsItem] = useState<InvItem | null>(null)
+  const [movementsData, setMovementsData] = useState<any[]>([])
+  const [movementsLoading, setMovementsLoading] = useState(false)
+  const [movementFrom, setMovementFrom] = useState("")
+  const [movementTo, setMovementTo] = useState("")
 
   const fetchData = useCallback(async () => {
     const [invRes, catRes] = await Promise.all([
@@ -60,6 +66,40 @@ export default function InventoryPage() {
     toast.success(`Stock adjusted to ${json.newQty}`)
     setAdjustItem(null); setAdjQty(""); setAdjReason(""); setAdjSaving(false)
     fetchData()
+  }
+
+  async function openMovements(item: InvItem) {
+    setMovementsItem(item)
+    setMovementFrom("")
+    setMovementTo("")
+    setMovementsLoading(true)
+    setMovementsData([])
+    try {
+      const res = await fetch(`/api/backoffice/items/${item.id}/movements`)
+      const json = await res.json()
+      setMovementsData(json.movements ?? [])
+    } catch {
+      toast.error("Failed to load movements")
+    } finally {
+      setMovementsLoading(false)
+    }
+  }
+
+  async function fetchMovements(itemId: string, from: string, to: string) {
+    setMovementsLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (from) params.set("from", from)
+      if (to) params.set("to", to)
+      const qs = params.toString()
+      const res = await fetch(`/api/backoffice/items/${itemId}/movements${qs ? "?" + qs : ""}`)
+      const json = await res.json()
+      setMovementsData(json.movements ?? [])
+    } catch {
+      toast.error("Failed to load movements")
+    } finally {
+      setMovementsLoading(false)
+    }
   }
 
   async function saveDelivery() {
@@ -125,6 +165,7 @@ export default function InventoryPage() {
                         <div className="flex gap-1">
                           <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
                           <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => openMovements(i)}><HistoryIcon className="h-3 w-3 mr-1" />Movements</Button>
                         </div>
                       </div>
                     </div>
@@ -149,6 +190,7 @@ export default function InventoryPage() {
                         <div className="flex gap-1">
                           <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
                           <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => openMovements(i)}><HistoryIcon className="h-3 w-3 mr-1" />Movements</Button>
                         </div>
                       </div>
                     </div>
@@ -171,8 +213,9 @@ export default function InventoryPage() {
                   <div className="flex justify-between items-center pt-1">
                     <span className="text-stone-700">₱{i.value.toFixed(2)}</span>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button>
+                          <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => openMovements(i)}><HistoryIcon className="h-3 w-3 mr-1" />Movements</Button>
                     </div>
                   </div>
                 </div>
@@ -212,7 +255,7 @@ export default function InventoryPage() {
                             <TableCell className="text-right text-stone-500">{Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</TableCell>
                             <TableCell className="text-right text-stone-500">₱{i.value.toFixed(2)}</TableCell>
                             <TableCell><Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-amber-100 text-amber-700" : "bg-red-500"}>{i.stock_status.toUpperCase()}</Badge></TableCell>
-                            <TableCell className="text-right"><div className="flex gap-1 justify-end"><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button></div></TableCell>
+                            <TableCell className="text-right"><div className="flex gap-1 justify-end"><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => openMovements(i)}><HistoryIcon className="h-3 w-3 mr-1" />Movements</Button></div></TableCell>
                           </TableRow>
                         ))}
                       </>
@@ -231,7 +274,7 @@ export default function InventoryPage() {
                             <TableCell className="text-right text-stone-500">{Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</TableCell>
                             <TableCell className="text-right text-stone-500">₱{i.value.toFixed(2)}</TableCell>
                             <TableCell><Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-amber-100 text-amber-700" : "bg-red-500"}>{i.stock_status.toUpperCase()}</Badge></TableCell>
-                            <TableCell className="text-right"><div className="flex gap-1 justify-end"><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button></div></TableCell>
+                            <TableCell className="text-right"><div className="flex gap-1 justify-end"><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => openMovements(i)}><HistoryIcon className="h-3 w-3 mr-1" />Movements</Button></div></TableCell>
                           </TableRow>
                         ))}
                       </>
@@ -245,7 +288,7 @@ export default function InventoryPage() {
                       <TableCell className="text-right text-stone-500">{Number(i.min_stock).toFixed(i.sell_by === "weight" ? 1 : 0)}</TableCell>
                       <TableCell className="text-right text-stone-500">₱{i.value.toFixed(2)}</TableCell>
                       <TableCell><Badge className={i.stock_status === "ok" ? "bg-green-600" : i.stock_status === "low" ? "bg-amber-100 text-amber-700" : "bg-red-500"}>{i.stock_status.toUpperCase()}</Badge></TableCell>
-                      <TableCell className="text-right"><div className="flex gap-1 justify-end"><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button></div></TableCell>
+                      <TableCell className="text-right"><div className="flex gap-1 justify-end"><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setDeliverItem(i); setDelivQty(""); setDelivSupplier("") }}><TruckIcon className="h-3 w-3 mr-1" />Receive</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => { setAdjustItem(i); setAdjQty(""); setAdjReason(""); setAdjType("spoilage") }}><SlidersHorizontal className="h-3 w-3 mr-1" />Adjust</Button><Button variant="ghost" size="sm" className="h-7 text-xs text-amber-600" onClick={() => openMovements(i)}><HistoryIcon className="h-3 w-3 mr-1" />Movements</Button></div></TableCell>
                     </TableRow>
                   ))
                 )}
@@ -313,6 +356,118 @@ export default function InventoryPage() {
                 <Button variant="outline" onClick={() => setAdjustItem(null)}>Cancel</Button>
                 <Button onClick={saveAdjustment} disabled={adjSaving} className="bg-amber-100 text-amber-700 hover:bg-yellow-500">{adjSaving ? "..." : "Adjust"}</Button>
               </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Movements Dialog */}
+      <Dialog open={!!movementsItem} onOpenChange={() => setMovementsItem(null)}>
+        <DialogContent className="max-w-2xl bg-gold-200/90 border-amber-300/60 text-stone-800 p-5 max-h-[85vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Movements — {movementsItem?.name}</DialogTitle></DialogHeader>
+          {movementsItem && (
+            <div className="space-y-4">
+              {/* Date Range Filter */}
+              <div className="flex items-center gap-2">
+                <label className="text-xs font-medium text-stone-500">From</label>
+                <Input type="date" value={movementFrom} onChange={e => setMovementFrom(e.target.value)}
+                  className="bg-gold-100 border-amber-300/60 h-8 w-40 text-xs" />
+                <label className="text-xs font-medium text-stone-500">To</label>
+                <Input type="date" value={movementTo} onChange={e => setMovementTo(e.target.value)}
+                  className="bg-gold-100 border-amber-300/60 h-8 w-40 text-xs" />
+                <Button variant="outline" size="sm" className="h-8 text-xs"
+                  onClick={() => fetchMovements(movementsItem.id, movementFrom, movementTo)}>
+                  Filter
+                </Button>
+                {(movementFrom || movementTo) && (
+                  <Button variant="ghost" size="sm" className="h-8 text-xs text-stone-500"
+                    onClick={() => { setMovementFrom(""); setMovementTo(""); fetchMovements(movementsItem.id, "", "") }}>
+                    Clear
+                  </Button>
+                )}
+              </div>
+
+              {movementsLoading ? (
+                <div className="flex justify-center py-8"><Loader2Icon className="h-6 w-6 animate-spin text-green-700" /></div>
+              ) : movementsData.length === 0 ? (
+                <p className="text-center text-stone-500 py-8">No movements recorded</p>
+              ) : (
+                <>
+                  {/* Mobile Cards */}
+                  <div className="space-y-2 md:hidden">
+                    {movementsData.map((m: any) => (
+                      <div key={m.id} className="bg-gold-100 rounded-xl p-3 border border-amber-300/60 text-xs space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-stone-700">{new Date(m.created_at).toLocaleString("en-PH")}</span>
+                          <span className="capitalize text-stone-500">{m.reason}</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <div className="text-[10px] text-stone-400">Qty In</div>
+                            <div className="font-bold text-green-600">{m.qty_in > 0 ? Number(m.qty_in).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0) : "—"}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-stone-400">Qty Out</div>
+                            <div className="font-bold text-red-500">{m.qty_out > 0 ? Number(m.qty_out).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0) : "—"}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-stone-400">On Hand</div>
+                            <div className="font-bold text-stone-700">{Number(m.qty_after).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0)}</div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-center">
+                          <div>
+                            <div className="text-[10px] text-stone-400">Cost</div>
+                            <div className="text-stone-600">₱{m.cost ? Number(m.cost).toFixed(2) : "—"}</div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] text-stone-400">Sold Price</div>
+                            <div className="text-stone-600">{m.sold_price ? "₱" + Number(m.sold_price).toFixed(2) : "—"}</div>
+                          </div>
+                        </div>
+                        {m.note ? <div className="text-stone-400 text-center">{m.note}</div> : null}
+                        <div className="flex justify-between text-stone-400 pt-0.5">
+                          <span>Before {Number(m.qty_before).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0)}</span>
+                          {m.employee_name ? <span>{m.employee_name}</span> : null}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Desktop Table */}
+                  <div className="hidden md:block rounded-xl border border-amber-300/60 overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-amber-300/60 hover:bg-transparent">
+                          <TableHead className="text-[10px] text-stone-500 font-semibold">Date</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold">Type</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold text-right">Qty In</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold text-right">Qty Out</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold text-right">On Hand</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold text-right">Cost</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold text-right">Sold Price</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold">Ref</TableHead>
+                          <TableHead className="text-[10px] text-stone-500 font-semibold">Employee</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {movementsData.map((m: any) => (
+                          <TableRow key={m.id} className="border-amber-300/60">
+                            <TableCell className="text-xs text-stone-700 whitespace-nowrap">{new Date(m.created_at).toLocaleString("en-PH")}</TableCell>
+                            <TableCell className="text-xs capitalize text-stone-500">{m.reason}</TableCell>
+                            <TableCell className="text-xs text-right font-medium text-green-600">{m.qty_in > 0 ? Number(m.qty_in).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0) : "—"}</TableCell>
+                            <TableCell className="text-xs text-right font-medium text-red-500">{m.qty_out > 0 ? Number(m.qty_out).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0) : "—"}</TableCell>
+                            <TableCell className="text-xs text-right font-medium text-stone-700">{Number(m.qty_after).toFixed(movementsItem?.sell_by === "weight" ? 3 : 0)}</TableCell>
+                            <TableCell className="text-xs text-right text-stone-500">{m.cost ? "₱" + Number(m.cost).toFixed(2) : "—"}</TableCell>
+                            <TableCell className="text-xs text-right text-stone-500">{m.sold_price ? "₱" + Number(m.sold_price).toFixed(2) : "—"}</TableCell>
+                            <TableCell className="text-xs text-stone-400 max-w-[120px] truncate">{m.note ?? "—"}</TableCell>
+                            <TableCell className="text-xs text-stone-400">{m.employee_name ?? "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </DialogContent>
