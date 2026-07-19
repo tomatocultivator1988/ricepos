@@ -73,7 +73,7 @@ function statusBadge(status: string) {
     partial: { label: "Partial", className: "bg-yellow-500/20 text-yellow-700 border-yellow-500/40" },
     unpaid: { label: "Unpaid", className: "bg-red-500/20 text-red-600 border-red-500/40" },
     refunded: { label: "Refunded", className: "bg-red-500/20 text-red-600 border-red-500/40" },
-    voided: { label: "Voided", className: "bg-white0/20 text-stone-700 border-stone-500/40" },
+    voided: { label: "Voided", className: "bg-white/20 text-stone-700 border-stone-500/40" },
   }
   const cfg = map[status.toLowerCase()] ?? { label: status, className: "bg-white/50 text-stone-700 border-stone-600/40" }
   return (
@@ -278,11 +278,10 @@ export default function SalesPage() {
                 <div className="grid gap-1.5">
                   <label className="text-xs font-medium text-stone-500">Cashier</label>
                   <Select
-                    value={employeeId === "all" || !employeeId ? "all" : (employees.find(e => e.id === employeeId)?.name || "")}
+                    value={employeeId || "all"}
                     onValueChange={(v) => {
-                      if (v === "all" || !v) { setEmployeeId("all"); setPage(1); return }
-                      const emp = employees.find(e => e.name === v)
-                      setEmployeeId(emp?.id || "all")
+                      if (!v || v === "all") { setEmployeeId("all"); setPage(1); return }
+                      setEmployeeId(v)
                       setPage(1)
                     }}
                   >
@@ -292,7 +291,7 @@ export default function SalesPage() {
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
                       {employees.map((emp) => (
-                        <SelectItem key={emp.id} value={emp.name}>
+                        <SelectItem key={emp.id} value={emp.id}>
                           {emp.name}
                         </SelectItem>
                       ))}

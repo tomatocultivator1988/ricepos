@@ -19,7 +19,7 @@ export function DenominationCounter({
 }) {
   const [denoms, setDenoms] = useState<DenomState>(value || {})
 
-  useEffect(() => { setDenoms(value || {}) }, [])
+  useEffect(() => { setDenoms(value || {}) }, [value])
 
   function update(d: number, count: string) {
     const n = Math.max(0, Math.floor(Number(count) || 0))

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import {
-  PrinterIcon, CheckCircleIcon, XCircleIcon,
-  Loader2Icon, PlugIcon, ReceiptIcon, LinkIcon, StoreIcon, Settings2Icon, PercentIcon
+  PrinterIcon, CheckCircleIcon, XCircleIcon, Search,
+  Loader2Icon, PlugIcon, ReceiptIcon, LinkIcon, StoreIcon, Settings2Icon, PercentIcon, FileTextIcon
 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import {
@@ -24,6 +25,7 @@ const SETTINGS_TABS = [
   { key: "discounts", label: "Discounts", icon: PercentIcon },
   { key: "taxrates", label: "Tax Rates", icon: PercentIcon },
   { key: "expensecategories", label: "Expense Categories", icon: PercentIcon },
+  { key: "audit", label: "Audit Log", icon: FileTextIcon },
 ] as const
 
 function ConnectionStatus({ connected }: { connected: boolean }) {
@@ -49,6 +51,11 @@ export default function SettingsPage() {
   const [store, setStore] = useState<any>({ name: "", tin: "", address: "", contact: "" })
   const [savingStore, setSavingStore] = useState(false)
 
+  // Audit state
+  const [logs, setLogs] = useState<any[]>([])
+  const [logSearch, setLogSearch] = useState("")
+  const [logsLoading, setLogsLoading] = useState(false)
+
   useEffect(() => {
     const init = async () => {
       const reconnected = await reconnectPrinter()
@@ -62,6 +69,16 @@ export default function SettingsPage() {
       if (d.store) setStore(d.store)
     })
   }, [])
+
+  // Load audit logs when tab activated
+  useEffect(() => {
+    if (activeTab !== "audit") return
+    setLogsLoading(true)
+    fetch("/api/dashboard/audit").then(r => r.json()).then(d => {
+      setLogs(d.logs ?? [])
+      setLogsLoading(false)
+    }).catch(() => setLogsLoading(false))
+  }, [activeTab])
 
   const saveStore = async () => {
     setSavingStore(true)
@@ -344,6 +361,73 @@ export default function SettingsPage() {
       {activeTab === "expensecategories" && (
         <div className="space-y-6">
           <ExpenseCategoriesManager />
+        </div>
+      )}
+
+      {activeTab === "audit" && (
+        <div className="space-y-6">
+          <div className="relative max-w-sm md:max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500" />
+            <Input placeholder="Search by action or entity..." value={logSearch} onChange={e => setLogSearch(e.target.value)}
+              className="pl-9 bg-gold-100 border-amber-300/60 text-stone-800" />
+          </div>
+
+          {logsLoading ? (
+            <Card className="bg-gold-200/90 border-amber-300/60"><CardContent className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-green-700" /></CardContent></Card>
+          ) : (() => {
+            const filtered = logSearch
+              ? logs.filter((l: any) => l.action?.toLowerCase().includes(logSearch.toLowerCase()) || l.entity_type?.toLowerCase().includes(logSearch.toLowerCase()))
+              : logs
+            return filtered.length === 0 ? (
+              <Card className="bg-gold-200/90 border-amber-300/60"><CardContent className="text-center text-stone-500 py-16">No audit entries yet.</CardContent></Card>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:hidden">
+                  {filtered.map((l: any) => (
+                    <div key={l.id} className="bg-gold-200 rounded-xl p-4 border border-amber-300/60 space-y-2">
+                      <div className="flex justify-between items-start">
+                        <span className="font-bold text-stone-800 text-sm">{l.action}</span>
+                        <span className="text-xs text-stone-500">{new Date(l.created_at).toLocaleString("en-PH")}</span>
+                      </div>
+                      <div className="text-xs text-stone-500 space-y-0.5">
+                        <p><span className="font-medium text-stone-700">Employee:</span> {l.employeeName}</p>
+                        <p><span className="font-medium text-stone-700">Entity:</span> {l.entity_type}</p>
+                        {l.new_value && <p className="truncate"><span className="font-medium text-stone-700">Details:</span> {JSON.stringify(l.new_value)}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Card className="hidden md:block bg-gold-200/90 border-amber-300/60">
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-amber-300/60 hover:bg-transparent">
+                          <TableHead className="text-stone-700">Date</TableHead>
+                          <TableHead className="text-stone-700">Employee</TableHead>
+                          <TableHead className="text-stone-700">Action</TableHead>
+                          <TableHead className="text-stone-700">Entity</TableHead>
+                          <TableHead className="text-stone-700">Details</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filtered.map((l: any) => (
+                          <TableRow key={l.id} className="border-amber-300/60">
+                            <TableCell className="text-xs text-stone-500">{new Date(l.created_at).toLocaleString("en-PH")}</TableCell>
+                            <TableCell className="text-stone-700">{l.employeeName}</TableCell>
+                            <TableCell className="text-stone-700">{l.action}</TableCell>
+                            <TableCell className="text-stone-500">{l.entity_type}</TableCell>
+                            <TableCell className="text-xs text-stone-500 max-w-xs truncate">
+                              {l.old_value ? `${JSON.stringify(l.old_value)} → ` : ""}{JSON.stringify(l.new_value ?? "")}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </>
+            )
+          })()}
         </div>
       )}
     </div>

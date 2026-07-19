@@ -15,6 +15,9 @@ const itemSchema = z.object({
   discount_eligible: z.boolean().optional(),
   status: z.enum(["active", "inactive"]).optional(),
   image_url: z.string().nullable().optional(),
+  is_consignment: z.boolean().optional(),
+  consignment_supplier_id: z.string().uuid().nullable().optional(),
+  consignment_agreed_price: z.number().min(0).optional(),
 })
 
 const updateSchema = itemSchema.partial()
@@ -73,11 +76,10 @@ export async function POST(request: NextRequest) {
 
     const data = parsed.data
 
-    // Check barcode uniqueness if provided
+    // Check barcode uniqueness if provided (barcode is globally UNIQUE)
     if (data.barcode) {
       const { data: existing } = await db.from("items")
         .select("id")
-        .neq("store_id", "00000000-0000-0000-0000-000000000000")
         .eq("barcode", data.barcode)
         .maybeSingle()
 
@@ -89,12 +91,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (data.is_consignment && data.stock_qty && data.stock_qty > 0) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Cannot create consignment item with existing stock. Set stock to 0 first." } },
+        { status: 400 }
+      )
+    }
+    const effectiveCost = data.is_consignment ? (data.consignment_agreed_price ?? data.cost ?? 0) : (data.cost ?? 0)
+
     const { data: created, error } = await db.from("items").insert({
       store_id: storeId,
       name: data.name.trim(),
       category_id: data.category_id ?? null,
       sell_by: data.sell_by,
-      cost: data.cost ?? 0,
+      cost: effectiveCost,
       barcode: data.barcode ?? null,
       stock_qty: data.stock_qty ?? 0,
       min_stock: data.min_stock ?? 0,
@@ -102,6 +112,9 @@ export async function POST(request: NextRequest) {
       discount_eligible: data.discount_eligible ?? true,
       status: data.status ?? "active",
       image_url: data.image_url ?? null,
+      is_consignment: data.is_consignment ?? false,
+      consignment_supplier_id: data.consignment_supplier_id ?? null,
+      consignment_agreed_price: data.consignment_agreed_price ?? null,
     }).select().single()
 
     if (error) {
@@ -152,11 +165,28 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    // Fetch existing state for merged consignment sync logic
+    const { data: current } = await db.from("items")
+      .select("is_consignment, consignment_agreed_price, cost, stock_qty")
+      .eq("id", id).eq("store_id", storeId).single()
+
+    const wasConsignment = current?.is_consignment ?? false
+    const newIsConsignment = data.is_consignment ?? wasConsignment
+    const currentStockQty = Number(current?.stock_qty ?? 0)
+    const currentAgreedPrice = Number(current?.consignment_agreed_price ?? 0)
+
+    // Block enabling consignment on items with existing stock
+    if (newIsConsignment && !wasConsignment && currentStockQty > 0) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Cannot enable consignment on an item with existing stock. Zero out stock first." } },
+        { status: 400 }
+      )
+    }
+
     const updateData: Record<string, any> = {}
     if (data.name !== undefined) updateData.name = data.name.trim()
     if (data.category_id !== undefined) updateData.category_id = data.category_id
     if (data.sell_by !== undefined) updateData.sell_by = data.sell_by
-    if (data.cost !== undefined) updateData.cost = data.cost
     if (data.barcode !== undefined) updateData.barcode = data.barcode
     if (data.stock_qty !== undefined) updateData.stock_qty = data.stock_qty
     if (data.min_stock !== undefined) updateData.min_stock = data.min_stock
@@ -164,6 +194,17 @@ export async function PUT(request: NextRequest) {
     if (data.discount_eligible !== undefined) updateData.discount_eligible = data.discount_eligible
     if (data.status !== undefined) updateData.status = data.status
     if (data.image_url !== undefined) updateData.image_url = data.image_url
+    if (data.is_consignment !== undefined) updateData.is_consignment = data.is_consignment
+    if (data.consignment_supplier_id !== undefined) updateData.consignment_supplier_id = data.consignment_supplier_id
+    if (data.consignment_agreed_price !== undefined) updateData.consignment_agreed_price = data.consignment_agreed_price
+
+    // Auto-sync cost with consignment agreed price using merged state
+    if (data.cost !== undefined) {
+      updateData.cost = data.cost
+    } else if (newIsConsignment) {
+      const mergedPrice = data.consignment_agreed_price ?? currentAgreedPrice
+      if (mergedPrice > 0) updateData.cost = mergedPrice
+    }
 
     const { data: updated, error } = await db.from("items")
       .update(updateData)

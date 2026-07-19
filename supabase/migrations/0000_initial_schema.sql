@@ -284,7 +284,7 @@ CREATE TABLE cash_counts (
 
 CREATE TABLE pos_carts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  shift_id UUID NOT NULL,
+  shift_id UUID NOT NULL, -- NB: stores store_id, not shift_id; the shift system was removed
   cart_data JSONB DEFAULT '[]'::JSONB,
   status TEXT DEFAULT 'active',
   updated_at TIMESTAMPTZ DEFAULT now()

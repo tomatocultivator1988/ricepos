@@ -5,7 +5,7 @@ import { Loader2Icon, DownloadIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts"
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts"
 
 interface ReportRow { [key: string]: any }
 
@@ -95,6 +95,8 @@ export default function ReportsPage() {
     { key: "voids", label: "Voids" },
     { key: "zreading", label: "Z-Reading" },
     { key: "salesdetail", label: "Sales Detail" },
+    { key: "cashflow", label: "Cash Flow" },
+    { key: "consignments", label: "Consignments" },
   ]
 
   function renderSummaryCards(cards: { label: string; value: string; color?: string }[]) {
@@ -448,6 +450,122 @@ export default function ReportsPage() {
     ])
   }
 
+  function CashFlowContent() {
+    const rows = data?.rows ?? []
+    const expCat = data?.expensesByCategory ?? []
+    const summary = data?.summary ?? {}
+    const totalExpCat = expCat.reduce((s: number, r: any) => s + Number(r.amount), 0)
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Cash In (Sales)", value: fmoney(summary.totalCashIn ?? 0), color: "text-blue-700" },
+          { label: "GCash In", value: fmoney(summary.totalGcashIn ?? 0), color: "text-purple-700" },
+          { label: "Collections", value: fmoney(summary.totalCollections ?? 0), color: "text-amber-600" },
+          { label: "Expenses", value: fmoney(summary.totalExpenses ?? 0), color: "text-red-600" },
+          { label: "Net Cash Flow", value: fmoney(summary.netCashFlow ?? 0), color: (summary.netCashFlow ?? 0) >= 0 ? "text-green-700" : "text-red-600" },
+        ])}
+        {/* Cash Flow Trend — Line Chart */}
+        {rows.length > 1 && (
+          <Card className="bg-gold-200/90 border-amber-300/60 mb-4">
+            <CardContent className="p-4">
+              <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Cash Flow Trend</h3>
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart data={rows}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => fdate(v)} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6b7280" }} tickFormatter={v => `₱${(Number(v) / 1000).toFixed(0)}k`} />
+                  <Tooltip formatter={(v: any) => [fmoney(v), undefined]} labelFormatter={l => fdate(l)} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                  <Line type="monotone" dataKey="cashSales" stroke={BLUE} strokeWidth={2} name="Cash In" dot={{ fill: BLUE, r: 2 }} />
+                  <Line type="monotone" dataKey="gcashSales" stroke={PURPLE} strokeWidth={2} name="GCash In" dot={{ fill: PURPLE, r: 2 }} />
+                  <Line type="monotone" dataKey="collections" stroke={ORANGE} strokeWidth={1.5} name="Collections" dot={false} />
+                  <Line type="monotone" dataKey="expenses" stroke={RED} strokeWidth={2} name="Expenses" dot={{ fill: RED, r: 2 }} />
+                  <Line type="monotone" dataKey="netCashFlow" stroke={GREEN} strokeWidth={2} name="Net Cash Flow" dot={{ fill: GREEN, r: 2 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+        {/* Expenses by Category — Donut Chart */}
+        {expCat.length > 0 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <Card className="bg-gold-200/90 border-amber-300/60">
+              <CardContent className="p-4">
+                <h3 className="text-xs font-semibold text-stone-500 mb-2 uppercase tracking-wider">Expenses Breakdown</h3>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie data={expCat} dataKey="amount" nameKey="category" cx="50%" cy="50%" outerRadius={80} innerRadius={45} paddingAngle={3} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                      {expCat.map((_: any, i: number) => <Cell key={i} fill={[RED, ORANGE, GOLD, PURPLE, BLUE, "#06b6d4", "#84cc16"][i % 7]} />)}
+                    </Pie>
+                    <Tooltip formatter={(v: any) => [fmoney(v), undefined]} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+            <Card className="bg-gold-200/90 border-amber-300/60 overflow-x-auto">
+              <CardContent className="p-0">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b border-amber-300/60"><th className="text-left px-3 py-2 text-stone-500 font-medium">Category</th><th className="text-right px-3 py-2 text-stone-500 font-medium">Amount</th><th className="text-right px-3 py-2 text-stone-500 font-medium">%</th><th className="px-3 py-2 text-stone-500 font-medium w-1/2"></th></tr></thead>
+                  <tbody>
+                    {expCat.map((r: any, i: number) => {
+                      const pct = totalExpCat > 0 ? (Number(r.amount) / totalExpCat) * 100 : 0
+                      return (
+                        <tr key={i} className="border-b border-amber-300/60 hover:bg-gold-200/50">
+                          <td className="px-3 py-1.5 text-stone-700 capitalize">{r.category}</td>
+                          <td className="px-3 py-1.5 text-right text-stone-700 tabular-nums">{fmoney(r.amount)}</td>
+                          <td className="px-3 py-1.5 text-right text-stone-700 tabular-nums">{fnum(pct, 1)}%</td>
+                          <td className="px-3 py-1.5">
+                            <div className="h-2 bg-stone-300/40 rounded-full overflow-hidden">
+                              <div className="h-full bg-red-500/60 rounded-full" style={{ width: `${Math.min(pct, 100)}%` }} />
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                  <tfoot><tr className="border-t border-amber-300/60 font-semibold"><td className="px-3 py-1.5 text-stone-700">Total</td><td className="px-3 py-1.5 text-right text-stone-700 tabular-nums">{fmoney(totalExpCat)}</td><td className="px-3 py-1.5 text-right text-stone-700 tabular-nums">100%</td><td className="px-3 py-1.5"></td></tr></tfoot>
+                </table>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+        {/* Daily Breakdown Table */}
+        <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Daily Breakdown</h3>
+        {renderTable(rows, [
+          { key: "date", label: "Date", format: "date" },
+          { key: "cashSales", label: "Cash Sales", format: "money" },
+          { key: "gcashSales", label: "GCash Sales", format: "money" },
+          { key: "collections", label: "Collections", format: "money" },
+          { key: "expenses", label: "Expenses", format: "money" },
+          { key: "netCashFlow", label: "Net Cash Flow", format: "money" },
+        ])}
+      </>
+    )
+  }
+
+  function ConsignmentContent() {
+    const rows = data?.rows ?? []
+    const summary = data?.summary ?? {}
+    return (
+      <>
+        {renderSummaryCards([
+          { label: "Total Settled", value: fmoney(summary.totalSettled ?? 0), color: "text-red-600" },
+          { label: "Total Qty Settled", value: fnum(summary.totalQty ?? 0) },
+          { label: "Settlements", value: fnum(summary.settlementCount ?? 0) },
+        ])}
+        {renderTable(rows, [
+          { key: "date", label: "Date", format: "date" },
+          { key: "item", label: "Item", format: "text" },
+          { key: "supplier", label: "Supplier", format: "text" },
+          { key: "qtySold", label: "Qty Sold", format: "number" },
+          { key: "unitPrice", label: "Unit Price", format: "money" },
+          { key: "totalAmount", label: "Total Paid", format: "money" },
+          { key: "note", label: "Note", format: "text" },
+        ])}
+      </>
+    )
+  }
+
   function renderContent() {
     if (loading) return <div className="flex justify-center py-16"><Loader2Icon className="h-8 w-8 animate-spin text-amber-600" /></div>
     if (!data) return <p className="text-stone-500 text-center py-16">Select a report type above</p>
@@ -461,6 +579,8 @@ export default function ReportsPage() {
       case "voids": return <VoidsContent />
       case "zreading": return <ZReadingContent />
       case "salesdetail": return <SalesDetailContent />
+      case "cashflow": return <CashFlowContent />
+      case "consignments": return <ConsignmentContent />
       default: return <p className="text-stone-500 text-center py-16">Select a report type above</p>
     }
   }

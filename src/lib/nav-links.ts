@@ -1,8 +1,8 @@
 import {
   StoreIcon, LayoutDashboardIcon, TrendingUpIcon,
   BoxesIcon, UsersIcon, PackageIcon, UserRoundIcon, 
-  ReceiptIcon, SettingsIcon, FileTextIcon, ClockIcon,
-  TruckIcon, ClipboardListIcon
+  ReceiptIcon, SettingsIcon, FileTextIcon,
+  TruckIcon, ClipboardListIcon, HandshakeIcon
 } from "lucide-react"
 
 export interface NavLink {
@@ -17,11 +17,11 @@ export const adminNavLinks: NavLink[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboardIcon },
   { label: "Reports", href: "/dashboard/reports", icon: FileTextIcon },
   { label: "Sales", href: "/dashboard/sales", icon: TrendingUpIcon },
-  { label: "Audit", href: "/dashboard/audit", icon: FileTextIcon },
   { label: "Expenses", href: "/backoffice/expenses", icon: ReceiptIcon },
   { label: "Items", href: "/backoffice/items", icon: PackageIcon },
 
   { label: "Inventory", href: "/backoffice/inventory", icon: BoxesIcon },
+  { label: "Consignments", href: "/backoffice/consignments", icon: HandshakeIcon },
   { label: "Purchase Orders", href: "/backoffice/purchase-orders", icon: ClipboardListIcon },
   { label: "Suppliers", href: "/backoffice/suppliers", icon: TruckIcon },
   { label: "Customers", href: "/backoffice/customers", icon: UserRoundIcon },

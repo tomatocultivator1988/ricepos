@@ -14,7 +14,7 @@ export async function PUT(
     const { date, category, description, amount } = body
 
     if (!category) return NextResponse.json({ error: "Category required" }, { status: 400 })
-    if (!amount || Number(amount) <= 0) return NextResponse.json({ error: "Amount must be > 0" }, { status: 400 })
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return NextResponse.json({ error: "Amount must be > 0" }, { status: 400 })
 
     const { data, error } = await db
       .from("expenses")

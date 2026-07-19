@@ -24,11 +24,13 @@ export async function GET(request: NextRequest) {
       db.from("sales").select("total, balance, status").eq("store_id", storeId)
         .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`)
         .not("status", "in", '("voided","refunded")'),
-      // Cash today
-      db.from("payments").select("amount").eq("method", "cash")
+      // Cash today — exclude payments from voided/refunded sales
+      db.from("payments").select("amount, sales!inner(status)").eq("method", "cash")
+        .not("sales.status", "in", '("voided","refunded")')
         .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`).eq("is_collection", false),
-      // GCash today
-      db.from("payments").select("amount").eq("method", "gcash")
+      // GCash today — exclude payments from voided/refunded sales
+      db.from("payments").select("amount, sales!inner(status)").eq("method", "gcash")
+        .not("sales.status", "in", '("voided","refunded")')
         .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`).eq("is_collection", false),
       // Outstanding utang
       db.from("sales").select("balance").eq("store_id", storeId).in("status", ["unpaid", "partial"]),

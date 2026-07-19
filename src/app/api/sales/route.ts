@@ -1,22 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db/client"
 import { getSession, unauth } from "@/lib/auth/session"
-import { v4 as uuid } from "uuid"
-
-interface SaleItemInput {
-  itemId: string
-  unitId: string
-  unitName: string
-  baseQty: number
-  qty: number
-  unitPrice: number
-  discountEligible: boolean
-}
-
-interface PaymentInput {
-  method: "cash" | "gcash"
-  amount: number
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,219 +30,82 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment info required" }, { status: 400 })
     }
 
-    const paymentsTotal = payments.reduce((sum: number, p: PaymentInput) => sum + p.amount, 0)
+    // Sort payments: GCash first (digital, exact), then cash (for change)
+    const sorted = [...payments].sort((a, b) =>
+      a.method === "gcash" ? -1 : b.method === "gcash" ? 1 : 0
+    )
+    const paymentsTotal = sorted.reduce((sum: number, p: any) => sum + p.amount, 0)
 
-    // Cap total recorded amount to sale total (over-tender becomes change)
-    const recordedPayments = payments.map(p => ({ ...p, recorded_amount: Math.min(p.amount, total) }))
+    // Allocate payments: GCash first, cash covers remainder
     let remaining = total
-    for (const p of recordedPayments) {
-      p.recorded_amount = Math.min(p.recorded_amount, remaining)
-      remaining -= p.recorded_amount
-    }
-    const recordedTotal = recordedPayments.reduce((sum, p) => sum + p.recorded_amount, 0)
-    const change = paymentsTotal - recordedTotal
+    const recorded = sorted.map(p => {
+      const alloc = Math.min(p.amount, remaining)
+      remaining -= alloc
+      return { ...p, recorded_amount: alloc }
+    })
+    const totalPaid = recorded.reduce((sum, p) => sum + p.recorded_amount, 0)
+    const change = Math.max(0, paymentsTotal - totalPaid)
+    const balance = total - totalPaid
 
-    const isShortPay = recordedTotal < total
-    const hasBalance = total - recordedTotal
+    let saleStatus: string
+    if (balance > 0 && totalPaid === 0) saleStatus = "unpaid"
+    else if (balance > 0) saleStatus = "partial"
+    else saleStatus = "completed"
 
-    // Short-pay requires a customer
-    if (isShortPay && !customerId) {
+    if (balance > 0 && !customerId) {
       return NextResponse.json({ error: "Customer required for short payment" }, { status: 400 })
     }
 
-    // ── ATOMIC TRANSACTION ──
-    // We'll use multiple queries in sequence since Supabase doesn't support
-    // full SQL transactions via JS client. Locking via FOR UPDATE isn't available.
-    // Stock re-verification is done via checking each item in sequence.
-
-    // Step 1: Re-verify stock availability
-    for (const item of items) {
-      const deductedQty = item.qty * item.baseQty
-      const { data: dbItem, error: itemError } = await db
-        .from("items")
-        .select("id, name, stock_qty, cost, tax_rate_id, discount_eligible")
-        .eq("id", item.itemId)
-        .eq("store_id", storeId)
-        .single()
-
-      if (itemError || !dbItem) {
-        return NextResponse.json({ error: `Product not found: ${item.itemId}` }, { status: 400 })
-      }
-
-      if (Number(dbItem.stock_qty) < deductedQty) {
-        return NextResponse.json({
-          error: `Insufficient stock for ${dbItem.name}. Available: ${Number(dbItem.stock_qty).toFixed(2)}, Needed: ${deductedQty}`
-        }, { status: 400 })
-      }
-
-      // Attach fetched data to item for later use
-      ;(item as any)._cost = dbItem.cost
-      ;(item as any)._taxRateId = dbItem.tax_rate_id
-      ;(item as any)._discountEligible = dbItem.discount_eligible
-    }
-
-    // Step 2: Generate receipt number
-    const year = new Date().getFullYear()
-    const { data: seq, error: seqError } = await db
-      .from("sale_sequences")
-      .select("last_number")
-      .eq("store_id", storeId)
-      .eq("year", year)
-      .single()
-
-    let saleNumber = 1
-    if (seq) {
-      saleNumber = seq.last_number + 1
-      await db.from("sale_sequences")
-        .update({ last_number: saleNumber })
-        .eq("store_id", storeId)
-        .eq("year", year)
-    } else {
-      await db.from("sale_sequences").insert({
-        store_id: storeId, year, last_number: 1
-      })
-    }
-
-    // Step 3: Insert sale
-    const saleId = uuid()
-    let saleStatus: string
-    const totalPaid = recordedTotal
-
-    if (isShortPay) {
-      saleStatus = totalPaid === 0 ? "unpaid" : "partial"
-    } else {
-      saleStatus = "completed"
-    }
-
-    const { error: saleError } = await db.from("sales").insert({
-      id: saleId,
-      store_id: storeId,
-      sale_number: saleNumber,
-      employee_id: employeeId,
-      customer_id: customerId || null,
-      subtotal,
-      discount_type: discountType || null,
-      discount_value: discountValue || 0,
-      discount_amount: discountAmount || 0,
-      tax_total: taxTotal,
-      delivery_fee: deliveryFee || 0,
-      total,
-      amount_paid: totalPaid,
-      balance: hasBalance,
-      status: saleStatus,
+    // Call atomic RPC — locks items with FOR UPDATE, entire sale in one transaction
+    const { data, error } = await db.rpc("process_sale", {
+      p_store_id: storeId,
+      p_employee_id: employeeId,
+      p_items: items.map((i: any) => ({
+        itemId: i.itemId, itemName: i.itemName, unitId: i.unitId, unitName: i.unitName,
+        baseQty: i.baseQty, qty: i.qty, unitPrice: i.unitPrice, discountEligible: i.discountEligible,
+      })),
+      p_payments: recorded,
+      p_customer_id: customerId || null,
+      p_discount_type: discountType || null,
+      p_discount_value: discountValue || 0,
+      p_discount_amount: discountAmount || 0,
+      p_discount_name: discountName || null,
+      p_subtotal: subtotal,
+      p_tax_total: taxTotal,
+      p_delivery_fee: deliveryFee || 0,
+      p_total: total,
+      p_total_paid: totalPaid,
+      p_balance: balance,
+      p_change: change,
+      p_sale_status: saleStatus,
     })
 
-    if (saleError) {
-      return NextResponse.json({ error: `Failed to create sale: ${saleError.message}` }, { status: 400 })
+    if (error) {
+      return NextResponse.json({ error: `Sale failed: ${error.message}` }, { status: 500 })
     }
 
-    // Step 4: Insert sale items + deduct stock + log inventory
-    for (const item of items) {
-      const deductedQty = item.qty * item.baseQty
-      const costAtSale = (item as any)._cost
-      const taxRateId = (item as any)._taxRateId
-
-      // Fetch tax rate
-      let taxRate = 0
-      if (taxRateId) {
-        const { data: tr } = await db.from("tax_rates").select("rate").eq("id", taxRateId).single()
-        if (tr) taxRate = Number(tr.rate)
-      }
-
-      // Per-item discount proportion
-      const itemDiscount = discountAmount > 0
-        ? discountAmount * ((item.unitPrice * item.qty) / (subtotal || 1))
-        : 0
-
-      const itemTax = (item.discountEligible && discountAmount > 0)
-        ? ((item.unitPrice * item.qty) - itemDiscount) * taxRate
-        : (item.unitPrice * item.qty) * taxRate
-
-      const lineTotal = (item.unitPrice * item.qty) - itemDiscount + itemTax
-
-      await db.from("sale_items").insert({
-        id: uuid(),
-        sale_id: saleId,
-        item_id: item.itemId,
-        item_name: item.itemName || "",
-        selling_unit_id: item.unitId,
-        selling_unit_name: item.unitName,
-        base_qty_snapshot: item.baseQty,
-        qty: item.qty,
-        unit_price: item.unitPrice,
-        cost_at_sale: costAtSale ? Number(costAtSale) : null,
-        tax_rate: taxRate,
-        tax_amount: itemTax,
-        discount_amount: itemDiscount,
-        line_total: lineTotal,
-        deducted_qty: deductedQty,
-        status: "completed",
-      })
-
-      // Deduct stock
-      const { data: currentItem } = await db.from("items").select("stock_qty").eq("id", item.itemId).single()
-      const oldQty = Number(currentItem?.stock_qty ?? 0)
-      const newQty = oldQty - deductedQty
-
-      await db.from("items").update({ stock_qty: newQty }).eq("id", item.itemId)
-
-      // Inventory log
-      await db.from("inventory_log").insert({
-        id: uuid(),
-        store_id: storeId,
-        item_id: item.itemId,
-        change_qty: -deductedQty,
-        qty_before: oldQty,
-        qty_after: newQty,
-        reason: "sale",
-        sale_id: saleId,
-        employee_id: employeeId,
-      })
+    const result = data as any
+    if (!result.success) {
+      return NextResponse.json({ error: result.error || "Sale failed" }, { status: 400 })
     }
 
-    // Step 5: Insert payments (recorded amounts — over-tender = change)
-    for (const p of recordedPayments) {
-      if (p.recorded_amount <= 0) continue
-      await db.from("payments").insert({
-        id: uuid(),
-        sale_id: saleId,
-        method: p.method,
-        amount: p.recorded_amount,
-        is_collection: false,
-        receipt_no: `REC-${String(saleNumber).padStart(6, "0")}`,
-        created_by: employeeId,
-      })
-    }
-
-    // Step 6: Journal
-    await db.from("journal").insert({
-      id: uuid(),
-      store_id: storeId,
-      event_type: "sale_completed",
-      sale_id: saleId,
-      employee_id: employeeId,
-      details: {
-        sale_number: saleNumber,
-        items: items.map(i => ({ name: i.itemName, qty: i.qty, unit: i.unitName })),
-        payments: payments,
-        total, balance: hasBalance, status: saleStatus,
-        change: change > 0 ? change : 0,
-      },
-    })
-
-    // Step 7: Clear cart
+    // Clear cart
     await db.from("pos_carts").update({ cart_data: [] }).eq("shift_id", storeId)
 
-    // Step 8: Return response
     return NextResponse.json({
       sale: {
-        id: saleId,
-        sale_number: saleNumber,
-        deliveryFee: deliveryFee || 0,
-        total, amount_paid: totalPaid, balance: hasBalance, change,
-        status: saleStatus,
-        payments: recordedPayments.filter(p => p.recorded_amount > 0).map(p => ({ method: p.method, amount: p.recorded_amount })),
-        items: items,
+        id: result.sale.id,
+        sale_number: result.sale.sale_number,
+        deliveryFee: result.sale.deliveryFee || 0,
+        total: result.sale.total,
+        amount_paid: result.sale.amountPaid,
+        balance: result.sale.balance,
+        change: result.sale.change,
+        status: result.sale.status,
+        payments: recorded.filter((p: any) => p.recorded_amount > 0).map((p: any) => ({
+          method: p.method, amount: p.recorded_amount,
+        })),
+        items,
       }
     }, { status: 201 })
 

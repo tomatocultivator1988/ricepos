@@ -15,15 +15,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No items to receive" }, { status: 400 })
     }
 
+    const errors: string[] = []
     const results: any[] = []
 
     for (const line of items) {
       const { itemId, quantity } = line
-      if (!itemId || quantity === undefined || Number(quantity) <= 0) continue
+      if (!itemId) { errors.push("Item missing ID"); continue }
+      if (quantity === undefined || Number(quantity) <= 0) { errors.push(`Item ${itemId}: invalid quantity`); continue }
 
       const { data: item } = await db.from("items")
         .select("stock_qty, name").eq("id", itemId).eq("store_id", storeId).single()
-      if (!item) continue
+      if (!item) { errors.push(`Item ${itemId}: not found in store`); continue }
 
       const oldQty = Number(item.stock_qty)
       const addQty = Number(quantity)
@@ -46,6 +48,10 @@ export async function POST(request: NextRequest) {
       })
 
       results.push({ itemId, name: item.name, oldQty, newQty, added: addQty })
+    }
+
+    if (errors.length > 0) {
+      return NextResponse.json({ error: errors.join("; ") }, { status: 400 })
     }
 
     return NextResponse.json({ success: true, received: results })

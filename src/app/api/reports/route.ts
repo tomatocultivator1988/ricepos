@@ -237,6 +237,95 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ rows })
     }
 
+    if (type === "cashflow") {
+      const { data: sales } = await db.from("sales")
+        .select("id, total, created_at")
+        .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
+        .gte("created_at", fromTs).lte("created_at", toTs)
+      const saleIds = (sales ?? []).map((s: any) => s.id)
+      let payments: any[] = []
+      if (saleIds.length) {
+        const { data: p } = await db.from("payments")
+          .select("method, amount, sale_id, created_at, is_collection")
+          .in("sale_id", saleIds)
+        payments = p ?? []
+      }
+      const { data: expenses } = await db.from("expenses")
+        .select("amount, date, category").eq("store_id", storeId)
+        .gte("date", from).lte("date", to)
+
+      const byDay = new Map<string, {
+        cashSales: number; gcashSales: number; collections: number
+        totalIn: number; expenses: number; txCount: number; expenseCount: number
+      }>()
+      for (const s of (sales ?? [])) {
+        const d = new Date(s.created_at).toISOString().split("T")[0]
+        if (!byDay.has(d)) byDay.set(d, { cashSales: 0, gcashSales: 0, collections: 0, totalIn: 0, expenses: 0, txCount: 0, expenseCount: 0 })
+        byDay.get(d)!.txCount++
+      }
+      for (const p of payments) {
+        const d = new Date(p.created_at).toISOString().split("T")[0]
+        if (!byDay.has(d)) byDay.set(d, { cashSales: 0, gcashSales: 0, collections: 0, totalIn: 0, expenses: 0, txCount: 0, expenseCount: 0 })
+        const row = byDay.get(d)!
+        if (p.is_collection) row.collections += Number(p.amount)
+        else if (p.method === "cash") row.cashSales += Number(p.amount)
+        else if (p.method === "gcash") row.gcashSales += Number(p.amount)
+      }
+      for (const e of (expenses ?? [])) {
+        if (!byDay.has(e.date)) byDay.set(e.date, { cashSales: 0, gcashSales: 0, collections: 0, totalIn: 0, expenses: 0, txCount: 0, expenseCount: 0 })
+        byDay.get(e.date)!.expenses += Number(e.amount)
+        byDay.get(e.date)!.expenseCount++
+      }
+      const rows = [...byDay.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([date, r]) => ({
+        date,
+        cashSales: r.cashSales, gcashSales: r.gcashSales,
+        collections: r.collections,
+        totalIn: r.cashSales + r.gcashSales + r.collections,
+        expenses: r.expenses,
+        netCashFlow: (r.cashSales + r.gcashSales + r.collections) - r.expenses,
+        txCount: r.txCount, expenseCount: r.expenseCount,
+      }))
+
+      const totalCashIn = rows.reduce((s: number, r: any) => s + Number(r.cashSales), 0)
+      const totalGcashIn = rows.reduce((s: number, r: any) => s + Number(r.gcashSales), 0)
+      const totalCollections = rows.reduce((s: number, r: any) => s + Number(r.collections), 0)
+      const totalExpenses = rows.reduce((s: number, r: any) => s + Number(r.expenses), 0)
+
+      const expensesByCategory = new Map<string, number>()
+      for (const e of (expenses ?? [])) {
+        expensesByCategory.set(e.category, (expensesByCategory.get(e.category) || 0) + Number(e.amount))
+      }
+
+      return NextResponse.json({
+        summary: { totalCashIn, totalGcashIn, totalCollections, totalExpenses, netCashFlow: totalCashIn + totalGcashIn + totalCollections - totalExpenses },
+        expensesByCategory: [...expensesByCategory.entries()].sort((a, b) => b[1] - a[1]).map(([category, amount]) => ({ category, amount })),
+        rows,
+      })
+    }
+
+    if (type === "consignments") {
+      const { data: settlements } = await db.from("consignment_settlements")
+        .select("id, item_id, supplier_id, qty_sold, unit_price, total_amount, settled_at, note, items(name), suppliers(name)")
+        .eq("store_id", storeId)
+        .gte("settled_at", fromTs).lte("settled_at", toTs)
+        .order("settled_at", { ascending: false })
+
+      const rows = (settlements ?? []).map((s: any) => ({
+        date: s.settled_at,
+        item: (s as any).items?.name ?? "—",
+        supplier: (s as any).suppliers?.name ?? "—",
+        qtySold: s.qty_sold,
+        unitPrice: Number(s.unit_price),
+        totalAmount: Number(s.total_amount),
+        note: s.note ?? "",
+      }))
+
+      const totalSettled = rows.reduce((s: number, r: any) => s + r.totalAmount, 0)
+      const totalQty = rows.reduce((s: number, r: any) => s + r.qtySold, 0)
+
+      return NextResponse.json({ summary: { totalSettled, totalQty, settlementCount: rows.length }, rows })
+    }
+
     return NextResponse.json({ error: "Unknown report type" }, { status: 400 })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()

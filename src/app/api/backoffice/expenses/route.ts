@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const { date, category, description, amount } = body
 
     if (!category) return NextResponse.json({ error: "Category required" }, { status: 400 })
-    if (!amount || Number(amount) <= 0) return NextResponse.json({ error: "Amount must be > 0" }, { status: 400 })
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return NextResponse.json({ error: "Amount must be > 0" }, { status: 400 })
 
     const { data: created, error } = await db.from("expenses").insert({
       id: uuid(), store_id: storeId, date: date || new Date().toISOString().split("T")[0],

@@ -53,6 +53,7 @@ export default function PosPage() {
   const [custResults, setCustResults] = useState<CustomerResult[]>([])
 
   const searchRef = useRef<HTMLInputElement>(null)
+  const scanRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const cart = useCart()
 
@@ -182,16 +183,32 @@ export default function PosPage() {
     w.document.close()
   }
 
-  // Barcode scanner
+  // Barcode scanner — dual capture: hidden input (hardware numpad) + window listener (software keyboard)
   useEffect(() => {
+    scanRef.current?.focus()
     let buf = ""; let t: NodeJS.Timeout | null = null
     const h = (e: KeyboardEvent) => {
       if (payModal || upItem || custModal) return
+      if (e.target === scanRef.current) return
       if (e.key === "Enter" && buf.length >= 8) { scanBarcode(buf); buf = ""; return }
       if (e.key.length === 1) { buf += e.key; if (t) clearTimeout(t); t = setTimeout(() => { buf = "" }, 80) }
     }
-    window.addEventListener("keydown", h); return () => window.removeEventListener("keydown", h)
-  })
+    window.addEventListener("keydown", h)
+    return () => window.removeEventListener("keydown", h)
+  }, [payModal, upItem, custModal])
+
+  function handleScanKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      const code = e.currentTarget.value.trim()
+      if (code.length >= 8) { scanBarcode(code); e.currentTarget.value = "" }
+    }
+  }
+
+  // Re-focus scan input after modals close
+  useEffect(() => {
+    if (!payModal && !upItem && !custModal && !collModal)
+      setTimeout(() => scanRef.current?.focus(), 150)
+  }, [payModal, upItem, custModal, collModal])
 
   function scanBarcode(code: string) {
     fetch(`/api/backoffice/items?q=${code}`).then(r => r.json()).then(d => {
@@ -203,7 +220,7 @@ export default function PosPage() {
       } else {
         toast.error(`Barcode ${code} not found`)
       }
-    })
+    }).catch(() => toast.error("Barcode lookup failed"))
   }
 
   function openUnitPicker(item: CatalogItem) {
@@ -327,6 +344,7 @@ export default function PosPage() {
 
       toast.success(`Sale #${sn} — ₱${json.sale.total.toFixed(2)}`)
       cart.clearCart()
+      cart.resumeMostRecentHeld()
       setPayModal(false)
       setPayCash(""); setPayGcash(""); setDeliveryFee("")
 
@@ -382,6 +400,11 @@ export default function PosPage() {
 
   return (
     <div className="flex h-screen flex-col rices-bg">
+      <input ref={scanRef} onKeyDown={handleScanKeyDown}
+        className="absolute left-0 top-0 w-[1px] h-[1px] opacity-0 -z-10"
+        autoComplete="off" inputMode="none" tabIndex={0}
+        aria-hidden="true"
+      />
       {/* ══ HEADER — same theme as admin shell ══ */}
       <header className="relative z-10 flex items-center justify-between border-b border-amber-300/60 bg-gradient-to-r from-[#0D3B1E]/95 via-[#0D3B1E]/95 to-[#1B4D2E]/95 px-3 sm:px-4 py-3 text-white shrink-0 shadow-md">
         <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-amber-400/50 to-transparent animate-gold-shimmer bg-[length:200%_100%]" />
@@ -486,6 +509,20 @@ export default function PosPage() {
             <div className="flex items-center gap-2"><ShoppingCart className="h-4 w-4 text-amber-600"/><span className="font-semibold text-stone-800 text-sm">Cart ({cart.items.length})</span></div>
             <Button variant="ghost" size="icon" className="h-7 w-7 lg:hidden" onClick={()=>setShowCart(false)}><X className="h-4 w-4"/></Button>
           </div>
+          {cart.heldCarts.length > 0 && (
+            <div className="p-2 pb-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider shrink-0">Held ({cart.heldCarts.length})</span>
+                {cart.heldCarts.map(h => (
+                  <button key={h.id} onClick={() => cart.resumeCart(h.id)}
+                    className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/15 text-amber-700 border border-amber-400/40 hover:bg-amber-500/25 flex items-center gap-1">
+                    <User className="h-3 w-3" />{h.label}
+                    <span className="text-[10px] text-stone-500">({h.items.length})</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto p-2 space-y-1">
             {cart.items.length===0?<div className="text-center text-stone-500 py-8 text-sm">Cart is empty</div>:cart.items.map(item=>{const k=cart.mergeKey(item);return(
               <div key={k} className="flex items-center gap-2 bg-gold-200/50 rounded-lg p-2">
@@ -523,8 +560,11 @@ export default function PosPage() {
               </div>
               <div className="flex justify-between text-base font-bold text-stone-800 pt-1"><span>TOTAL</span><span>₱{(cart.total + (Number(deliveryFee) || 0)).toFixed(2)}</span></div>
             </div>
-            <div className="flex gap-2"><Button variant="outline" size="sm" className="flex-1" onClick={cart.clearCart} disabled={cart.items.length===0}>Clear</Button>
-              <Button size="sm" className="flex-1 bg-primary hover:bg-amber-400" disabled={cart.items.length===0} onClick={openPay}><CreditCard className="h-3 w-3 mr-1"/>Pay</Button></div>
+            <div className="flex gap-2">
+               <Button variant="outline" size="sm" className="flex-1" onClick={cart.clearCart} disabled={cart.items.length===0}>Clear</Button>
+               <Button variant="outline" size="sm" className="flex-1" onClick={cart.holdCurrentCart} disabled={cart.items.length===0} title="Park this cart for later"><ShoppingCart className="h-3 w-3 mr-1"/>Hold</Button>
+               <Button size="sm" className="flex-1 bg-primary hover:bg-amber-400" disabled={cart.items.length===0} onClick={openPay}><CreditCard className="h-3 w-3 mr-1"/>Pay</Button>
+            </div>
           </div>
         </div>
 
