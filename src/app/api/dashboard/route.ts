@@ -41,12 +41,8 @@ export async function GET(request: NextRequest) {
       db.from("sales").select("id, sale_number, total, status, created_at")
         .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
         .order("created_at", { ascending: false }).limit(10),
-      // Recent 10 sales
-      db.from("sales").select("id, sale_number, total, status, created_at")
-        .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
-        .order("created_at", { ascending: false }).limit(10),
       // Last cash count
-      db.from("cash_counts").select("*").eq("store_id", storeId).order("created_at", { ascending: false }).limit(1).single(),
+      db.from("cash_counts").select("*").eq("store_id", storeId).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       // Sales trend (last 14 days)
       db.from("sales").select("total, created_at")
         .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
