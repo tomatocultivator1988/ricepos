@@ -53,14 +53,14 @@ export async function PATCH(
     if (!po) return notfind("Purchase order not found")
 
     if (body.action === "cancel") {
-      if (po.status === "received" || po.status === "cancelled") {
-        return NextResponse.json({ error: `Cannot cancel a ${po.status} PO` }, { status: 400 })
-      }
-      await db.from("purchase_orders").update({ status: "cancelled", updated_at: new Date().toISOString() }).eq("id", id)
-      await db.from("journal").insert({
-        id: uuid(), store_id: storeId, event_type: "po_cancelled", employee_id: session.employeeId,
-        details: { po_number: po.po_number },
+      const { data: result, error: rpcErr } = await db.rpc("cancel_purchase_order", {
+        p_po_id: id,
+        p_store_id: storeId,
+        p_employee_id: session.employeeId,
       })
+      if (rpcErr) return NextResponse.json({ error: rpcErr.message }, { status: 500 })
+      const r = result as any
+      if (!r.success) return NextResponse.json({ error: r.error }, { status: 400 })
       return NextResponse.json({ success: true })
     }
 

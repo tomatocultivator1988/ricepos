@@ -139,11 +139,21 @@ export async function DELETE(
     const { id } = await params
 
     const { data: existing } = await db.from("items")
-      .select("id")
+      .select("id, name")
       .eq("id", id)
       .eq("store_id", storeId)
       .single()
     if (!existing) return notfind("Item not found")
+
+    // Check for open POs referencing this item
+    const { data: openPOs } = await db.from("purchase_order_items")
+      .select("po_id").eq("item_id", id).limit(1)
+    const { data: openPOs2 } = await db.from("purchase_orders")
+      .select("id").eq("store_id", storeId).in("status", ["ordered", "partial"])
+    const openPoIds = new Set((openPOs2 ?? []).map((p: any) => p.id))
+    if ((openPOs ?? []).some((p: any) => openPoIds.has(p.po_id))) {
+      return NextResponse.json({ error: "Cannot delete item with open purchase orders" }, { status: 400 })
+    }
 
     await db.from("items")
       .update({ status: "inactive", updated_at: new Date().toISOString() })

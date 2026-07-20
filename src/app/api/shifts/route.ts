@@ -4,17 +4,18 @@ import { getSession, unauth } from "@/lib/auth/session"
 import { v4 as uuid } from "uuid"
 
 // Compute cash collected during a shift window (cash only)
-async function computeCashDuringShift(storeId: string, openedAt: string) {
-  // Get all store sale IDs to scope payments (payments table has no store_id)
-  const { data: storeSales } = await db.from("sales")
-    .select("id").eq("store_id", storeId)
+async function computeCashDuringShift(storeId: string, openedAt: string, closedAt?: string) {
+  // Get store sale IDs from the shift window only
+  let saleQuery = db.from("sales").select("id").eq("store_id", storeId).gte("created_at", openedAt)
+  if (closedAt) saleQuery = saleQuery.lte("created_at", closedAt)
+  const { data: storeSales } = await saleQuery
   const storeSaleIds = new Set((storeSales ?? []).map((s: any) => s.id))
 
   // All cash payments since shift opened
-  const { data: payments } = await db.from("payments")
-    .select("amount, is_collection, sale_id")
-    .eq("method", "cash")
-    .gte("created_at", openedAt)
+  let payQuery = db.from("payments").select("amount, is_collection, sale_id")
+    .eq("method", "cash").gte("created_at", openedAt)
+  if (closedAt) payQuery = payQuery.lte("created_at", closedAt)
+  const { data: payments } = await payQuery
 
   // Exclude payments tied to voided/refunded sales
   const { data: voidedSales } = await db.from("sales")
@@ -26,8 +27,9 @@ async function computeCashDuringShift(storeId: string, openedAt: string) {
   let cashSales = 0
   let cashCollections = 0
   for (const p of (payments ?? [])) {
-    if (p.sale_id && !storeSaleIds.has(p.sale_id)) continue  // not this store's sale
-    if (p.sale_id && voidedIds.has(p.sale_id)) continue
+      if (!p.sale_id) continue  // skip orphan payments
+      if (!storeSaleIds.has(p.sale_id)) continue
+      if (voidedIds.has(p.sale_id)) continue
     if (p.is_collection) cashCollections += Number(p.amount)
     else cashSales += Number(p.amount)
   }
@@ -35,15 +37,16 @@ async function computeCashDuringShift(storeId: string, openedAt: string) {
 }
 
 // Compute gcash collected during a shift window (gcash only)
-async function computeGcashDuringShift(storeId: string, openedAt: string) {
-  const { data: storeSales } = await db.from("sales")
-    .select("id").eq("store_id", storeId)
+async function computeGcashDuringShift(storeId: string, openedAt: string, closedAt?: string) {
+  let saleQuery = db.from("sales").select("id").eq("store_id", storeId).gte("created_at", openedAt)
+  if (closedAt) saleQuery = saleQuery.lte("created_at", closedAt)
+  const { data: storeSales } = await saleQuery
   const storeSaleIds = new Set((storeSales ?? []).map((s: any) => s.id))
 
-  const { data: payments } = await db.from("payments")
-    .select("amount, is_collection, sale_id")
-    .eq("method", "gcash")
-    .gte("created_at", openedAt)
+  let payQuery = db.from("payments").select("amount, is_collection, sale_id")
+    .eq("method", "gcash").gte("created_at", openedAt)
+  if (closedAt) payQuery = payQuery.lte("created_at", closedAt)
+  const { data: payments } = await payQuery
 
   const { data: voidedSales } = await db.from("sales")
     .select("id")

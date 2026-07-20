@@ -61,17 +61,13 @@ export async function POST(request: NextRequest) {
     const { data: supplier } = await db.from("suppliers").select("id").eq("id", supplier_id).eq("store_id", storeId).single()
     if (!supplier) return NextResponse.json({ error: "Supplier not found" }, { status: 400 })
 
-    // Generate PO number (year-based, po_sequences pattern)
+    // Generate PO number atomically
     const year = new Date().getFullYear()
-    const { data: seq } = await db.from("po_sequences")
-      .select("last_number").eq("store_id", storeId).eq("year", year).maybeSingle()
-    let num = 1
-    if (seq) {
-      num = seq.last_number + 1
-      await db.from("po_sequences").update({ last_number: num }).eq("store_id", storeId).eq("year", year)
-    } else {
-      await db.from("po_sequences").insert({ store_id: storeId, year, last_number: 1 })
-    }
+    const { data: seq } = await db.rpc("next_po_number", {
+      p_store_id: storeId,
+      p_year: year,
+    })
+    const num = (seq as any)?.num ?? 1
     const poNumber = `PO-${year}-${String(num).padStart(6, "0")}`
 
     // Compute total

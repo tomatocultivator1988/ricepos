@@ -89,8 +89,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: result.error || "Sale failed" }, { status: 400 })
     }
 
-    // Clear cart
-    await db.from("pos_carts").update({ cart_data: [] }).eq("shift_id", storeId)
+    // Clear only the active cart (preserve held carts for other customers/cashiers)
+    const { data: currentCart } = await db.from("pos_carts")
+      .select("cart_data").eq("shift_id", storeId).maybeSingle()
+    const raw = currentCart?.cart_data
+    if (raw && typeof raw === "object" && !Array.isArray(raw) && Array.isArray((raw as any).carts)) {
+      const cd = raw as any
+      // Remove the cart that was just sold (empty active)
+      const remaining = cd.carts.filter((c: any) => !c.active || c.items.length > 0)
+      // If remaining carts exist, set the last one as active
+      if (remaining.length > 0) {
+        remaining[remaining.length - 1].active = true
+        await db.from("pos_carts").update({
+          cart_data: { carts: remaining, activeId: remaining[remaining.length - 1].id },
+          updated_at: new Date().toISOString(),
+        }).eq("shift_id", storeId)
+      } else {
+        await db.from("pos_carts").update({
+          cart_data: { carts: [], activeId: null },
+          updated_at: new Date().toISOString(),
+        }).eq("shift_id", storeId)
+      }
+    } else {
+      await db.from("pos_carts").update({
+        cart_data: { carts: [], activeId: null },
+        updated_at: new Date().toISOString(),
+      }).eq("shift_id", storeId)
+    }
 
     return NextResponse.json({
       sale: {

@@ -25,15 +25,20 @@ export async function GET(request: NextRequest) {
           .in("sale_id", saleIds).eq("is_collection", false)
         payments = p ?? []
       }
+      // Build saleId → date map for correct payment grouping
+      const saleDateMap = new Map<string, string>()
+      for (const s of (sales ?? [])) saleDateMap.set(s.id, new Date(s.created_at).toISOString().split("T")[0])
+
       // Group by day
       const byDay = new Map<string, { count: number; cash: number; gcash: number; total: number }>()
       for (const s of (sales ?? [])) {
-        const d = new Date(s.created_at).toISOString().split("T")[0]
+        const d = saleDateMap.get(s.id)!
         if (!byDay.has(d)) byDay.set(d, { count: 0, cash: 0, gcash: 0, total: 0 })
         const row = byDay.get(d)!; row.count++; row.total += Number(s.total)
       }
       for (const p of payments) {
-        const d = new Date(p.created_at).toISOString().split("T")[0]
+        const d = saleDateMap.get(p.sale_id)
+        if (!d) continue
         if (!byDay.has(d)) byDay.set(d, { count: 0, cash: 0, gcash: 0, total: 0 })
         const row = byDay.get(d)!
         if (p.method === "cash") row.cash += Number(p.amount)
@@ -258,13 +263,16 @@ export async function GET(request: NextRequest) {
         cashSales: number; gcashSales: number; collections: number
         totalIn: number; expenses: number; txCount: number; expenseCount: number
       }>()
+      const saleDateMap = new Map<string, string>()
       for (const s of (sales ?? [])) {
         const d = new Date(s.created_at).toISOString().split("T")[0]
+        saleDateMap.set(s.id, d)
         if (!byDay.has(d)) byDay.set(d, { cashSales: 0, gcashSales: 0, collections: 0, totalIn: 0, expenses: 0, txCount: 0, expenseCount: 0 })
         byDay.get(d)!.txCount++
       }
       for (const p of payments) {
-        const d = new Date(p.created_at).toISOString().split("T")[0]
+        const d = saleDateMap.get(p.sale_id)
+        if (!d) continue
         if (!byDay.has(d)) byDay.set(d, { cashSales: 0, gcashSales: 0, collections: 0, totalIn: 0, expenses: 0, txCount: 0, expenseCount: 0 })
         const row = byDay.get(d)!
         if (p.is_collection) row.collections += Number(p.amount)

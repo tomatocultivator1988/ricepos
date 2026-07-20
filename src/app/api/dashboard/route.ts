@@ -16,7 +16,6 @@ export async function GET(request: NextRequest) {
       { data: lowStock },
       { data: todayExpenses },
       { data: recentSales },
-      { data: topProducts },
       { data: lastCashCount },
       { data: salesTrend },
     ] = await Promise.all([
@@ -42,11 +41,10 @@ export async function GET(request: NextRequest) {
       db.from("sales").select("id, sale_number, total, status, created_at")
         .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
         .order("created_at", { ascending: false }).limit(10),
-      // Top 5 products today (from sale_items)
-      db.from("sale_items")
-        .select("item_name, deducted_qty")
-        .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`)
-        .eq("status", "completed").limit(50),
+      // Recent 10 sales
+      db.from("sales").select("id, sale_number, total, status, created_at")
+        .eq("store_id", storeId).not("status", "in", '("voided","refunded")')
+        .order("created_at", { ascending: false }).limit(10),
       // Last cash count
       db.from("cash_counts").select("*").eq("store_id", storeId).order("created_at", { ascending: false }).limit(1).single(),
       // Sales trend (last 14 days)
@@ -62,11 +60,22 @@ export async function GET(request: NextRequest) {
     const outstandingTotal = (outstanding ?? []).reduce((s: number, r: any) => s + Number(r.balance), 0)
     const expensesToday = (todayExpenses ?? []).reduce((s: number, r: any) => s + Number(r.amount), 0)
 
-    // Cost of goods sold today (rough — from sale_items cost_at_sale)
-    const { data: todayCost } = await db.from("sale_items")
-      .select("cost_at_sale, base_qty_snapshot, qty")
-      .gte("created_at", `${today}T00:00:00`).lte("created_at", `${today}T23:59:59`)
-      .eq("status", "completed")
+    // Get today's sale IDs for this store (used by COGS and top products queries)
+    const todaySaleIds = (todaySales ?? []).map((s: any) => s.id)
+
+    // Top products + COGS from sale_items (scoped by store's sale_ids)
+    let topProducts: any[] = []
+    let todayCost: any[] = []
+    if (todaySaleIds.length > 0) {
+      const [{ data: tp }, { data: tc }] = await Promise.all([
+        db.from("sale_items").select("item_name, deducted_qty")
+          .in("sale_id", todaySaleIds).eq("status", "completed").limit(200),
+        db.from("sale_items").select("cost_at_sale, base_qty_snapshot, qty")
+          .in("sale_id", todaySaleIds).eq("status", "completed"),
+      ])
+      topProducts = tp ?? []
+      todayCost = tc ?? []
+    }
     const cogs = (todayCost ?? []).reduce((s: number, r: any) => {
       if (r.cost_at_sale == null) return s
       return s + (Number(r.cost_at_sale) * Number(r.qty) * Number(r.base_qty_snapshot))
@@ -108,8 +117,8 @@ export async function GET(request: NextRequest) {
       topProducts: top5.map(([name, qty]) => ({ name, qty })),
       salesTrend: trend.map(([date, total]) => ({ date, total })),
       lastCashCount: lastCashCount ? {
-        variance: Number(lastCashCount.variance),
-        date: lastCashCount.date,
+        variance: Number((lastCashCount as any).variance),
+        date: (lastCashCount as any).date,
       } : null,
     })
   } catch (error: any) {

@@ -18,10 +18,12 @@ export async function GET(request: NextRequest) {
 
     let saleIdsFromSearch: string[] | null = null
     if (search && search.trim().length > 0) {
+      // Get sale IDs from matching items (scoped by store via sales join)
       const { data: matchingItems } = await db
         .from("sale_items")
-        .select("sale_id")
+        .select("sale_id, sales!inner(store_id)")
         .ilike("item_name", `%${search.trim()}%`)
+        .eq("sales.store_id", storeId)
         .limit(500)
       if (matchingItems && matchingItems.length > 0) {
         saleIdsFromSearch = (matchingItems as Record<string, any>[]).map((i: Record<string, any>) => i.sale_id)
@@ -42,7 +44,7 @@ export async function GET(request: NextRequest) {
     if (search && search.trim().length > 0) {
       const term = `%${search.trim()}%`
       const orFilters: string[] = [`sale_number.ilike.${term}`]
-      if (saleIdsFromSearch && saleIdsFromSearch.length > 0 && saleIdsFromSearch.length <= 100) {
+      if (saleIdsFromSearch && saleIdsFromSearch.length > 0) {
         orFilters.push(...saleIdsFromSearch.map(id => `id.eq.${id}`))
       }
       if (orFilters.length > 1) {

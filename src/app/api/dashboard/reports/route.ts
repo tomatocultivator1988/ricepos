@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const allSales = sales ?? []
 
     // Compute reports
-    const completed = allSales.filter((s: any) => s.status === "completed" || s.status === "refunded")
+    const completed = allSales.filter((s: any) => s.status === "completed")
     const voided = allSales.filter((s: any) => s.status === "voided")
     const refunded = allSales.filter((s: any) => s.status === "refunded")
 

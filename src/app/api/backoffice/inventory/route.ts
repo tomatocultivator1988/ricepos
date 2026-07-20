@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db/client"
 import { getSession, unauth } from "@/lib/auth/session"
-import { v4 as uuid } from "uuid"
 
 // GET — live inventory view
 export async function GET() {
@@ -51,22 +50,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Adjustment would make stock negative (current: ${oldQty})` }, { status: 400 })
     }
 
-    await db.from("items").update({ stock_qty: newQty }).eq("id", itemId)
-
-    await db.from("inventory_log").insert({
-      id: uuid(), store_id: storeId, item_id: itemId,
-      change_qty: delta, qty_before: oldQty, qty_after: newQty,
-      reason: "adjustment", note: `${adjustmentType || "adjustment"}: ${reason || ""}`,
-      employee_id: session.employeeId,
+    const { data: result, error: rpcErr } = await db.rpc("adjust_stock", {
+      p_store_id: storeId,
+      p_item_id: itemId,
+      p_new_qty: newQty,
+      p_employee_id: session.employeeId,
+      p_reason: `${adjustmentType || "adjustment"}: ${reason || ""}`,
     })
 
-    await db.from("audit_log").insert({
-      id: uuid(), store_id: storeId, employee_id: session.employeeId,
-      action: "stock_adjusted", entity_type: "item", entity_id: itemId,
-      old_value: { stock_qty: oldQty }, new_value: { stock_qty: newQty }, reason,
-    })
+    if (rpcErr) return NextResponse.json({ error: rpcErr.message }, { status: 500 })
+    const r = result as any
+    if (!r.success) return NextResponse.json({ error: r.error }, { status: 400 })
 
-    return NextResponse.json({ success: true, newQty })
+    return NextResponse.json({ success: true, newQty: r.newQty })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
