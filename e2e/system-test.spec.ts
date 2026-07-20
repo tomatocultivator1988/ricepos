@@ -2,16 +2,11 @@ import { test, expect } from "@playwright/test"
 
 test.describe("Feature 4: POS Sale Completion (Atomic RPC)", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/pos")
-    await page.waitForSelector("text=All", { timeout: 15000 })
-    await page.evaluate(async () => {
-      await fetch("/api/pos/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart_data: { carts: [], activeId: null } }),
-      })
+    // Clear cart via direct API call before page load
+    await page.request.post("http://localhost:3000/api/pos/cart", {
+      data: { cart_data: { carts: [], activeId: null } },
     })
-    await page.reload()
+    await page.goto("/pos")
     await page.waitForSelector("text=All", { timeout: 15000 })
     await page.waitForTimeout(2000)
     const shiftBtn = page.locator("button:has-text('Open Shift')").first()

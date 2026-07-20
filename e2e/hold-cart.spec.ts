@@ -2,22 +2,11 @@ import { test, expect } from "@playwright/test"
 
 test.describe("POS Hold / Park Cart", () => {
   test.beforeEach(async ({ page }) => {
+    await page.request.post("http://localhost:3000/api/pos/cart", {
+      data: { cart_data: { carts: [], activeId: null } },
+    })
     await page.goto("/pos")
     await page.waitForSelector("text=All", { timeout: 15000 })
-
-    // Clear stale held carts from previous runs
-    await page.evaluate(async () => {
-      await fetch("/api/pos/cart", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart_data: { carts: [], activeId: null } }),
-      })
-    })
-    await page.waitForTimeout(600)
-    await page.reload()
-    await page.waitForSelector("text=All", { timeout: 15000 })
-
-    // Open shift if dialog is showing — wait a beat for shift API to resolve
     await page.waitForTimeout(2000)
     const shiftBtn = page.locator("button:has-text('Open Shift')").first()
     if (await shiftBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
