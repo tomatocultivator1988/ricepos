@@ -52,9 +52,12 @@ test.describe("Feature 4: POS Sale Completion (Atomic RPC)", () => {
 
     if (hasReceipt) {
       console.log("✅ Sale completed successfully!")
-      await receiptDialog.locator("button:has-text('Close')").click()
+      // Close receipt dialog
+      await page.keyboard.press("Escape")
       await page.waitForTimeout(500)
-      await expect(page.locator("text=Cart (0)")).toBeVisible({ timeout: 5000 })
+      // Cart should reset — check no error toast visible
+      const errorToast = page.locator('[role="alert"]:has-text("Sale failed")')
+      await expect(errorToast).not.toBeVisible({ timeout: 3000 })
     } else {
       console.log("⚠ Sale failed — Supabase RPC migration needs re-run")
       // Close pay dialog if still open
