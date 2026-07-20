@@ -41,7 +41,7 @@ export default function PurchaseOrdersPage() {
   // Detail / receive
   const [detail, setDetail] = useState<any>(null)
   const [detailOpen, setDetailOpen] = useState(false)
-  const [recvLines, setRecvLines] = useState<Record<string, { qty: string; updateCost: boolean }>>({})
+  const [recvLines, setRecvLines] = useState<Record<string, { qty: string; updateCost: boolean; isConsignment: boolean; agreedPrice: string }>>({})
   const [receiving, setReceiving] = useState(false)
 
   // Return to supplier
@@ -103,9 +103,9 @@ export default function PurchaseOrdersPage() {
     const json = await res.json()
     setDetail(json.purchaseOrder)
     // Pre-fill receive with remaining qty
-    const init: Record<string, { qty: string; updateCost: boolean }> = {}
+    const init: Record<string, { qty: string; updateCost: boolean; isConsignment: boolean; agreedPrice: string }> = {}
     for (const it of json.purchaseOrder.items) {
-      init[it.id] = { qty: String(it.remaining > 0 ? it.remaining : 0), updateCost: false }
+      init[it.id] = { qty: String(it.remaining > 0 ? it.remaining : 0), updateCost: false, isConsignment: false, agreedPrice: "" }
     }
     setRecvLines(init)
     setDetailOpen(true)
@@ -115,7 +115,11 @@ export default function PurchaseOrdersPage() {
     if (!detail) return
     const lines = Object.entries(recvLines)
       .filter(([_, v]) => Number(v.qty) > 0)
-      .map(([line_id, v]) => ({ line_id, receive_qty: Number(v.qty), update_cost: v.updateCost }))
+      .map(([line_id, v]) => ({
+        line_id, receive_qty: Number(v.qty), update_cost: v.updateCost,
+        is_consignment: v.isConsignment,
+        consignment_agreed_price: v.isConsignment ? Number(v.agreedPrice) : null,
+      }))
     if (lines.length === 0) { toast.error("Enter quantities to receive"); return }
     setReceiving(true)
     const res = await fetch(`/api/backoffice/purchase-orders/${detail.id}/receive`, {
@@ -364,6 +368,25 @@ export default function PurchaseOrdersPage() {
                               className="accent-amber-500" />
                             Sync cost
                           </label>
+                          {/* Consignment toggle */}
+                          <label className="flex items-center gap-1.5 text-[10px] text-amber-600 cursor-pointer">
+                            <input type="checkbox" checked={recvLines[it.id]?.isConsignment ?? false}
+                              onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], isConsignment: e.target.checked } })}
+                              className="accent-amber-500" />
+                            Consignment
+                          </label>
+                        </div>
+                      )}
+                      {/* Show agreed price when consignment checked */}
+                      {canReceive && it.remaining > 0 && recvLines[it.id]?.isConsignment && (
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="text-[10px] text-stone-500">Agreed Price ₱</span>
+                          <Input type="number" step="0.01" min="0"
+                            value={recvLines[it.id]?.agreedPrice ?? ""}
+                            placeholder={String(it.unit_cost)}
+                            onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], agreedPrice: e.target.value } })}
+                            className="w-24 h-8 bg-gold-100 border-amber-300/60 text-center text-xs" />
+                          <span className="text-[10px] text-stone-500">per unit to pay supplier</span>
                         </div>
                       )}
                       {canReceive && it.remaining <= 0 && (

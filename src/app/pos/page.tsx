@@ -11,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCart, type CartItem } from "@/hooks/use-cart"
 import { toast } from "sonner"
 import { DenominationCounter, type DenomState } from "@/components/denomination-counter"
-import { Numpad } from "@/components/numpad"
 
 interface CatalogItem {
   id: string; name: string; category_id: string | null; sell_by: "weight" | "unit";
@@ -78,9 +77,6 @@ export default function PosPage() {
   const [collAmount, setCollAmount] = useState("")
   const [collMethod, setCollMethod] = useState("cash")
   const [collSaving, setCollSaving] = useState(false)
-
-  // Numpad state
-  const [focusedInput, setFocusedInput] = useState<"cash" | "gcash" | "qty" | "collAmount" | null>(null)
 
   // Auth
   useEffect(() => { fetch("/api/pos/me").then(r => r.json()).then(d => {
@@ -593,12 +589,13 @@ export default function PosPage() {
             </div>
             <div className="space-y-1.5 mb-1">
               <span className="text-xs font-medium text-stone-500 mb-1">Quantity:</span>
-              <div
-                className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer"
-                onClick={() => setFocusedInput("qty")}
-              >
-                {upQty || "0"}
-              </div>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={upQty}
+                onChange={e => setUpQty(e.target.value)}
+                className="bg-gold-100 border-amber-300/60 h-12 text-lg font-mono"
+              />
             </div>
             {upUnit&&(<p className="text-xs text-stone-500">Total: {(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.base_qty??1)).toFixed(upItem.sell_by==="weight"?1:0)} {upItem.sell_by==="weight"?"kg":"pcs"} = ₱{(Number(upQty||0)*(upItem.units.find(u=>u.id===upUnit)?.price??0)).toFixed(2)}</p>)}
             <Button onClick={addToCart} className="w-full bg-primary hover:bg-amber-400">Add to Cart</Button>
@@ -629,21 +626,23 @@ export default function PosPage() {
             <div className="space-y-3">
               <div className="space-y-1.5 mb-1">
                 <label className="text-xs font-medium text-stone-500 mb-1">Cash</label>
-                <div
-                  className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer"
-                  onClick={() => setFocusedInput("cash")}
-                >
-                  ₱{payCash || "0.00"}
-                </div>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={payCash}
+                onChange={e => setPayCash(e.target.value)}
+                className="bg-gold-100 border-amber-300/60 h-12 text-lg font-mono"
+              />
               </div>
               <div className="space-y-1.5 mb-1">
                 <label className="text-xs font-medium text-stone-500 mb-1">GCash</label>
-                <div
-                  className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer"
-                  onClick={() => setFocusedInput("gcash")}
-                >
-                  ₱{payGcash || "0.00"}
-                </div>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={payGcash}
+                onChange={e => setPayGcash(e.target.value)}
+                className="bg-gold-100 border-amber-300/60 h-12 text-lg font-mono"
+              />
               </div>
               <div className="border-t border-amber-300/60 pt-2 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-stone-500">Paid</span><span className="text-white font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)).toFixed(2)}</span></div>
@@ -836,12 +835,13 @@ export default function PosPage() {
                   <p className="text-xl font-bold text-amber-600">Balance: ₱{collSelected.balance.toFixed(2)}</p>
                 </div>
                 <div className="flex gap-2">
-                  <div
-                    className="h-12 rounded-xl border-2 border-amber-300/60 bg-gold-100 flex items-center px-4 text-lg font-mono tabular-nums cursor-pointer flex-1"
-                    onClick={() => setFocusedInput("collAmount")}
-                  >
-                    ₱{collAmount || "0.00"}
-                  </div>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={collAmount}
+                  onChange={e => setCollAmount(e.target.value)}
+                  className="bg-gold-100 border-amber-300/60 h-12 text-lg font-mono flex-1"
+                />
                   <Select value={collMethod} onValueChange={v => setCollMethod(v ?? "cash")}>
                     <SelectTrigger className="w-28 bg-gold-100 border-amber-300/60 h-10"><SelectValue /></SelectTrigger>
                     <SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="gcash">GCash</SelectItem></SelectContent>
@@ -868,25 +868,6 @@ export default function PosPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ══ ON-SCREEN NUMPAD ══ */}
-      {focusedInput && (() => {
-        const config: Record<string, { value: string; onChange: (v: string) => void; label: string; decimal: boolean }> = {
-          cash: { value: payCash, onChange: setPayCash, label: "Cash Amount", decimal: true },
-          gcash: { value: payGcash, onChange: setPayGcash, label: "GCash Amount", decimal: true },
-          qty: { value: upQty, onChange: setUpQty, label: "Quantity", decimal: true },
-          collAmount: { value: collAmount, onChange: setCollAmount, label: "Collection Amount", decimal: true },
-        }
-        const cfg = config[focusedInput]
-        return (
-          <Numpad
-            value={cfg.value}
-            onChange={cfg.onChange}
-            onDismiss={() => setFocusedInput(null)}
-            label={cfg.label}
-            allowDecimal={cfg.decimal}
-          />
-        )
-      })()}
     </div>
   )
 }

@@ -24,6 +24,8 @@ export async function POST(
         line_id: l.line_id,
         receive_qty: Number(l.receive_qty),
         update_cost: !!l.update_cost,
+        is_consignment: !!l.is_consignment,
+        consignment_agreed_price: l.consignment_agreed_price || null,
       }))
 
     if (cleanLines.length === 0) {
