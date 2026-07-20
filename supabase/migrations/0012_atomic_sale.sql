@@ -81,7 +81,7 @@ BEGIN
     tax_total, delivery_fee, total, amount_paid, balance, change, status
   ) VALUES (
     v_sale_id, p_store_id, v_sale_number, p_employee_id, p_customer_id,
-    p_subtotal, p_discount_type, p_discount_value, p_discount_amount, p_discount_name,
+    p_subtotal, p_discount_type::discount_type, p_discount_value, p_discount_amount, p_discount_name,
     p_tax_total, p_delivery_fee, p_total, p_total_paid, p_balance, p_change,
     p_sale_status::sale_status
   );
