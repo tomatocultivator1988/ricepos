@@ -368,25 +368,28 @@ export default function PurchaseOrdersPage() {
                               className="accent-amber-500" />
                             Sync cost
                           </label>
-                          {/* Consignment toggle */}
+                        </div>
+                      )}
+                      {/* Consignment toggle — always visible on receivable POs */}
+                      {canReceive && (
+                        <div className="pt-2 border-t border-amber-200/50 space-y-2">
                           <label className="flex items-center gap-1.5 text-[10px] text-amber-600 cursor-pointer">
                             <input type="checkbox" checked={recvLines[it.id]?.isConsignment ?? false}
                               onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], isConsignment: e.target.checked } })}
                               className="accent-amber-500" />
-                            Consignment
+                            Consignment — pay supplier only when sold
                           </label>
-                        </div>
-                      )}
-                      {/* Show agreed price when consignment checked */}
-                      {canReceive && it.remaining > 0 && recvLines[it.id]?.isConsignment && (
-                        <div className="flex items-center gap-2 pt-1">
-                          <span className="text-[10px] text-stone-500">Agreed Price ₱</span>
-                          <Input type="number" step="0.01" min="0"
-                            value={recvLines[it.id]?.agreedPrice ?? ""}
-                            placeholder={String(it.unit_cost)}
-                            onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], agreedPrice: e.target.value } })}
-                            className="w-24 h-8 bg-gold-100 border-amber-300/60 text-center text-xs" />
-                          <span className="text-[10px] text-stone-500">per unit to pay supplier</span>
+                          {recvLines[it.id]?.isConsignment && (
+                            <div className="flex items-center gap-2 pl-2">
+                              <span className="text-[10px] text-stone-500">Agreed Price ₱</span>
+                              <Input type="number" step="0.01" min="0"
+                                value={recvLines[it.id]?.agreedPrice ?? ""}
+                                placeholder={String(it.unit_cost)}
+                                onChange={e => setRecvLines({ ...recvLines, [it.id]: { ...recvLines[it.id], agreedPrice: e.target.value } })}
+                                className="w-24 h-8 bg-gold-100 border-amber-300/60 text-center text-xs" />
+                              <span className="text-[10px] text-stone-500">per unit</span>
+                            </div>
+                          )}
                         </div>
                       )}
                       {canReceive && it.remaining <= 0 && (
