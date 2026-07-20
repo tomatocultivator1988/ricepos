@@ -47,8 +47,10 @@ export async function GET(
     const transactions: any[] = []
 
     for (const sale of sales ?? []) {
+      const d = new Date(sale.created_at)
       transactions.push({
-        date: new Date(sale.created_at).toLocaleDateString("en-PH"),
+        date: d.toLocaleDateString("en-PH"),
+        isoDate: d.toISOString(),
         ref: `#${String(sale.sale_number).padStart(6, "0")}`,
         description: "Purchase",
         debit: Number(sale.total),
@@ -65,9 +67,11 @@ export async function GET(
 
     for (const [saleId, payments] of paymentMap) {
       for (const p of payments) {
+        const d = new Date(p.created_at)
         transactions.push({
-          date: new Date(p.created_at).toLocaleDateString("en-PH"),
-          ref: p.is_collection ? `Collection` : "Payment",
+          date: d.toLocaleDateString("en-PH"),
+          isoDate: d.toISOString(),
+          ref: p.is_collection ? "Collection" : "Payment",
           description: `${p.method.toUpperCase()} payment`,
           debit: 0,
           credit: Number(p.amount),
@@ -76,8 +80,7 @@ export async function GET(
       }
     }
 
-    // Sort by date
-    transactions.sort((a, b) => a.date.localeCompare(b.date))
+    transactions.sort((a, b) => a.isoDate.localeCompare(b.isoDate))
 
     // Compute running balance
     let running = 0

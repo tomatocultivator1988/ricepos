@@ -33,7 +33,7 @@ export async function GET(
     // Get employee name
     let empName = "—"
     if ((sale as any).employee_id) {
-      const { data: emp } = await db.from("employees").select("name").eq("id", (sale as any).employee_id).single()
+      const { data: emp } = await db.from("employees").select("name").eq("id", (sale as any).employee_id).maybeSingle()
       if (emp) empName = (emp as any).name
     }
 
@@ -46,6 +46,7 @@ export async function GET(
         items: (itemRows ?? []).map((i: any) => ({
           itemName: i.item_name,
           qty: Number(i.qty),
+          unitPrice: Number(i.unit_price),
           lineTotal: Number(i.line_total),
         })),
         subtotal: Number(sale.subtotal),

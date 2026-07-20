@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         { error: "Name is required" }, { status: 400 }
       )
     }
-    if (rate === undefined || Number(rate) < 0) {
+    if (rate === undefined || isNaN(Number(rate)) || Number(rate) < 0 || Number(rate) > 1) {
       return NextResponse.json(
         { error: "Valid rate is required" }, { status: 400 }
       )

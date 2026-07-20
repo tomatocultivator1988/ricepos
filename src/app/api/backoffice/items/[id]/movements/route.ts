@@ -45,6 +45,7 @@ export async function GET(
       .from("items")
       .select("cost")
       .eq("id", id)
+      .eq("store_id", storeId)
 
     const standardCost = itemArr && itemArr.length > 0 ? Number(itemArr[0].cost) : 0
 

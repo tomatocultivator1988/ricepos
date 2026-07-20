@@ -80,7 +80,6 @@ export async function PUT(
 
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (name !== undefined) updateData.name = name.trim()
-    if (price !== undefined) updateData.price = String(Number(price).toFixed(2))
     if (sellBy !== undefined) updateData.sell_by = sellBy
     if (discountEligible !== undefined) updateData.discount_eligible = discountEligible
     if (sku !== undefined) updateData.sku = sku || null
@@ -98,8 +97,8 @@ export async function PUT(
     if (categoryId !== undefined) updateData.category_id = categoryId || null
     if (taxRateId !== undefined) updateData.tax_rate_id = taxRateId || null
     if (trackStock !== undefined) updateData.track_stock = trackStock
-    if (stockQty != null) updateData.stock_qty = String(Number(stockQty))
-    if (minStock != null) updateData.min_stock = String(Number(minStock))
+    if (stockQty != null) updateData.stock_qty = Number(stockQty)
+    if (minStock != null) updateData.min_stock = Number(minStock)
     if (imageUrl !== undefined) updateData.image_url = imageUrl || null
     if (isActive !== undefined) updateData.status = isActive ? "active" : "inactive"
     if (isConsignment !== undefined) updateData.is_consignment = isConsignment

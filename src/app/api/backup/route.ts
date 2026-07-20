@@ -80,10 +80,11 @@ export async function POST(request: NextRequest) {
 
     // Store pre-restore backup
     const preRestoreId = uuid()
+    const preRestoreKey = `pre_restore_backup_${Date.now()}`
     await db.from("settings").insert({
       id: preRestoreId,
       store_id: storeId,
-      key: `pre_restore_backup_${Date.now()}`,
+      key: preRestoreKey,
       value: { exportedAt: new Date().toISOString(), data: preRestoreBackup },
     }).select("id").single()
 
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
       employee_id: session.employeeId,
       action: "backup_restored",
       entity_type: "backup",
-      new_value: { imported, failed_tables: failed, pre_restore_key: `pre_restore_backup_${Date.now()}` },
+      new_value: { imported, failed_tables: failed, pre_restore_key: preRestoreKey },
     })
 
     return NextResponse.json({

@@ -236,6 +236,10 @@ export default function PosPage() {
     if (!unit) return
     const qty = Number(upQty)
     if (!qty || qty <= 0) return
+    if (upItem.sell_by === "unit" && qty % 1 !== 0) {
+      toast.error("Unit items require whole number quantity")
+      return
+    }
     if (qty * unit.base_qty > upItem.stock_qty) {
       toast.error(`Only ${Number(upItem.stock_qty).toFixed(upItem.sell_by==="weight"?3:0)} available`)
       return
@@ -530,7 +534,7 @@ export default function PosPage() {
                 <div className="flex items-center gap-1">
                   <button onClick={()=>cart.updateQty(k,item.qty-(item.sellBy==="weight"?0.1:1))} className="h-6 w-6 rounded bg-white flex items-center justify-center btnQuantity text-stone-500 hover:text-stone-800"><Minus className="h-3 w-3"/></button>
                   <span className="text-xs font-medium text-stone-800 w-10 text-center">{item.sellBy==="weight"?Number(item.qty).toFixed(item.qty%1===0?1:3):item.qty}</span>
-                  <button onClick={()=>cart.updateQty(k,item.qty+(item.sellBy==="weight"?0.1:1))} className="h-6 w-6 rounded bg-white flex items-center justify-center btnQuantity text-stone-500 hover:text-stone-800"><Plus className="h-3 w-3"/></button>
+                  <button onClick={()=>{ const step=item.sellBy==="weight"?0.1:1; const next=item.qty+step; if(next*item.baseQty>item.stockQty){toast.error(`Only ${Number(item.stockQty).toFixed(item.sellBy==="weight"?1:0)} available`); return } cart.updateQty(k,next) }} className="h-6 w-6 rounded bg-white flex items-center justify-center btnQuantity text-stone-500 hover:text-stone-800"><Plus className="h-3 w-3"/></button>
                 </div>
                 <button onClick={()=>cart.removeItem(k)} className="h-6 w-6 rounded flex items-center justify-center text-stone-500 hover:text-red-600"><X className="h-3 w-3"/></button>
               </div>
@@ -617,10 +621,11 @@ export default function PosPage() {
 
       {/* ══ PAYMENT OVERLAY ══ */}
       <Dialog open={payModal} onOpenChange={setPayModal}>
-        <DialogContent className="max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
+          <DialogContent className="max-w-sm bg-gold-200/90 border-amber-300/60 text-stone-800 p-5">
           <DialogHeader><DialogTitle>Payment</DialogTitle></DialogHeader>
           <div className="space-y-5">
-            <p className="text-center"><span className="text-3xl font-bold text-white">₱{cart.total.toFixed(2)}</span></p>
+            {(() => { const payTotal = cart.total + (Number(deliveryFee) || 0); return (<>
+            <p className="text-center"><span className="text-3xl font-bold text-white">₱{payTotal.toFixed(2)}</span></p>
             <div className="space-y-3">
               <div className="space-y-1.5 mb-1">
                 <label className="text-xs font-medium text-stone-500 mb-1">Cash</label>
@@ -642,12 +647,13 @@ export default function PosPage() {
               </div>
               <div className="border-t border-amber-300/60 pt-2 space-y-1 text-sm">
                 <div className="flex justify-between"><span className="text-stone-500">Paid</span><span className="text-white font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)).toFixed(2)}</span></div>
-                {((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&(<div className="flex justify-between"><span className="text-amber-600">To Balance</span><span className="text-amber-600 font-semibold">₱{(cart.total-(Number(payCash)||0)-(Number(payGcash)||0)).toFixed(2)}</span></div>)}
-                {(Number(payCash)||0)+(Number(payGcash)||0)>cart.total&&(<div className="flex justify-between"><span className="text-amber-600">Change</span><span className="text-amber-600 font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)-cart.total).toFixed(2)}</span></div>)}
+                {((Number(payCash)||0)+(Number(payGcash)||0))<payTotal&&(<div className="flex justify-between"><span className="text-amber-600">To Balance</span><span className="text-amber-600 font-semibold">₱{(payTotal-(Number(payCash)||0)-(Number(payGcash)||0)).toFixed(2)}</span></div>)}
+                {(Number(payCash)||0)+(Number(payGcash)||0)>payTotal&&(<div className="flex justify-between"><span className="text-amber-600">Change</span><span className="text-amber-600 font-semibold">₱{((Number(payCash)||0)+(Number(payGcash)||0)-payTotal).toFixed(2)}</span></div>)}
               </div>
               {cart.customerId&&<div className="text-xs text-stone-500">Customer: {cart.customerName} {cart.customerBalance>0?`(existing utang: ₱${cart.customerBalance.toFixed(2)})`:""}</div>}
-              {!cart.customerId&&((Number(payCash)||0)+(Number(payGcash)||0))<cart.total&&<p className="text-xs text-red-600 text-center">Select a customer to have a balance</p>}
+              {!cart.customerId&&((Number(payCash)||0)+(Number(payGcash)||0))<payTotal&&<p className="text-xs text-red-600 text-center">Select a customer to have a balance</p>}
             </div>
+            </>) })()}
             <div className="flex gap-3">
               <Button variant="outline" className="flex-1" onClick={()=>setPayModal(false)}>Cancel</Button>
               <Button className="flex-1 bg-primary hover:bg-amber-400" onClick={processPayment} disabled={paySaving}>{paySaving?<Loader2Icon className="h-4 w-4 animate-spin"/>:"Confirm Payment"}</Button>

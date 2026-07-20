@@ -6,6 +6,12 @@ import { signSession, setSessionCookie } from "@/lib/auth/session"
 const loginAttempts = new Map<string, { count: number; resetAt: number }>()
 function checkRateLimit(key: string): boolean {
   const now = Date.now()
+
+  // Periodic cleanup of expired entries every ~100 calls
+  if (Math.random() < 0.01) {
+    for (const [k, v] of loginAttempts) { if (now > v.resetAt) loginAttempts.delete(k) }
+  }
+
   const entry = loginAttempts.get(key)
   if (!entry || now > entry.resetAt) {
     loginAttempts.set(key, { count: 1, resetAt: now + 60000 })
@@ -44,10 +50,11 @@ export async function POST(request: NextRequest) {
           role: emp.role as "admin" | "cashier",
         }
 
-        await db.from("time_logs").insert({
+        // Fire-and-forget time log (don't block login)
+        db.from("time_logs").insert({
           employee_id: emp.id,
           login_at: new Date().toISOString(),
-        })
+        }).then(() => {}, () => {})
 
         const token = signSession(session)
         const response = NextResponse.json(session)

@@ -13,6 +13,7 @@ test.describe("POS Hold / Park Cart", () => {
         body: JSON.stringify({ cart_data: { carts: [], activeId: null } }),
       })
     })
+    await page.waitForTimeout(600)
     await page.reload()
     await page.waitForSelector("text=All", { timeout: 15000 })
 

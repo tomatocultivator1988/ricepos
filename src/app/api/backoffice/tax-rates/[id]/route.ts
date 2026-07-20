@@ -94,11 +94,18 @@ export async function DELETE(
 
     const { data: existing } = await db
       .from("tax_rates")
-      .select("id")
+      .select("id, name")
       .eq("id", id)
       .eq("store_id", storeId)
       .single()
     if (!existing) return notfind("Tax rate not found")
+
+    // Block delete if items reference this tax rate
+    const { data: refs } = await db.from("items")
+      .select("id").eq("tax_rate_id", id).eq("store_id", storeId).limit(1)
+    if (refs && refs.length > 0) {
+      return NextResponse.json({ error: "Cannot delete tax rate referenced by items" }, { status: 400 })
+    }
 
     await db
       .from("tax_rates")

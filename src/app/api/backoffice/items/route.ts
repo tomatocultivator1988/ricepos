@@ -139,6 +139,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: { code: "VALIDATION_ERROR", message: "Item ID is required" } }, { status: 400 })
     }
 
+    // Verify item exists and belongs to this store
+    const { data: itemCheck } = await db.from("items")
+      .select("id").eq("id", id).eq("store_id", storeId).maybeSingle()
+    if (!itemCheck) return NextResponse.json({ error: "Item not found" }, { status: 404 })
+
     const parsed = updateSchema.safeParse(fields)
     if (!parsed.success) {
       return NextResponse.json(

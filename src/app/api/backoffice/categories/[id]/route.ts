@@ -89,11 +89,18 @@ export async function DELETE(
 
     const { data: existing } = await db
       .from("categories")
-      .select("id")
+      .select("id, name")
       .eq("id", id)
       .eq("store_id", storeId)
       .single()
     if (!existing) return notfind("Category not found")
+
+    // Block delete if items reference this category
+    const { data: refs } = await db.from("items")
+      .select("id").eq("category_id", id).eq("store_id", storeId).limit(1)
+    if (refs && refs.length > 0) {
+      return NextResponse.json({ error: "Cannot delete category referenced by items" }, { status: 400 })
+    }
 
     await db
       .from("categories")

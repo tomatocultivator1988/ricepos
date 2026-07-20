@@ -13,7 +13,7 @@ export async function GET(_request: NextRequest) {
       .eq("store_id", storeId)
       .order("sort_order", { ascending: true })
 
-    return NextResponse.json({ categories: list })
+    return NextResponse.json({ categories: list ?? [] })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
     if (error.message === "Store not found")

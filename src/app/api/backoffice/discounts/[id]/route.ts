@@ -71,7 +71,7 @@ export async function PUT(
     const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
     if (name !== undefined) updateData.name = name.trim()
     if (type !== undefined) updateData.type = type
-    if (value !== undefined) updateData.value = String(Number(value).toFixed(2))
+    if (value !== undefined) updateData.value = Number(Number(value).toFixed(2))
     if (isActive !== undefined) updateData.is_active = isActive
 
     const { data: updated } = await db
