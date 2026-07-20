@@ -14,7 +14,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Plus, Search, X, Trash2, GripVertical, Check, PackageIcon, LayersIcon } from "lucide-react"
+import { HandshakeIcon, Plus, Search, X, Trash2, GripVertical, Check, PackageIcon, LayersIcon } from "lucide-react"
 import { toast } from "sonner"
 import { CategoriesManager } from "@/components/categories-manager"
 
@@ -29,7 +29,9 @@ interface Item {
   cost: number; barcode: string | null; stock_qty: number; min_stock: number;
   tax_rate_id: string | null; discount_eligible: boolean; status: string;
   image_url: string | null; selling_units: SellingUnit[];
+  is_consignment?: boolean; consignment_supplier_id?: string | null; consignment_agreed_price?: number;
 }
+interface Supplier { id: string; name: string }
 
 const emptyUnit = (sellBy: string, idx: number): SellingUnit => ({
   name: sellBy === "weight" ? "Per Kilo" : "Piece",
@@ -42,6 +44,7 @@ export default function ItemsPage() {
   const [items, setItems] = useState<Item[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [taxRates, setTaxRates] = useState<TaxRate[]>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [search, setSearch] = useState("")
   const [filterCat, setFilterCat] = useState<string>("all")
   const [loading, setLoading] = useState(true)
@@ -75,6 +78,11 @@ export default function ItemsPage() {
   }, [search, filterCat])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  // Load suppliers for consignment dropdown
+  useEffect(() => {
+    fetch("/api/backoffice/suppliers").then(r => r.json()).then(d => setSuppliers(d.suppliers ?? [])).catch(() => {})
+  }, [])
 
   function openNew() {
     setEditing({ sell_by: "unit", cost: 0, min_stock: 0, discount_eligible: true, status: "active", selling_units: [emptyUnit("unit", 0)] })
@@ -117,6 +125,9 @@ export default function ItemsPage() {
       tax_rate_id: editing.tax_rate_id || null,
       discount_eligible: editing.discount_eligible ?? true,
       status: editing.status ?? "active",
+      is_consignment: (editing as any).is_consignment ?? false,
+      consignment_supplier_id: (editing as any).consignment_supplier_id || null,
+      consignment_agreed_price: (editing as any).consignment_agreed_price || 0,
     }
     if (!isNew) body.id = editing.id
 
@@ -488,6 +499,42 @@ export default function ItemsPage() {
                       onChange={e => updateField("discount_eligible", e.target.checked)} className="accent-amber-500" />
                     <span className="text-xs font-medium text-stone-500">Senior/PWD discount</span>
                   </label>
+
+                  {/* Consignment Section */}
+                  <div className="border-t border-amber-300/60 pt-4 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <HandshakeIcon className="h-4 w-4 text-amber-600" />
+                      <span className="text-sm font-semibold text-amber-600">Consignment</span>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" checked={(editing as any).is_consignment ?? false}
+                        onChange={e => updateField("is_consignment", e.target.checked)} className="accent-amber-500" />
+                      <span className="text-xs font-medium text-stone-500">Mark as Consignment Item</span>
+                    </label>
+                    {(editing as any).is_consignment && (
+                      <div className="space-y-3 pl-2 border-l-2 border-amber-400/40">
+                        <div className="flex flex-col gap-1.5">
+                          <Label className="text-xs font-medium text-stone-500">Supplier</Label>
+                          <Select value={(editing as any).consignment_supplier_id ?? "none"} onValueChange={v => updateField("consignment_supplier_id", v === "none" ? null : v)}>
+                            <SelectTrigger className="bg-gold-100 border-amber-300/60 h-10">
+                              <span className="text-stone-800">{suppliers.find(s => s.id === (editing as any).consignment_supplier_id)?.name || "Select supplier..."}</span>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              {suppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex flex-col gap-1.5">
+                          <Label className="text-xs font-medium text-stone-500">Agreed Price (₱)</Label>
+                          <Input type="number" step="0.01" value={(editing as any).consignment_agreed_price ?? 0}
+                            onChange={e => updateField("consignment_agreed_price", e.target.value)}
+                            className="bg-gold-100 border-amber-300/60 h-10" />
+                          <p className="text-[10px] text-stone-500">Amount to pay supplier per unit sold</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Right: Selling Units */}
