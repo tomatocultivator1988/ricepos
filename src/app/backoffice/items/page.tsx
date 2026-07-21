@@ -127,7 +127,7 @@ export default function ItemsPage() {
       status: editing.status ?? "active",
       is_consignment: (editing as any).is_consignment ?? false,
       consignment_supplier_id: (editing as any).consignment_supplier_id || null,
-      consignment_agreed_price: (editing as any).consignment_agreed_price || 0,
+      consignment_agreed_price: Number((editing as any).consignment_agreed_price ?? 0),
     }
     if (!isNew) body.id = editing.id
 
@@ -148,7 +148,7 @@ export default function ItemsPage() {
             body: JSON.stringify({
               unitId: unit.id, name: unit.name.trim(), base_qty: Number(unit.base_qty),
               price: Number(unit.price), min_qty: Number(unit.min_qty),
-              is_default: unit.is_default, sort_order: unit.sort_order,
+              is_default: unit.is_default, sort_order: Number(unit.sort_order),
             }),
           })
         } else {
@@ -159,7 +159,7 @@ export default function ItemsPage() {
             body: JSON.stringify({
               name: unit.name.trim(), base_qty: Number(unit.base_qty),
               price: Number(unit.price), min_qty: Number(unit.min_qty),
-              is_default: unit.is_default, sort_order: unit.sort_order,
+              is_default: unit.is_default, sort_order: Number(unit.sort_order),
             }),
           })
         }
