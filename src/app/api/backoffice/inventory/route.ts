@@ -50,19 +50,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Adjustment would make stock negative (current: ${oldQty})` }, { status: 400 })
     }
 
-    const { data: result, error: rpcErr } = await db.rpc("adjust_stock", {
-      p_store_id: storeId,
-      p_item_id: itemId,
-      p_new_qty: newQty,
-      p_employee_id: session.employeeId,
-      p_reason: `${adjustmentType || "adjustment"}: ${reason || ""}`,
+    const adjReason: string = adjustmentType === "stock-in" ? "delivery" : "adjustment"
+    const adjNote: string = reason || adjustmentType || "adjustment"
+
+    const { error: updateErr } = await db.from("items")
+      .update({ stock_qty: newQty })
+      .eq("id", itemId).eq("store_id", storeId)
+
+    if (updateErr) return NextResponse.json({ error: updateErr.message }, { status: 500 })
+
+    const { error: logErr } = await db.from("inventory_log").insert({
+      store_id: storeId,
+      item_id: itemId,
+      change_qty: delta,
+      qty_before: oldQty,
+      qty_after: newQty,
+      reason: adjReason,
+      note: adjNote,
+      employee_id: session.employeeId,
     })
 
-    if (rpcErr) return NextResponse.json({ error: rpcErr.message }, { status: 500 })
-    const r = result as any
-    if (!r.success) return NextResponse.json({ error: r.error }, { status: 400 })
+    if (logErr) return NextResponse.json({ error: logErr.message }, { status: 500 })
 
-    return NextResponse.json({ success: true, newQty: r.newQty })
+    return NextResponse.json({ success: true, newQty })
   } catch (error: any) {
     if (error.message === "Unauthorized") return unauth()
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
